@@ -12,6 +12,20 @@ import CalendarHeader from "./CalendarHeader";
 import { useAlertas } from "../../hooks/useAlertas";
 import "./Calendar.css";
 
+const API_MOCK = {
+  eventos: [
+    {
+      titulo: "Servicio de ejemplo",
+      fecha_inicio: new Date(),
+      fecha_fin: new Date(Date.now() + 3600000), // 1 hora después
+      color: "#87c947",
+      estado: "confirmado",
+      descripcion: "Servicio de prueba",
+    },
+    // Más eventos de ejemplo...
+  ],
+};
+
 const Calendar = () => {
   const tecnicosIniciales = [
     { id: "1", title: "Francisco Londoño" },
@@ -26,6 +40,11 @@ const Calendar = () => {
   const [eventos, setEventos] = useState([]);
   const [tecnicos, setTecnicos] = useState(tecnicosIniciales);
   const { mostrarAlerta } = useAlertas();
+  const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
+  const [posicionMenu, setPosicionMenu] = useState({ x: 0, y: 0 });
+  const [mostrarMenuContextual, setMostrarMenuContextual] = useState(false);
+  const [mostrarMenuContextualTecnico, setMostrarMenuContextualTecnico] =
+    useState(false);
 
   useEffect(() => {
     // Cargar servicios pendientes del localStorage
@@ -40,6 +59,35 @@ const Calendar = () => {
     // Forzar la carga de técnicos iniciales
     setTecnicos(tecnicosIniciales);
     localStorage.setItem("tecnicos", JSON.stringify(tecnicosIniciales));
+
+    const fetchEvents = async () => {
+      try {
+        // Simular llamada a la API
+        const data = API_MOCK.eventos;
+
+        const formattedEvents = data.map((event) => ({
+          title: event.titulo,
+          start: new Date(event.fecha_inicio),
+          end: new Date(event.fecha_fin),
+          display: "auto",
+          backgroundColor: event.color || "#87c947",
+          borderColor: event.color || "#87c947",
+          extendedProps: {
+            estado: event.estado,
+            description: event.descripcion,
+          },
+        }));
+
+        setEventos(formattedEvents);
+      } catch (error) {
+        console.error("Error al cargar eventos:", error);
+        const eventosLocales =
+          JSON.parse(localStorage.getItem("eventos")) || [];
+        setEventos(eventosLocales);
+      }
+    };
+
+    fetchEvents();
   }, []);
 
   const handleAgregarTecnico = async () => {
@@ -64,7 +112,6 @@ const Calendar = () => {
         popup: "swal2-popup-custom",
         title: "swal2-title-custom",
         confirmButton: "swal2-confirm-custom",
-        cancelButton: "swal2-cancel-custom",
       },
       preConfirm: () => {
         const nombre = document.getElementById("nombreTecnico").value;
@@ -76,6 +123,11 @@ const Calendar = () => {
             confirmButtonColor: "#87c947",
             background: "#f8ffec",
             color: "#004122",
+            customClass: {
+              popup: "swal2-popup-custom",
+              title: "swal2-title-custom",
+              confirmButton: "swal2-confirm-custom",
+            },
           });
           return false;
         }
@@ -84,11 +136,8 @@ const Calendar = () => {
     });
 
     if (nombreTecnico) {
-      // Obtener técnicos actuales
       const tecnicosActuales =
         JSON.parse(localStorage.getItem("tecnicos")) || tecnicosIniciales;
-
-      // Generar un nuevo ID único
       const maxId = Math.max(...tecnicosActuales.map((t) => parseInt(t.id)), 0);
       const nuevoTecnico = {
         id: (maxId + 1).toString(),
@@ -107,6 +156,10 @@ const Calendar = () => {
         showConfirmButton: false,
         background: "#f8ffec",
         color: "#004122",
+        customClass: {
+          popup: "swal2-popup-custom",
+          title: "swal2-title-custom",
+        },
       });
     }
   };
@@ -160,9 +213,17 @@ const Calendar = () => {
       cancelButtonColor: "#e74c3c",
       background: "#ffffff",
       color: "#004122",
+      customClass: {
+        popup: "swal2-popup-custom",
+        title: "swal2-title-custom",
+        confirmButton: "swal2-confirm-custom",
+        cancelButton: "swal2-cancel-custom",
+        htmlContainer: "swal2-html-container",
+      },
     });
 
     if (result.isConfirmed) {
+      // Actualizar el evento en tu estado
       const eventosActualizados = eventos.map((ev) =>
         ev.id === event.id
           ? {
@@ -237,20 +298,12 @@ const Calendar = () => {
       cancelButtonColor: "#e74c3c",
       background: "#ffffff",
       color: "#004122",
-      preConfirm: () => {
-        const nombre = document.getElementById("nombreTecnico").value;
-        if (!nombre) {
-          mostrarAlerta({
-            icon: "error",
-            title: "Error",
-            text: "Por favor ingrese el nombre del técnico",
-            confirmButtonColor: "#87c947",
-            background: "#f8ffec",
-            color: "#004122",
-          });
-          return false;
-        }
-        return nombre;
+      customClass: {
+        popup: "swal2-popup-custom",
+        title: "swal2-title-custom",
+        confirmButton: "swal2-confirm-custom",
+        cancelButton: "swal2-cancel-custom",
+        htmlContainer: "swal2-html-container",
       },
     });
 
@@ -315,41 +368,52 @@ const Calendar = () => {
     event.preventDefault();
     const tecnico = tecnicos.find((t) => t.id === info.resource.id);
 
-    Swal.fire({
-      title: tecnico.title,
-      html: `
-        <div class="d-flex flex-column gap-2">
-          <button class="btn w-100" id="btnEditar" style="background-color: #87c947; color: white; border: none;">
-            <i class="fas fa-edit me-2"></i>Editar
-          </button>
-          <button class="btn btn-danger w-100" id="btnEliminar">
-            <i class="fas fa-trash-alt me-2"></i>Eliminar
-          </button>
-        </div>
-      `,
-      showConfirmButton: false,
-      showCancelButton: false,
-      background: "#ffffff",
-      color: "#004122",
-      didOpen: () => {
-        const btnEditar = Swal.getPopup().querySelector("#btnEditar");
-        const btnEliminar = Swal.getPopup().querySelector("#btnEliminar");
+    // Eliminar menú contextual existente si hay uno
+    const existingMenu = document.querySelector(".context-menu");
+    if (existingMenu) {
+      existingMenu.remove();
+    }
 
-        btnEditar.addEventListener("mouseover", () => {
-          btnEditar.style.backgroundColor = "#6fa33c";
-        });
-        btnEditar.addEventListener("mouseout", () => {
-          btnEditar.style.backgroundColor = "#87c947";
-        });
-        btnEditar.addEventListener("click", () => {
-          Swal.close();
-          handleEditarTecnico(tecnico);
-        });
-        btnEliminar.addEventListener("click", () => {
-          Swal.close();
-          handleEliminarTecnico(tecnico);
-        });
-      },
+    // Crear el nuevo menú contextual
+    const menu = document.createElement("div");
+    menu.className = "context-menu";
+    menu.innerHTML = `
+      <button class="context-menu-item editar">
+        <i class="fas fa-edit"></i>
+        Editar
+      </button>
+      <div class="context-menu-separator"></div>
+      <button class="context-menu-item eliminar">
+        <i class="fas fa-trash-alt"></i>
+        Eliminar
+      </button>
+    `;
+
+    // Posicionar el menú
+    menu.style.left = `${event.pageX}px`;
+    menu.style.top = `${event.pageY}px`;
+    document.body.appendChild(menu);
+
+    // Agregar event listeners
+    const btnEditar = menu.querySelector(".context-menu-item.editar");
+    const btnEliminar = menu.querySelector(".context-menu-item.eliminar");
+
+    btnEditar.addEventListener("click", () => {
+      menu.remove();
+      handleEditarTecnico(tecnico);
+    });
+
+    btnEliminar.addEventListener("click", () => {
+      menu.remove();
+      handleEliminarTecnico(tecnico);
+    });
+
+    // Cerrar el menú al hacer clic fuera de él
+    document.addEventListener("click", function closeMenu(e) {
+      if (!menu.contains(e.target)) {
+        menu.remove();
+        document.removeEventListener("click", closeMenu);
+      }
     });
   };
 
@@ -430,8 +494,6 @@ const Calendar = () => {
       },
     };
 
-    let estadoSeleccionado = null;
-
     const { value: formValues } = await mostrarAlerta({
       title: "Agregar Servicio",
       html: `
@@ -446,27 +508,27 @@ const Calendar = () => {
           </div>
           <div class="mb-3">
             <label class="form-label" style="color: #004122;">Estado del Servicio</label>
-            <div class="d-flex flex-column gap-2" id="estadosContainer">
+            <div id="estadosContainer">
               ${Object.entries(estadosServicio)
                 .map(
                   ([key, estado]) => `
-                <button type="button" class="btn estado-btn w-100 d-flex align-items-center" 
-                  data-estado="${key}" 
-                  style="background-color: ${estado.color}; color: white; border: none; transition: all 0.3s ease;">
-                  <i class="fas ${estado.icon} me-2"></i>
-                  ${estado.nombre}
-                </button>
-              `
+                  <button type="button" class="estado-btn" 
+                    data-estado="${key}" 
+                    style="background-color: ${estado.color}; color: white;">
+                    <i class="fas ${estado.icon}"></i>
+                    ${estado.nombre}
+                  </button>
+                `
                 )
                 .join("")}
             </div>
+            <input type="hidden" id="estadoServicio" value="">
           </div>
           <div class="text-muted">
             <small>Técnico: ${tecnico.title}</small><br>
             <small>Inicio: ${fechaInicio.toLocaleTimeString()}</small><br>
             <small>Fin: ${fechaFin.toLocaleTimeString()}</small>
           </div>
-          <input type="hidden" id="estadoServicio" value="">
         </form>
       `,
       showCancelButton: true,
@@ -545,36 +607,25 @@ const Calendar = () => {
     });
 
     if (formValues) {
-      const nuevoEvento = {
-        id: Date.now().toString(),
+      const calendarApi = selectInfo.view.calendar;
+      calendarApi.unselect();
+
+      calendarApi.addEvent({
         title: formValues.nombre,
-        start: selectInfo.startStr,
-        end: selectInfo.endStr,
-        backgroundColor: formValues.color,
-        borderColor: formValues.color,
+        start: selectInfo.start,
+        end: selectInfo.end,
         resourceId: selectInfo.resource.id,
         extendedProps: {
           descripcion: formValues.descripcion,
-          tecnico: tecnico.title,
           estado: formValues.estado,
         },
-      };
-
-      const eventosActualizados = [...eventos, nuevoEvento];
-      setEventos(eventosActualizados);
-      localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
-
-      mostrarAlerta({
-        icon: "success",
-        title: "Servicio Agregado",
-        text: "El servicio ha sido agregado correctamente",
-        timer: 1500,
-        showConfirmButton: false,
-        background: "#f8ffec",
-        color: "#004122",
+        backgroundColor: formValues.color,
+        borderColor: formValues.color,
+        textColor: "white",
+        classNames: [`estado-${formValues.estado}`],
+        display: "block",
       });
     }
-    selectInfo.view.calendar.unselect();
   };
 
   const handleEventClick = (info) => {
@@ -684,35 +735,35 @@ const Calendar = () => {
           </div>
           <div class="mb-3">
             <label class="form-label" style="color: #004122;">Estado del Servicio</label>
-            <div class="d-flex flex-column gap-2" id="estadosContainer">
+            <div id="estadosContainer">
               ${Object.entries(estadosServicio)
                 .map(
                   ([key, estado]) => `
-                  <button type="button" class="btn estado-btn w-100 d-flex align-items-center ${
+                  <button type="button" class="estado-btn ${
                     key === evento.extendedProps.estado ? "active" : ""
                   }" 
                     data-estado="${key}" 
                     style="background-color: ${
                       estado.color
-                    }; color: white; border: none; transition: all 0.3s ease; opacity: ${
+                    }; color: white; opacity: ${
                     key === evento.extendedProps.estado ? "1" : "0.6"
                   }">
-                    <i class="fas ${estado.icon} me-2"></i>
+                    <i class="fas ${estado.icon}"></i>
                     ${estado.nombre}
                   </button>
                 `
                 )
                 .join("")}
             </div>
+            <input type="hidden" id="estadoServicio" value="${
+              evento.extendedProps.estado || ""
+            }">
           </div>
           <div class="text-muted">
             <small>Técnico: ${tecnico?.title}</small><br>
             <small>Inicio: ${fechaInicio.toLocaleTimeString()}</small><br>
             <small>Fin: ${fechaFin.toLocaleTimeString()}</small>
           </div>
-          <input type="hidden" id="estadoServicio" value="${
-            evento.extendedProps.estado || ""
-          }">
         </form>
       `,
       showCancelButton: true,
@@ -791,33 +842,13 @@ const Calendar = () => {
     });
 
     if (formValues) {
-      const eventosActualizados = eventos.map((ev) =>
-        ev.id === evento.id
-          ? {
-              ...ev,
-              title: formValues.nombre,
-              backgroundColor: formValues.color,
-              borderColor: formValues.color,
-              extendedProps: {
-                ...ev.extendedProps,
-                descripcion: formValues.descripcion,
-                estado: formValues.estado,
-              },
-            }
-          : ev
-      );
-      setEventos(eventosActualizados);
-      localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
-
-      mostrarAlerta({
-        icon: "success",
-        title: "Servicio Actualizado",
-        text: "El servicio ha sido actualizado correctamente",
-        timer: 1500,
-        showConfirmButton: false,
-        background: "#f8ffec",
-        color: "#004122",
-      });
+      evento.setProp("title", formValues.nombre);
+      evento.setExtendedProp("descripcion", formValues.descripcion);
+      evento.setExtendedProp("estado", formValues.estado);
+      evento.setProp("backgroundColor", formValues.color);
+      evento.setProp("borderColor", formValues.color);
+      evento.setProp("textColor", "white");
+      evento.setProp("classNames", [`estado-${formValues.estado}`]);
     }
   };
 
@@ -867,6 +898,141 @@ const Calendar = () => {
     }
   };
 
+  // Función para validar eventos
+  const validateEvents = (rawEvents) => {
+    return rawEvents.filter((event) => {
+      return (
+        event &&
+        event.title &&
+        event.start &&
+        typeof event.title === "string" &&
+        (event.start instanceof Date || typeof event.start === "string")
+      );
+    });
+  };
+
+  // Manejador de eventos montados
+  const handleEventDidMount = (info) => {
+    try {
+      if (!info.event.display) {
+        info.event.setDisplay("auto");
+      }
+    } catch (error) {
+      console.error("Error al montar evento:", error);
+      console.log("Evento problemático:", info.event);
+    }
+  };
+
+  // Función para manejar el clic derecho en un servicio
+  const handleContextMenu = (e, servicio) => {
+    e.preventDefault(); // Importante para prevenir el menú contextual del navegador
+
+    // Establece el servicio seleccionado
+    setServicioSeleccionado(servicio);
+
+    // Posiciona el menú donde se hizo clic
+    setPosicionMenu({ x: e.clientX, y: e.clientY });
+
+    // Muestra el menú
+    setMostrarMenuContextual(true);
+
+    // Oculta cualquier otro menú contextual que pudiera estar abierto
+    setMostrarMenuContextualTecnico(false);
+  };
+
+  // En algún lugar de tu componente, añade un manejador para cerrar el menú cuando se hace clic en otro lugar
+  useEffect(() => {
+    const handleClickFuera = () => {
+      setMostrarMenuContextual(false);
+    };
+
+    document.addEventListener("click", handleClickFuera);
+
+    return () => {
+      document.removeEventListener("click", handleClickFuera);
+    };
+  }, []);
+
+  // Manejar cuando un evento se redimensiona
+  const handleEventResize = (info) => {
+    // Actualizar el evento en tu estado
+    const updatedEventos = eventos.map((evento) => {
+      if (evento.id === info.event.id) {
+        return {
+          ...evento,
+          start: info.event.start,
+          end: info.event.end,
+        };
+      }
+      return evento;
+    });
+
+    setEventos(updatedEventos);
+
+    // Guardar en localStorage o API
+    localStorage.setItem("eventos", JSON.stringify(updatedEventos));
+
+    // Notificar al usuario
+    mostrarAlerta({
+      icon: "success",
+      title: "Servicio actualizado",
+      text: `La duración del servicio ha sido actualizada.`,
+      timer: 2000,
+      timerProgressBar: true,
+    });
+  };
+
+  // Manejar cuando se arrastra un servicio desde fuera del calendario
+  const handleExternalDrop = (info) => {
+    // Crear un nuevo evento a partir del elemento arrastrado
+    const servicioData = JSON.parse(
+      info.draggedEl.getAttribute("data-servicio")
+    );
+
+    const newEvento = {
+      id: `evento-${Date.now()}`,
+      title: servicioData.titulo,
+      start: info.date,
+      end: new Date(info.date.getTime() + 60 * 60 * 1000), // 1 hora después por defecto
+      backgroundColor: getColorByEstado(servicioData.estado),
+      borderColor: getColorByEstado(servicioData.estado),
+      extendedProps: {
+        estado: servicioData.estado,
+        description: servicioData.descripcion,
+        clienteId: servicioData.clienteId,
+        resourceId: info.resource?.id || null,
+      },
+    };
+
+    // Agregar el nuevo evento a tu estado
+    const updatedEventos = [...eventos, newEvento];
+    setEventos(updatedEventos);
+
+    // Guardar en localStorage o API
+    localStorage.setItem("eventos", JSON.stringify(updatedEventos));
+
+    // Notificar al usuario
+    mostrarAlerta({
+      icon: "success",
+      title: "Servicio asignado",
+      text: `El servicio ha sido asignado al calendario.`,
+      timer: 2000,
+      timerProgressBar: true,
+    });
+
+    // Opcional: remover el servicio de los pendientes si corresponde
+    if (info.draggedEl.classList.contains("servicio-card")) {
+      const serviciosActualizados = serviciosPendientes.filter(
+        (s) => s.id !== servicioData.id
+      );
+      setServiciosPendientes(serviciosActualizados);
+      localStorage.setItem(
+        "serviciosPendientes",
+        JSON.stringify(serviciosActualizados)
+      );
+    }
+  };
+
   return (
     <div className="calendar-container">
       <Sidebar
@@ -901,6 +1067,7 @@ const Calendar = () => {
                 slotMinTime: "00:00:00",
                 slotMaxTime: "24:00:00",
                 editable: true,
+                allDaySlot: false,
               },
               dayGridMonth: {
                 type: "dayGrid",
@@ -941,36 +1108,26 @@ const Calendar = () => {
               },
             }}
             resources={tecnicos}
-            events={eventos}
-            editable={false}
-            droppable={false}
-            locale={esLocale}
+            events={validateEvents(eventos)}
+            editable={true}
+            eventStartEditable={true}
+            eventDurationEditable={true}
+            droppable={true}
+            eventOverlap={true}
+            eventConstraint={null}
+            businessHours={false}
+            snapDuration={"00:15:00"}
+            slotDuration={"00:30:00"}
+            slotLabelInterval={"01:00:00"}
             allDaySlot={false}
-            slotEventOverlap={false}
-            eventDrop={(info) => {
-              if (info.view.type === "resourceTimeGridDay") {
-                handleEventDrop(info);
-              } else {
-                info.revert();
-              }
-            }}
-            eventReceive={(info) => {
-              if (info.view.type === "resourceTimeGridDay") {
-                handleEventReceive(info);
-              } else {
-                info.revert();
-              }
-            }}
-            eventContent={(arg) => (
-              <div className="fc-event-main-content">
-                <div className="fc-event-title">{arg.event.title}</div>
-                <div className="fc-event-description">
-                  {arg.event.extendedProps.descripcion}
-                </div>
-              </div>
-            )}
-            schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
+            eventResize={handleEventResize}
+            eventDrop={handleEventDrop}
+            drop={handleExternalDrop}
+            resourceOrder="title"
+            resourceAreaWidth="15%"
             resourceLabelContent={resourceLabelContent}
+            eventResourceEditable={true}
+            locale={esLocale}
             selectable={true}
             select={(info) => {
               if (info.view.type === "resourceTimeGridDay") {
@@ -979,6 +1136,8 @@ const Calendar = () => {
             }}
             eventClick={handleEventClick}
             dateClick={handleDateClick}
+            eventDidMount={handleEventDidMount}
+            resourceAreaHeaderContent="Técnicos"
           />
         </div>
       </div>

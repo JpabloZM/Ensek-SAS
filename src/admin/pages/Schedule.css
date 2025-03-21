@@ -1,0 +1,30 @@
+.schedule-page {
+  padding: 2rem;
+  height: calc(100vh - 64px); /* Ajusta esto según la altura de tu header */
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-header {
+  margin-bottom: 2rem;
+}
+
+.schedule-header h1 {
+  color: #004122;
+  margin: 0;
+}
+
+.schedule-content {
+  flex: 1;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  min-height: 0; /* Importante para que el calendario se ajuste correctamente */
+}
+
+@media (max-width: 768px) {
+  .schedule-page {
+    padding: 1rem;
+  }
+} 

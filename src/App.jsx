@@ -1,38 +1,67 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import Calendar from "./components/Calendar/Calendar";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
-import "@fortawesome/fontawesome-free/css/all.min.css";
-import "./App.css";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import ClientLayout from "./client/components/layout/ClientLayout";
+import AdminLayout from "./admin/components/layout/AdminLayout";
+
+// Client Pages
+import Home from "./client/pages/Home";
+import Services from "./client/pages/Services";
+import RequestService from "./client/pages/RequestService";
+
+// Admin Pages
+import Login from "./admin/auth/Login";
+import Register from "./admin/auth/Register";
+import Dashboard from "./admin/pages/Dashboard";
+import Schedule from "./admin/pages/Schedule";
+import Inventory from "./admin/pages/Inventory";
+import ProtectedRoute from "./admin/auth/ProtectedRoute";
 
 function App() {
   return (
     <Router>
-      <div className="App">
-        <nav className="navbar">
-          <div className="d-flex align-items-center">
-            <Link to="/" className="navbar-brand">
-              <i className="fas fa-calendar-alt me-2"></i>
-              ENSEK
-            </Link>
-            <div className="nav-links">
-              <Link to="/" className="nav-link">
-                <i className="fas fa-calendar-alt"></i>
-                <span>Calendario</span>
-              </Link>
-              <Link to="/inventario" className="nav-link">
-                <i className="fas fa-box"></i>
-                <span>Inventario</span>
-              </Link>
-            </div>
-          </div>
-        </nav>
+      <Routes>
+        {/* Rutas públicas (cliente) */}
+        <Route path="/" element={<ClientLayout />}>
+          <Route index element={<Home />} />
+          <Route path="servicios" element={<Services />} />
+          <Route path="solicitar/:serviceId" element={<RequestService />} />
+        </Route>
 
-        <Routes>
-          <Route path="/" element={<Calendar />} />
-        </Routes>
-      </div>
+        {/* Rutas administrativas */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="login" element={<Login />} />
+          <Route path="registro" element={<Register />} />
+          <Route
+            path="dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="calendario"
+            element={
+              <ProtectedRoute>
+                <Schedule />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="inventario"
+            element={
+              <ProtectedRoute>
+                <Inventory />
+              </ProtectedRoute>
+            }
+          />
+          <Route index element={<Navigate to="/admin/login" replace />} />
+        </Route>
+      </Routes>
     </Router>
   );
 }
