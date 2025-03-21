@@ -1,42 +1,91 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+.App {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-green);
+  display: flex;
+  flex-direction: column;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Estilos de la barra de navegación */
+.navbar {
+  background-color: white;
+  padding: 1rem 2rem;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.navbar-brand {
+  color: var(--dark-green2);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-left: 2rem;
+}
+
+.nav-link {
+  color: var(--dark-green2);
+  text-decoration: none;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.3s ease;
+}
+
+.nav-link i {
+  font-size: var(--font-size-lg);
+}
+
+.nav-link:hover {
+  color: var(--primary-green);
+  background-color: var(--bg-green);
+}
+
+.nav-link.active {
+  color: var(--primary-green);
+  background-color: var(--bg-green);
+}
+
+/* Estilos del contenedor principal */
+.main-content {
+  flex: 1;
+  padding: var(--spacing-xl);
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1rem;
   }
-  to {
-    transform: rotate(360deg);
+
+  .nav-links {
+    margin-left: 1rem;
+    gap: 1rem;
   }
-}
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  .nav-link {
+    padding: 0.5rem;
   }
-}
 
-.card {
-  padding: 2em;
-}
+  .nav-link span {
+    display: none;
+  }
 
-.read-the-docs {
-  color: #888;
+  .nav-link i {
+    font-size: var(--font-size-xl);
+  }
+
+  .main-content {
+    padding: var(--spacing-md);
+  }
 }
