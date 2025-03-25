@@ -1,0 +1,131 @@
+/* Estilos de botones */
+.calendar-header .btn-primary,
+.sidebar .btn-primary {
+  width: 100%;
+  max-width: 200px;
+  margin: 0 auto 1.25rem auto;
+  justify-content: center;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--border-radius-md);
+}
+
+.calendar-header .btn-outline-primary {
+  width: 50%;
+  max-width: 200px;
+  margin: 0 auto 1.25rem auto;
+  justify-content: center;
+  padding: 0.9rem 0.9rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--primary-green);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebar .btn-agregar-servicio,
+.sidebar .btn-primary.btn-servicio {
+  width: 90%;
+  padding: 0.85rem 1rem;
+  background-color: var(--primary-green);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0.5rem auto 1.25rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Efectos de botones */
+.sidebar .btn-agregar-servicio:hover,
+.sidebar .btn-primary.btn-servicio:hover {
+  background-color: var(--dark-green);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Botón variante outline */
+.sidebar .btn-outline-servicio {
+  background-color: transparent;
+  color: var(--primary-green);
+  border: 1.5px solid var(--primary-green);
+}
+
+.sidebar .btn-outline-servicio:hover {
+  background-color: var(--bg-green);
+  color: var(--dark-green);
+}
+
+.sidebar .btn-outline-servicio i {
+  color: var(--primary-green);
+}
+
+/* Posicionamiento del botón eliminar */
+.eliminar-servicio {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.servicio-card:hover .eliminar-servicio {
+  opacity: 1;
+}
+
+.btn-link.text-danger.eliminar-servicio {
+  font-size: 1rem;
+  padding: 4px !important;
+  margin: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--dark-green);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-link.text-danger.eliminar-servicio:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+}
+
+/* Icono de servicio */
+.icon-primary {
+  color: var(--primary-green);
+  padding: 0.5rem 0;
+}
+
+/* Alineación de icono y texto en botones */
+.btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+/* Ajuste específico para iconos en botones */
+.btn i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+/* Para asegurar que el texto no se envuelva */
+.btn span {
+  display: inline-block;
+  line-height: 1;
+}

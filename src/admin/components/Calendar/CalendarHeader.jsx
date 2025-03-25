@@ -14,7 +14,7 @@ const CalendarHeader = ({ onExportar, onAgregarTecnico }) => {
       showDenyButton: true,
       confirmButtonText: '<i class="fas fa-image"></i> Imagen',
       denyButtonText: '<i class="fas fa-file-pdf"></i> PDF',
-      confirmButtonColor: "#2ecc71",
+      confirmButtonColor: "#87c947",
       denyButtonColor: "#e74c3c",
     });
 

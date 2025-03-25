@@ -27,7 +27,7 @@ const AdminLayout = () => {
       <header className="admin-header">
         <nav className="admin-nav">
           <div className="logo">
-            <Link to="/admin/dashboard">ENSEK Admin</Link>
+            <Link to="/admin/dashboard">ENSEK</Link>
           </div>
           <div className="nav-links">
             <Link to="/admin/dashboard">Panel de Control</Link>

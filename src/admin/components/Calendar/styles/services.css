@@ -1,0 +1,107 @@
+/* Contenedor de servicios */
+.servicios-container {
+  /* padding: var(--spacing-sm); */
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+}
+
+/* Scrollbar personalizado */
+.servicios-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.servicios-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.servicios-container::-webkit-scrollbar-thumb {
+  background: var(--primary-green);
+  border-radius: 3px;
+}
+
+.servicios-container::-webkit-scrollbar-thumb:hover {
+  background: var(--dark-green);
+}
+
+/* Tarjetas de servicios */
+.servicio-card {
+  background-color: white;
+  border: 1px solid var(--light-green);
+  border-radius: var(--border-radius-md);
+  padding: 15px;
+  cursor: grab;
+  transition: all 0.3s ease;
+  user-select: none;
+  -webkit-user-drag: element;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-top: 15px;
+}
+
+/* Estados de tarjetas */
+.servicio-card.estado-confirmado::before {
+  background-color: #87c947;
+}
+
+.servicio-card.estado-cancelado::before {
+  background-color: #e74c3c;
+}
+
+.servicio-card.estado-pendiente::before {
+  background-color: #ffd54f;
+}
+
+.servicio-card.estado-almuerzo::before {
+  background-color: #3498db;
+}
+
+.servicio-card.estado-especial::before {
+  background-color: #c425bc;
+}
+
+/* ===== Botones del ServicioCard ===== */
+.servicio-card .botones-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 92%;
+  margin: 0.5rem auto;
+}
+
+/* Estilos base para los botones */
+.servicio-card .btn {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  border: none;
+  letter-spacing: 0.3px;
+}
+
+/* Ajustes responsive */
+@media (max-width: 768px) {
+  .servicio-card .botones-container {
+    width: 95%;
+    gap: 0.625rem;
+  }
+
+  .servicio-card .btn {
+    padding: 0.7rem 0.875rem;
+    font-size: 0.9rem;
+  }
+}

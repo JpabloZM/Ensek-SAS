@@ -36,11 +36,31 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
     Swal.fire({
       title: servicio.nombre,
       html: `
-        <div class="d-flex flex-column gap-2">
-          <button class="btn w-100" id="btnAsignar" style="background-color: #87c947; color: white; border: none;">
+        <div class="d-flex gap-2" style="
+        justify-content: center;
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        ">
+          <button class="btn w-100" id="btnAsignar" 
+          style="
+          background-color: #87c947; color: white; 
+          border: none;
+          border-radius: 8px;
+          padding: 0.7rem 1rem;
+          ">
+
             <i class="fas fa-calendar-plus me-2"></i>Asignar al Calendario
           </button>
-          <button class="btn btn-danger w-100" id="btnEliminar">
+
+          <button class="btn btn-danger w-100" id="btnEliminar" 
+          style="
+          background-color: #e74c3c; color: white; 
+          border: none; 
+          border-radius: 8px;
+          padding: 0.7rem 1rem;
+          ">
+
             <i class="fas fa-trash-alt me-2"></i>Eliminar
           </button>
         </div>
@@ -215,13 +235,13 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
       <div className="d-flex justify-content-between align-items-start">
         <div className="contenido-servicio">
           <h5>
-            <i className="fas fa-tag"></i> {servicio.nombre}
+            <i className="fas fa-tag icon-primary"></i> {servicio.nombre}
           </h5>
           <p className="mb-1">
-            <i className="fas fa-clock"></i> {servicio.duracion} minutos
+            <i className="fas fa-clock icon-primary"></i> {servicio.duracion} minutos
           </p>
           <p className="mb-0 descripcion-truncada">
-            <i className="fas fa-info-circle"></i> {servicio.descripcion}
+            <i className="fas fa-info-circle icon-primary"></i> {servicio.descripcion}
           </p>
         </div>
         <button

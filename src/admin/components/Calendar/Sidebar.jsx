@@ -16,16 +16,13 @@ const Sidebar = ({
       html: `
         <form id="servicioForm" class="text-left">
           <div class="mb-3">
-            <label class="form-label" style="color: #004122;">Nombre del servicio</label>
-            <input type="text" id="nombre" class="form-control" required style="border-color: #c5f198;">
+            <input type="text" id="nombre" placeholder="Nombre del servicio" class="form-control" required style="border-color: #c5f198;">
           </div>
           <div class="mb-3">
-            <label class="form-label" style="color: #004122;">Descripción</label>
-            <textarea id="descripcion" class="form-control" rows="3" required style="border-color: #c5f198;"></textarea>
+            <textarea id="descripcion" placeholder="Descripción del servicio" class="form-control" rows="3" required style="border-color: #c5f198;"></textarea>
           </div>
           <div class="mb-3">
-            <label class="form-label" style="color: #004122;">Duración (minutos)</label>
-            <input type="number" id="duracion" class="form-control" min="15" step="15" value="60" required style="border-color: #c5f198;">
+            <input type="number" id="duracion" placeholder="Duración del servicio (minutos)" class="form-control" min="15" step="15" required style="border-color: #c5f198;">
           </div>
         </form>
       `,

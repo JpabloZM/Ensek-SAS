@@ -1,0 +1,301 @@
+/* Estilos para el modal de SweetAlert */
+.swal2-popup.form-asignar-servicio {
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 12px;
+}
+
+.swal2-title {
+  font-size: 1.5rem !important;
+  color: #333 !important;
+  margin-bottom: 1.5rem !important;
+}
+
+/* Formulario */
+#servicioForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Campos de entrada */
+#servicioForm .form-control {
+  width: 300px;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+#servicioForm textarea.form-control {
+  height: 80px;
+  resize: none;
+}
+
+/* Estados de servicio */
+.estados-section {
+  margin: 1rem 0;
+}
+
+#estadosContainer {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+/* Botones de estado */
+.estado-btn {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.85;
+  width: 250px;
+  color: white !important;
+}
+
+.estado-btn i {
+  margin-right: 0.75rem;
+  font-size: 1rem;
+  color: white !important;
+}
+
+/* Ajuste específico para el estado pendiente */
+.estado-btn[data-estado="pendiente"] {
+  color: white !important;
+}
+
+/* Estado hover */
+.estado-btn:hover {
+  opacity: 1;
+  color: white !important;
+}
+
+/* Información adicional */
+.text-muted {
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.text-muted small {
+  display: block;
+  padding: 0.25rem 0;
+  color: #666;
+}
+
+.text-muted i {
+  margin-right: 0.5rem;
+  color: #87c947;
+}
+
+/* Botones de acción */
+.swal2-actions {
+  margin-top: 1.5rem !important;
+  gap: 0.75rem !important;
+}
+
+.swal2-confirm,
+.swal2-cancel {
+  padding: 0.75rem 1.25rem !important;
+  font-size: 0.95rem !important;
+  border-radius: 8px !important;
+}
+
+/* Estilos para el modal de detalles del servicio */
+.swal2-popup.detalles-servicio {
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 12px;
+}
+
+/* Título */
+.detalles-servicio .swal2-title {
+  font-size: 1.5rem !important;
+  color: #333 !important;
+  margin-bottom: 1rem !important;
+  padding-bottom: 0.5rem !important;
+  border-bottom: 1px solid #eee;
+}
+
+/* Contenido */
+.detalles-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Filas de información */
+.detalle-row {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+/* Etiquetas */
+.detalle-label {
+  min-width: 100px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.detalle-label i {
+  color: var(--primary-green);
+  margin-right: 0.5rem;
+  width: 16px;
+}
+
+/* Valores */
+.detalle-value {
+  color: #333;
+  font-weight: 500;
+}
+
+/* Contenedor de botones */
+.detalles-servicio .swal2-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  margin-top: 1rem;
+  border-top: 1px solid #eee;
+  width: 100%;
+}
+
+/* Estilos base para ambos botones */
+.detalles-servicio .swal2-confirm,
+.detalles-servicio .swal2-cancel {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  margin: 0;
+}
+
+/* Botón Editar */
+.detalles-servicio .swal2-confirm {
+  background: var(--primary-green);
+  color: white !important;
+  border: none;
+}
+
+.detalles-servicio .swal2-confirm:hover {
+  background: var(--dark-green);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Botón Eliminar */
+.detalles-servicio .swal2-cancel {
+  background: white;
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+
+.detalles-servicio .swal2-cancel:hover {
+  background: #fff5f5;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Iconos en los botones */
+.detalles-servicio .swal2-confirm i,
+.detalles-servicio .swal2-cancel i {
+  font-size: 1rem !important;
+}
+
+/* Menú contextual para técnicos */
+.context-menu {
+  position: fixed;
+  background: white;
+  border-radius: 8px;
+  padding: 0.5rem;
+  min-width: 180px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+/* Botones del menú contextual */
+.context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  color: #333;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+  text-align: left;
+}
+
+/* Iconos en los botones */
+.context-menu-item i {
+  font-size: 1rem;
+  width: 20px;
+  text-align: center;
+}
+
+/* Estilos específicos para cada acción */
+.context-menu-item.editar i {
+  color: var(--primary-green);
+}
+
+.context-menu-item.eliminar i {
+  color: #e74c3c;
+}
+
+/* Hover effects */
+.context-menu-item:hover {
+  background: #f8f9fa;
+  transform: translateX(2px);
+}
+
+.context-menu-item.editar:hover {
+  color: var(--primary-green);
+}
+
+.context-menu-item.eliminar:hover {
+  color: #e74c3c;
+}
+
+/* Separador */
+.context-menu-separator {
+  height: 1px;
+  background: #eee;
+  margin: 0.5rem 0;
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -11,6 +11,7 @@ import Sidebar from "./Sidebar";
 import CalendarHeader from "./CalendarHeader";
 import { useAlertas } from "../../hooks/useAlertas";
 import "./Calendar.css";
+import "./styles/forms.css";
 
 const API_MOCK = {
   eventos: [
@@ -28,12 +29,12 @@ const API_MOCK = {
 
 const Calendar = () => {
   const tecnicosIniciales = [
-    { id: "1", title: "Francisco Londoño" },
-    { id: "2", title: "Oscar Morales" },
-    { id: "3", title: "Yeyferson Villada" },
-    { id: "4", title: "Santiago Henao" },
-    { id: "5", title: "German Oyola" },
-    { id: "6", title: "Jhoan Moreno" },
+    { id: "1", title: "Francisco Londoño", order: 1 },
+    { id: "2", title: "Oscar Morales", order: 2 },
+    { id: "3", title: "Yeyferson Villada", order: 3 },
+    { id: "4", title: "Santiago Henao", order: 4 },
+    { id: "5", title: "German Oyola", order: 5 },
+    { id: "6", title: "Jhoan Moreno", order: 6 },
   ];
 
   const [serviciosPendientes, setServiciosPendientes] = useState([]);
@@ -96,8 +97,13 @@ const Calendar = () => {
       html: `
         <form id="tecnicoForm" class="text-left">
           <div class="mb-3">
-            <label class="form-label" style="color: #004122;">Nombre del técnico</label>
-            <input type="text" id="nombreTecnico" class="form-control" required style="border-color: #c5f198;">
+            <input 
+              type="text" 
+              id="nombreTecnico" 
+              placeholder="Nombre del técnico" 
+              class="form-control" 
+              required 
+            >
           </div>
         </form>
       `,
@@ -108,11 +114,6 @@ const Calendar = () => {
       cancelButtonColor: "#e74c3c",
       background: "#ffffff",
       color: "#004122",
-      customClass: {
-        popup: "swal2-popup-custom",
-        title: "swal2-title-custom",
-        confirmButton: "swal2-confirm-custom",
-      },
       preConfirm: () => {
         const nombre = document.getElementById("nombreTecnico").value;
         if (!nombre) {
@@ -123,11 +124,6 @@ const Calendar = () => {
             confirmButtonColor: "#87c947",
             background: "#f8ffec",
             color: "#004122",
-            customClass: {
-              popup: "swal2-popup-custom",
-              title: "swal2-title-custom",
-              confirmButton: "swal2-confirm-custom",
-            },
           });
           return false;
         }
@@ -138,13 +134,23 @@ const Calendar = () => {
     if (nombreTecnico) {
       const tecnicosActuales =
         JSON.parse(localStorage.getItem("tecnicos")) || tecnicosIniciales;
-      const maxId = Math.max(...tecnicosActuales.map((t) => parseInt(t.id)), 0);
+
+      // Encontrar el orden más bajo actual y restar 1
+      const minOrder = Math.min(...tecnicosActuales.map((t) => t.order || 0));
+
+      // Crear el nuevo técnico con orden menor
       const nuevoTecnico = {
-        id: (maxId + 1).toString(),
+        id: (
+          Math.max(...tecnicosActuales.map((t) => parseInt(t.id)), 0) + 1
+        ).toString(),
         title: nombreTecnico,
+        order: minOrder - 1, // Esto hará que aparezca a la derecha
       };
 
+      // Agregar el nuevo técnico al array
       const tecnicosActualizados = [...tecnicosActuales, nuevoTecnico];
+
+      // Actualizar el estado y localStorage
       setTecnicos(tecnicosActualizados);
       localStorage.setItem("tecnicos", JSON.stringify(tecnicosActualizados));
 
@@ -156,10 +162,6 @@ const Calendar = () => {
         showConfirmButton: false,
         background: "#f8ffec",
         color: "#004122",
-        customClass: {
-          popup: "swal2-popup-custom",
-          title: "swal2-title-custom",
-        },
       });
     }
   };
@@ -380,18 +382,28 @@ const Calendar = () => {
     menu.innerHTML = `
       <button class="context-menu-item editar">
         <i class="fas fa-edit"></i>
-        Editar
+        <span>Editar</span>
       </button>
       <div class="context-menu-separator"></div>
       <button class="context-menu-item eliminar">
         <i class="fas fa-trash-alt"></i>
-        Eliminar
+        <span>Eliminar</span>
       </button>
     `;
 
     // Posicionar el menú
-    menu.style.left = `${event.pageX}px`;
-    menu.style.top = `${event.pageY}px`;
+    const x = event.pageX;
+    const y = event.pageY;
+    const menuWidth = 180; // Ancho aproximado del menú
+    const menuHeight = 100; // Altura aproximada del menú
+
+    // Ajustar posición si el menú se sale de la pantalla
+    const adjustedX = Math.min(x, window.innerWidth - menuWidth - 10);
+    const adjustedY = Math.min(y, window.innerHeight - menuHeight - 10);
+
+    menu.style.left = `${adjustedX}px`;
+    menu.style.top = `${adjustedY}px`;
+
     document.body.appendChild(menu);
 
     // Agregar event listeners
@@ -466,12 +478,32 @@ const Calendar = () => {
     };
   }, [tecnicos]); // Dependencia del useEffect
 
-  // Modificar resourceLabelContent para incluir el ID del recurso
-  const resourceLabelContent = (arg) => {
+  // Contenido personalizado para las etiquetas de recursos
+  const resourceLabelContent = useCallback((arg) => {
+    // Dividir el nombre completo en nombre y apellido
+    const fullName = arg.resource.title;
+    let firstName = fullName;
+    let lastName = "";
+
+    // Buscar el primer espacio para separar nombre y apellido
+    const spaceIndex = fullName.indexOf(" ");
+    if (spaceIndex > 0) {
+      firstName = fullName.substring(0, spaceIndex);
+      lastName = fullName.substring(spaceIndex + 1);
+    }
+
     return {
-      html: `<div class="resource-label" style="cursor: context-menu;" data-resource-id="${arg.resource.id}">${arg.resource.title}</div>`,
+      html: `<div class="resource-label" 
+                style="cursor: context-menu;" 
+                data-resource-id="${arg.resource.id}" 
+                title="${fullName}">
+                <div class="tecnico-nombre">
+                  <span class="tecnico-nombre-first">${firstName}</span>
+                  <span class="tecnico-nombre-last">${lastName}</span>
+                </div>
+            </div>`,
     };
-  };
+  }, []);
 
   const handleDateSelect = async (selectInfo) => {
     const tecnico = tecnicos.find((t) => t.id === selectInfo.resource.id);
@@ -479,42 +511,67 @@ const Calendar = () => {
     const fechaFin = new Date(selectInfo.end);
 
     const estadosServicio = {
-      confirmado: { nombre: "Confirmado", color: "#87c947", icon: "fa-check" },
-      cancelado: { nombre: "Cancelado", color: "#e74c3c", icon: "fa-times" },
-      pendiente: { nombre: "Pendiente", color: "#ffd54f", icon: "fa-clock" },
+      confirmado: {
+        nombre: "Confirmado",
+        color: "#87c947",
+        icon: "fa-check",
+        gradient: "linear-gradient(135deg, #87c947, #66b417)",
+      },
+      cancelado: {
+        nombre: "Cancelado",
+        color: "#e74c3c",
+        icon: "fa-times",
+        gradient: "linear-gradient(135deg, #e74c3c, #c0392b)",
+      },
+      pendiente: {
+        nombre: "Pendiente",
+        color: "#ffd54f",
+        icon: "fa-clock",
+        gradient: "linear-gradient(135deg, #ffd54f, #f1c40f)",
+      },
       almuerzo: {
         nombre: "Hora de Almuerzo",
         color: "#3498db",
         icon: "fa-utensils",
+        gradient: "linear-gradient(135deg, #3498db, #2980b9)",
       },
       especial: {
         nombre: "Situación Especial",
         color: "#9b59b6",
         icon: "fa-exclamation-circle",
+        gradient: "linear-gradient(135deg, #9b59b6, #8e44ad)",
       },
     };
 
     const { value: formValues } = await mostrarAlerta({
       title: "Agregar Servicio",
       html: `
-        <form id="servicioForm" class="text-left">
-          <div class="mb-3">
-            <label class="form-label" style="color: #004122;">Nombre del servicio</label>
-            <input type="text" id="nombreServicio" class="form-control" required style="border-color: #c5f198;">
-          </div>
-          <div class="mb-3">
-            <label class="form-label" style="color: #004122;">Descripción</label>
-            <textarea id="descripcionServicio" class="form-control" style="border-color: #c5f198;"></textarea>
-          </div>
-          <div class="mb-3">
-            <label class="form-label" style="color: #004122;">Estado del Servicio</label>
+        <form id="servicioForm">
+          <input 
+            type="text" 
+            id="nombreServicio" 
+            class="form-control" 
+            placeholder="Nombre del servicio"
+            required
+          >
+          
+          <textarea 
+            id="descripcionServicio" 
+            class="form-control"
+            placeholder="Descripción del servicio"
+          ></textarea>
+          
+          <div class="estados-section">
             <div id="estadosContainer">
               ${Object.entries(estadosServicio)
                 .map(
                   ([key, estado]) => `
-                  <button type="button" class="estado-btn" 
+                  <button 
+                    type="button" 
+                    class="estado-btn" 
                     data-estado="${key}" 
-                    style="background-color: ${estado.color}; color: white;">
+                    style="background: ${estado.gradient};"
+                  >
                     <i class="fas ${estado.icon}"></i>
                     ${estado.nombre}
                   </button>
@@ -524,45 +581,54 @@ const Calendar = () => {
             </div>
             <input type="hidden" id="estadoServicio" value="">
           </div>
+          
           <div class="text-muted">
-            <small>Técnico: ${tecnico.title}</small><br>
-            <small>Inicio: ${fechaInicio.toLocaleTimeString()}</small><br>
-            <small>Fin: ${fechaFin.toLocaleTimeString()}</small>
+            <small><i class="fas fa-user"></i>${tecnico.title}</small>
+            <small><i class="fas fa-clock"></i>${fechaInicio.toLocaleTimeString()}</small>
+            <small><i class="fas fa-hourglass-end"></i>${fechaFin.toLocaleTimeString()}</small>
           </div>
         </form>
       `,
       showCancelButton: true,
-      confirmButtonText: "Guardar",
-      cancelButtonText: "Cancelar",
+      confirmButtonText: '<i class="fas fa-save"></i> Guardar',
+      cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
       confirmButtonColor: "#87c947",
       cancelButtonColor: "#e74c3c",
-      background: "#ffffff",
-      color: "#004122",
+      customClass: {
+        popup: "form-asignar-servicio",
+      },
       didOpen: () => {
         const btns = Swal.getPopup().querySelectorAll(".estado-btn");
         btns.forEach((btn) => {
           const estado = btn.dataset.estado;
-          const color = estadosServicio[estado].color;
-          const colorHover = color
-            .replace(")", ", 0.8)")
-            .replace("rgb", "rgba");
 
+          // Agregar evento click
+          btn.addEventListener("click", () => {
+            // Remover estado activo de todos los botones
+            btns.forEach((b) => {
+              b.style.opacity = "0.6";
+              b.classList.remove("active");
+            });
+
+            // Activar el botón seleccionado
+            btn.style.opacity = "1";
+            btn.classList.add("active");
+
+            // Actualizar el valor del input oculto
+            document.getElementById("estadoServicio").value = estado;
+          });
+
+          // Efectos hover
           btn.addEventListener("mouseover", () => {
-            btn.style.backgroundColor = colorHover;
-            btn.style.transform = "translateY(-1px)";
-            btn.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+            if (!btn.classList.contains("active")) {
+              btn.style.opacity = "0.8";
+            }
           });
 
           btn.addEventListener("mouseout", () => {
-            btn.style.backgroundColor = color;
-            btn.style.transform = "translateY(0)";
-            btn.style.boxShadow = "none";
-          });
-
-          btn.addEventListener("click", () => {
-            btns.forEach((b) => (b.style.opacity = "0.6"));
-            btn.style.opacity = "1";
-            document.getElementById("estadoServicio").value = estado;
+            if (!btn.classList.contains("active")) {
+              btn.style.opacity = "0.6";
+            }
           });
         });
       },
@@ -610,7 +676,9 @@ const Calendar = () => {
       const calendarApi = selectInfo.view.calendar;
       calendarApi.unselect();
 
-      calendarApi.addEvent({
+      // Crear evento con la clase correcta para el estado
+      const nuevoEvento = {
+        id: `evento-${Date.now()}`,
         title: formValues.nombre,
         start: selectInfo.start,
         end: selectInfo.end,
@@ -622,77 +690,90 @@ const Calendar = () => {
         backgroundColor: formValues.color,
         borderColor: formValues.color,
         textColor: "white",
-        classNames: [`estado-${formValues.estado}`],
+        className: `estado-${formValues.estado}`, // Usar className en vez de classNames
         display: "block",
+      };
+
+      // Agregar evento al estado
+      setEventos((prevEventos) => {
+        const eventosActualizados = [...prevEventos, nuevoEvento];
+        localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
+        return eventosActualizados;
       });
+
+      calendarApi.addEvent(nuevoEvento);
     }
   };
 
   const handleEventClick = (info) => {
-    // Si estamos en vista mes o año, solo cambiamos a la vista día
-    if (
-      info.view.type === "dayGridMonth" ||
-      info.view.type === "multiMonthYear"
-    ) {
-      info.view.calendar.changeView("resourceTimeGridDay", info.event.start);
-      return;
-    }
-
     const evento = info.event;
     const tecnico = tecnicos.find((t) => t.id === evento.getResources()[0]?.id);
     const fechaInicio = new Date(evento.start);
     const fechaFin = new Date(evento.end);
 
-    Swal.fire({
+    mostrarAlerta({
       title: evento.title,
       html: `
-        <div class="text-left mb-3">
-          <p style="color: #004122; margin-bottom: 0.5rem;">
-            <strong><i class="fas fa-user" style="color: #87c947;"></i> Técnico:</strong> 
-            ${tecnico?.title}
-          </p>
-          <p style="color: #004122; margin-bottom: 0.5rem;">
-            <strong><i class="fas fa-clock" style="color: #87c947;"></i> Horario:</strong><br>
-            Inicio: ${fechaInicio.toLocaleTimeString()}<br>
-            Fin: ${fechaFin.toLocaleTimeString()}
-          </p>
-          <p style="color: #004122;">
-            <strong><i class="fas fa-info-circle" style="color: #87c947;"></i> Descripción:</strong><br>
-            ${evento.extendedProps.descripcion || "Sin descripción"}
-          </p>
-        </div>
-        <div class="d-flex flex-column gap-2">
-          <button class="btn w-100" id="btnEditar" style="background-color: #87c947; color: white; border: none;">
-            <i class="fas fa-edit me-2"></i>Editar
-          </button>
-          <button class="btn btn-danger w-100" id="btnEliminar">
-            <i class="fas fa-trash-alt me-2"></i>Eliminar
-          </button>
+        <div class="detalles-content">
+          <div class="detalle-row">
+            <div class="detalle-label">
+              <i class="fas fa-user"></i>
+              <span>Técnico:</span>
+            </div>
+            <div class="detalle-value">${tecnico?.title}</div>
+          </div>
+          
+          <div class="detalle-row">
+            <div class="detalle-label">
+              <i class="fas fa-clock"></i>
+              <span>Horario:</span>
+            </div>
+            <div class="detalle-value">
+              <div>Inicio: ${fechaInicio.toLocaleTimeString()}</div>
+              <div>Fin: ${fechaFin.toLocaleTimeString()}</div>
+            </div>
+          </div>
+          
+          <div class="detalle-row">
+            <div class="detalle-label">
+              <i class="fas fa-align-left"></i>
+              <span>Descripción:</span>
+            </div>
+            <div class="detalle-value">
+              ${evento.extendedProps.descripcion || "Sin descripción"}
+            </div>
+          </div>
         </div>
       `,
-      showConfirmButton: false,
-      showCancelButton: false,
-      background: "#ffffff",
-      color: "#004122",
-      didOpen: () => {
-        const btnEditar = Swal.getPopup().querySelector("#btnEditar");
-        const btnEliminar = Swal.getPopup().querySelector("#btnEliminar");
-
-        btnEditar.addEventListener("mouseover", () => {
-          btnEditar.style.backgroundColor = "#6fa33c";
-        });
-        btnEditar.addEventListener("mouseout", () => {
-          btnEditar.style.backgroundColor = "#87c947";
-        });
-        btnEditar.addEventListener("click", () => {
-          Swal.close();
-          handleEditarServicio(evento);
-        });
-        btnEliminar.addEventListener("click", () => {
-          Swal.close();
-          handleEliminarServicioCalendario(evento);
-        });
+      showCancelButton: true,
+      confirmButtonText: '<i class="fas fa-edit"></i> Editar',
+      cancelButtonText: '<i class="fas fa-trash"></i> Eliminar',
+      confirmButtonColor: "#87c947",
+      cancelButtonColor: "#fff",
+      customClass: {
+        popup: "detalles-servicio",
+        actions: "detalles-actions",
+        confirmButton: "detalles-confirm",
+        cancelButton: "detalles-cancel",
       },
+      didOpen: () => {
+        // Asegurarse de que los botones tengan los estilos correctos
+        const confirmButton = Swal.getConfirmButton();
+        const cancelButton = Swal.getCancelButton();
+
+        if (confirmButton) {
+          confirmButton.style.flex = "1";
+        }
+        if (cancelButton) {
+          cancelButton.style.flex = "1";
+        }
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleEditarServicio(evento);
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        handleEliminarServicioCalendario(evento);
+      }
     });
   };
 
@@ -702,18 +783,35 @@ const Calendar = () => {
     const fechaFin = new Date(evento.end);
 
     const estadosServicio = {
-      confirmado: { nombre: "Confirmado", color: "#87c947", icon: "fa-check" },
-      cancelado: { nombre: "Cancelado", color: "#e74c3c", icon: "fa-times" },
-      pendiente: { nombre: "Pendiente", color: "#ffd54f", icon: "fa-clock" },
+      confirmado: {
+        nombre: "Confirmado",
+        color: "#87c947",
+        icon: "fa-check",
+        gradient: "linear-gradient(135deg, #87c947, #66b417)",
+      },
+      cancelado: {
+        nombre: "Cancelado",
+        color: "#e74c3c",
+        icon: "fa-times",
+        gradient: "linear-gradient(135deg, #e74c3c, #c0392b)",
+      },
+      pendiente: {
+        nombre: "Pendiente",
+        color: "#ffd54f",
+        icon: "fa-clock",
+        gradient: "linear-gradient(135deg, #ffd54f, #f1c40f)",
+      },
       almuerzo: {
         nombre: "Hora de Almuerzo",
         color: "#3498db",
         icon: "fa-utensils",
+        gradient: "linear-gradient(135deg, #3498db, #2980b9)",
       },
       especial: {
         nombre: "Situación Especial",
         color: "#9b59b6",
         icon: "fa-exclamation-circle",
+        gradient: "linear-gradient(135deg,rgb(185, 63, 159), #8e44ad)",
       },
     };
 
@@ -722,19 +820,21 @@ const Calendar = () => {
       html: `
         <form id="servicioForm" class="text-left">
           <div class="mb-3">
-            <label class="form-label" style="color: #004122;">Nombre del servicio</label>
+            <label class="form-label required" style="color: #004122;">Nombre del servicio</label>
             <input type="text" id="nombreServicio" class="form-control" required style="border-color: #c5f198;" value="${
               evento.title
             }">
           </div>
+          
           <div class="mb-3">
             <label class="form-label" style="color: #004122;">Descripción</label>
             <textarea id="descripcionServicio" class="form-control" style="border-color: #c5f198;">${
               evento.extendedProps.descripcion || ""
             }</textarea>
           </div>
+          
           <div class="mb-3">
-            <label class="form-label" style="color: #004122;">Estado del Servicio</label>
+            <label class="form-label required" style="color: #004122;">Estado del Servicio</label>
             <div id="estadosContainer">
               ${Object.entries(estadosServicio)
                 .map(
@@ -743,13 +843,13 @@ const Calendar = () => {
                     key === evento.extendedProps.estado ? "active" : ""
                   }" 
                     data-estado="${key}" 
-                    style="background-color: ${
-                      estado.color
-                    }; color: white; opacity: ${
+                    style="background: ${estado.gradient}; color: ${
+                    key === "pendiente" ? "#2c3e50" : "white"
+                  }; opacity: ${
                     key === evento.extendedProps.estado ? "1" : "0.6"
                   }">
                     <i class="fas ${estado.icon}"></i>
-                    ${estado.nombre}
+                    <span>${estado.nombre}</span>
                   </button>
                 `
                 )
@@ -759,20 +859,26 @@ const Calendar = () => {
               evento.extendedProps.estado || ""
             }">
           </div>
+          
           <div class="text-muted">
-            <small>Técnico: ${tecnico?.title}</small><br>
-            <small>Inicio: ${fechaInicio.toLocaleTimeString()}</small><br>
-            <small>Fin: ${fechaFin.toLocaleTimeString()}</small>
+            <small><i class="fas fa-user"></i> Técnico: ${
+              tecnico?.title
+            }</small>
+            <small><i class="fas fa-clock"></i> Inicio: ${fechaInicio.toLocaleTimeString()}</small>
+            <small><i class="fas fa-hourglass-end"></i> Fin: ${fechaFin.toLocaleTimeString()}</small>
           </div>
         </form>
       `,
       showCancelButton: true,
-      confirmButtonText: "Guardar",
-      cancelButtonText: "Cancelar",
+      confirmButtonText: '<i class="fas fa-save"></i> Guardar',
+      cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
       confirmButtonColor: "#87c947",
       cancelButtonColor: "#e74c3c",
       background: "#ffffff",
       color: "#004122",
+      customClass: {
+        popup: "form-asignar-servicio",
+      },
       didOpen: () => {
         const btns = Swal.getPopup().querySelectorAll(".estado-btn");
         btns.forEach((btn) => {
@@ -797,6 +903,7 @@ const Calendar = () => {
           btn.addEventListener("click", () => {
             btns.forEach((b) => (b.style.opacity = "0.6"));
             btn.style.opacity = "1";
+            btn.classList.add("active");
             document.getElementById("estadoServicio").value = estado;
           });
         });
@@ -842,13 +949,52 @@ const Calendar = () => {
     });
 
     if (formValues) {
+      // Actualizar el evento en FullCalendar
       evento.setProp("title", formValues.nombre);
       evento.setExtendedProp("descripcion", formValues.descripcion);
       evento.setExtendedProp("estado", formValues.estado);
       evento.setProp("backgroundColor", formValues.color);
       evento.setProp("borderColor", formValues.color);
       evento.setProp("textColor", "white");
-      evento.setProp("classNames", [`estado-${formValues.estado}`]);
+
+      // Eliminar clases existentes de estados y agregar la nueva
+      const clasesActuales = evento.classNames || [];
+      const clasesEstados = clasesActuales.filter(
+        (clase) => !clase.startsWith("estado-")
+      );
+      clasesEstados.push(`estado-${formValues.estado}`);
+      evento.setProp("classNames", clasesEstados);
+
+      // Actualizar el evento en el estado
+      const eventosActualizados = eventos.map((ev) =>
+        ev.id === evento.id
+          ? {
+              ...ev,
+              title: formValues.nombre,
+              extendedProps: {
+                ...ev.extendedProps,
+                descripcion: formValues.descripcion,
+                estado: formValues.estado,
+              },
+              backgroundColor: formValues.color,
+              borderColor: formValues.color,
+              className: `estado-${formValues.estado}`, // Usar className en lugar de classNames
+            }
+          : ev
+      );
+
+      setEventos(eventosActualizados);
+      localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
+
+      mostrarAlerta({
+        icon: "success",
+        title: "Servicio Actualizado",
+        text: "El servicio ha sido actualizado correctamente",
+        timer: 1500,
+        showConfirmButton: false,
+        background: "#f8ffec",
+        color: "#004122",
+      });
     }
   };
 
@@ -914,8 +1060,25 @@ const Calendar = () => {
   // Manejador de eventos montados
   const handleEventDidMount = (info) => {
     try {
+      // Validar que el evento tenga las propiedades necesarias
       if (!info.event.display) {
         info.event.setDisplay("auto");
+      }
+
+      // Aplicar clase de estado si no está presente
+      const estado = info.event.extendedProps?.estado;
+      if (estado) {
+        const claseEstado = `estado-${estado}`;
+        if (!info.el.classList.contains(claseEstado)) {
+          info.el.classList.add(claseEstado);
+        }
+
+        // Establecer el color de fondo basado en el estado si no se ha establecido
+        if (!info.event.backgroundColor) {
+          info.event.setProp("backgroundColor", getColorByEstado(estado));
+          info.event.setProp("borderColor", getColorByEstado(estado));
+          info.event.setProp("textColor", "white");
+        }
       }
     } catch (error) {
       console.error("Error al montar evento:", error);
@@ -979,6 +1142,9 @@ const Calendar = () => {
       text: `La duración del servicio ha sido actualizada.`,
       timer: 2000,
       timerProgressBar: true,
+      showConfirmButton: false,
+      background: "#f8ffec",
+      color: "#004122",
     });
   };
 
@@ -993,9 +1159,11 @@ const Calendar = () => {
       id: `evento-${Date.now()}`,
       title: servicioData.titulo,
       start: info.date,
-      end: new Date(info.date.getTime() + 60 * 60 * 1000), // 1 hora después por defecto
+      end: new Date(info.date.getTime() + 60 * 60 * 1000),
       backgroundColor: getColorByEstado(servicioData.estado),
       borderColor: getColorByEstado(servicioData.estado),
+      textColor: "white",
+      className: `estado-${servicioData.estado}`, // Usar className en lugar de classNames
       extendedProps: {
         estado: servicioData.estado,
         description: servicioData.descripcion,
@@ -1031,6 +1199,104 @@ const Calendar = () => {
         JSON.stringify(serviciosActualizados)
       );
     }
+  };
+
+  const handleServicioClick = (servicio) => {
+    Swal.fire({
+      title: servicio.title,
+      html: `
+        <div class="text-left">
+          <p>
+            <strong><i class="fas fa-info-circle" style="color: #87c947; margin-right: 1rem;"></i>Descripción:</strong><br>
+            ${servicio.descripcion || "Sin descripción"}
+          </p>
+        </div>
+        <div class="action-buttons">
+          <button type="button" id="btnAsignar" class="asignar-btn">
+            <i class="fas fa-calendar-plus"></i> Asignar al Calendario
+          </button>
+          <button type="button" id="btnEliminar" class="eliminar-btn">
+            <i class="fas fa-trash-alt"></i> Eliminar
+          </button>
+        </div>
+      `,
+      showConfirmButton: false,
+      showCancelButton: false,
+      customClass: {
+        popup: "servicio-modal",
+      },
+      didOpen: () => {
+        // Añadir manejadores de eventos a los botones
+        document.getElementById("btnAsignar").addEventListener("click", () => {
+          Swal.close();
+          handleAsignarServicio(servicio);
+        });
+
+        document.getElementById("btnEliminar").addEventListener("click", () => {
+          Swal.close();
+          handleEliminarServicio(servicio.id);
+        });
+      },
+    });
+  };
+
+  // Mejorar la función getColorByEstado para ser más explícita
+  const getColorByEstado = (estado) => {
+    const colores = {
+      confirmado: "#87c947",
+      cancelado: "#e74c3c",
+      pendiente: "#ffd54f",
+      almuerzo: "#3498db",
+      especial: "#9b59b6",
+    };
+
+    return colores[estado] || "#87c947";
+  };
+
+  const mostrarDetallesServicio = (servicio) => {
+    mostrarAlerta({
+      title: servicio.title,
+      html: `
+        <div class="detalles-content">
+          <div class="detalle-row">
+            <div class="detalle-label">
+              <i class="fas fa-user"></i>Técnico
+            </div>
+            <div class="detalle-value">${servicio.resourceId}</div>
+          </div>
+          
+          <div class="detalle-row">
+            <div class="detalle-label">
+              <i class="fas fa-clock"></i>Horario
+            </div>
+            <div class="detalle-value">
+              <div>Inicio: ${servicio.start}</div>
+              <div>Fin: ${servicio.end}</div>
+            </div>
+          </div>
+          
+          <div class="detalle-row">
+            <div class="detalle-label">
+              <i class="fas fa-align-left"></i>Descripción
+            </div>
+            <div class="detalle-value">
+              ${servicio.description || "Sin descripción"}
+            </div>
+          </div>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: '<i class="fas fa-edit"></i>Editar',
+      cancelButtonText: '<i class="fas fa-trash"></i>Eliminar',
+      confirmButtonColor: "#87c947",
+      cancelButtonColor: "#fff",
+      customClass: {
+        popup: "detalles-servicio",
+        actions: "detalles-actions",
+        confirmButton: "detalles-confirm",
+        cancelButton: "detalles-cancel",
+      },
+    });
   };
 
   return (
@@ -1123,7 +1389,7 @@ const Calendar = () => {
             eventResize={handleEventResize}
             eventDrop={handleEventDrop}
             drop={handleExternalDrop}
-            resourceOrder="title"
+            resourceOrder="order"
             resourceAreaWidth="15%"
             resourceLabelContent={resourceLabelContent}
             eventResourceEditable={true}
