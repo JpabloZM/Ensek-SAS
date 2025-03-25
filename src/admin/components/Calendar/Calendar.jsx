@@ -16,7 +16,7 @@ import "./styles/forms.css";
 const API_MOCK = {
   eventos: [
     {
-      titulo: "Servicio de ejemplo",
+      titulo: "Prueba!!!",
       fecha_inicio: new Date(),
       fecha_fin: new Date(Date.now() + 3600000), // 1 hora después
       color: "#87c947",
@@ -283,200 +283,172 @@ const Calendar = () => {
   };
 
   const handleEditarTecnico = async (tecnico) => {
-    const { value: nuevoNombre } = await mostrarAlerta({
-      title: "Editar Técnico",
-      html: `
-        <form id="tecnicoForm" class="text-left">
-          <div class="mb-3">
-            <label class="form-label" style="color: #004122;">Nombre del técnico</label>
-            <input type="text" id="nombreTecnico" class="form-control" required style="border-color: #c5f198;" value="${tecnico.title}">
-          </div>
-        </form>
-      `,
-      showCancelButton: true,
-      confirmButtonText: "Guardar",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#87c947",
-      cancelButtonColor: "#e74c3c",
-      background: "#ffffff",
-      color: "#004122",
-      customClass: {
-        popup: "swal2-popup-custom",
-        title: "swal2-title-custom",
-        confirmButton: "swal2-confirm-custom",
-        cancelButton: "swal2-cancel-custom",
-        htmlContainer: "swal2-html-container",
-      },
-    });
+    try {
+      const { value: formValues } = await mostrarAlerta({
+        title: "Editar Técnico",
+        html: `
+                <form id="editTecnicoForm">
+                    <div class="form-group">
+                        <label for="nombreTecnico" class="form-label">Nombre del Técnico</label>
+                        <input type="text" id="nombreTecnico" class="form-control" value="${tecnico.title}" required>
+                    </div>
+                </form>
+            `,
+        showCancelButton: true,
+        confirmButtonText: "Guardar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#87c947",
+        cancelButtonColor: "#e74c3c",
+        preConfirm: () => {
+          const nombre = document.getElementById("nombreTecnico").value;
+          if (!nombre) {
+            Swal.showValidationMessage(
+              "Por favor ingrese el nombre del técnico"
+            );
+            return false;
+          }
+          return { nombre };
+        },
+      });
 
-    if (nuevoNombre) {
-      const tecnicosActualizados = tecnicos.map((t) =>
-        t.id === tecnico.id ? { ...t, title: nuevoNombre } : t
-      );
-      setTecnicos(tecnicosActualizados);
-      localStorage.setItem("tecnicos", JSON.stringify(tecnicosActualizados));
+      if (formValues) {
+        // Actualizar el técnico en el estado local
+        const tecnicosActualizados = tecnicos.map((t) =>
+          t.id === tecnico.id ? { ...t, title: formValues.nombre } : t
+        );
 
+        setTecnicos(tecnicosActualizados);
+        localStorage.setItem("tecnicos", JSON.stringify(tecnicosActualizados));
+
+        mostrarAlerta({
+          icon: "success",
+          title: "Técnico actualizado exitosamente",
+          confirmButtonColor: "#87c947",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+    } catch (error) {
+      console.error("Error:", error);
       mostrarAlerta({
-        icon: "success",
-        title: "Técnico Actualizado",
-        text: "El nombre del técnico ha sido actualizado correctamente",
-        timer: 1500,
-        showConfirmButton: false,
-        background: "#f8ffec",
-        color: "#004122",
+        icon: "error",
+        title: "Error",
+        text: "Hubo un error al editar el técnico",
+        confirmButtonColor: "#87c947",
       });
     }
   };
 
   const handleEliminarTecnico = async (tecnico) => {
-    const { isConfirmed } = await mostrarAlerta({
-      title: "¿Eliminar Técnico?",
-      text: `¿Está seguro que desea eliminar a ${tecnico.title}?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#e74c3c",
-      cancelButtonColor: "#87c947",
-      background: "#ffffff",
-      color: "#004122",
-    });
+    try {
+      const result = await mostrarAlerta({
+        title: "¿Estás seguro?",
+        text: `¿Deseas eliminar al técnico ${tecnico.title}?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#87c947",
+        cancelButtonColor: "#e74c3c",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+      });
 
-    if (isConfirmed) {
-      const tecnicosActualizados = tecnicos.filter((t) => t.id !== tecnico.id);
-      setTecnicos(tecnicosActualizados);
-      localStorage.setItem("tecnicos", JSON.stringify(tecnicosActualizados));
+      if (result.isConfirmed) {
+        // Eliminar el técnico del estado local
+        const tecnicosActualizados = tecnicos.filter(
+          (t) => t.id !== tecnico.id
+        );
+        setTecnicos(tecnicosActualizados);
+        localStorage.setItem("tecnicos", JSON.stringify(tecnicosActualizados));
 
-      // Eliminar eventos asociados al técnico
-      const eventosActualizados = eventos.filter(
-        (e) => e.resourceId !== tecnico.id
-      );
-      setEventos(eventosActualizados);
-      localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
-
+        mostrarAlerta({
+          icon: "success",
+          title: "Técnico eliminado exitosamente",
+          confirmButtonColor: "#87c947",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+    } catch (error) {
+      console.error("Error:", error);
       mostrarAlerta({
-        icon: "success",
-        title: "Técnico Eliminado",
-        text: "El técnico ha sido eliminado correctamente",
-        timer: 1500,
-        showConfirmButton: false,
-        background: "#f8ffec",
-        color: "#004122",
+        icon: "error",
+        title: "Error",
+        text: "Hubo un error al eliminar el técnico",
+        confirmButtonColor: "#87c947",
       });
     }
   };
 
-  const handleResourceContextMenu = (info, event) => {
+  // Función para mostrar el menú contextual
+  const showContextMenu = (event, tecnico) => {
     event.preventDefault();
-    const tecnico = tecnicos.find((t) => t.id === info.resource.id);
 
-    // Eliminar menú contextual existente si hay uno
+    // Eliminar menú contextual existente si hay alguno
     const existingMenu = document.querySelector(".context-menu");
     if (existingMenu) {
       existingMenu.remove();
     }
 
-    // Crear el nuevo menú contextual
-    const menu = document.createElement("div");
-    menu.className = "context-menu";
-    menu.innerHTML = `
-      <button class="context-menu-item editar">
-        <i class="fas fa-edit"></i>
-        <span>Editar</span>
-      </button>
-      <div class="context-menu-separator"></div>
-      <button class="context-menu-item eliminar">
-        <i class="fas fa-trash-alt"></i>
-        <span>Eliminar</span>
-      </button>
+    // Crear nuevo menú contextual
+    const contextMenu = document.createElement("div");
+    contextMenu.className = "context-menu";
+
+    // Importante: No usar onclick en el string HTML
+    contextMenu.innerHTML = `
+        <div class="context-menu-item edit">
+            <i class="fas fa-edit"></i>
+            Editar
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item delete">
+            <i class="fas fa-trash"></i>
+            Eliminar
+        </div>
     `;
 
     // Posicionar el menú
-    const x = event.pageX;
-    const y = event.pageY;
-    const menuWidth = 180; // Ancho aproximado del menú
-    const menuHeight = 100; // Altura aproximada del menú
+    contextMenu.style.left = `${event.pageX}px`;
+    contextMenu.style.top = `${event.pageY}px`;
 
-    // Ajustar posición si el menú se sale de la pantalla
-    const adjustedX = Math.min(x, window.innerWidth - menuWidth - 10);
-    const adjustedY = Math.min(y, window.innerHeight - menuHeight - 10);
+    // Agregar event listeners después de crear el menú
+    const editButton = contextMenu.querySelector(".context-menu-item.edit");
+    const deleteButton = contextMenu.querySelector(".context-menu-item.delete");
 
-    menu.style.left = `${adjustedX}px`;
-    menu.style.top = `${adjustedY}px`;
-
-    document.body.appendChild(menu);
-
-    // Agregar event listeners
-    const btnEditar = menu.querySelector(".context-menu-item.editar");
-    const btnEliminar = menu.querySelector(".context-menu-item.eliminar");
-
-    btnEditar.addEventListener("click", () => {
-      menu.remove();
+    editButton.addEventListener("click", () => {
       handleEditarTecnico(tecnico);
+      contextMenu.remove();
     });
 
-    btnEliminar.addEventListener("click", () => {
-      menu.remove();
+    deleteButton.addEventListener("click", () => {
       handleEliminarTecnico(tecnico);
+      contextMenu.remove();
     });
 
-    // Cerrar el menú al hacer clic fuera de él
+    // Agregar al DOM
+    document.body.appendChild(contextMenu);
+
+    // Cerrar el menú al hacer clic fuera
     document.addEventListener("click", function closeMenu(e) {
-      if (!menu.contains(e.target)) {
-        menu.remove();
+      if (!contextMenu.contains(e.target)) {
+        contextMenu.remove();
         document.removeEventListener("click", closeMenu);
       }
     });
   };
 
-  // Agregar useEffect para manejar los event listeners
+  // Agregar el evento contextmenu a los elementos de técnico
   useEffect(() => {
-    const attachContextMenuListeners = () => {
-      const resourceLabels = document.querySelectorAll(".resource-label");
-      resourceLabels.forEach((label) => {
-        // Remover listeners anteriores para evitar duplicados
-        label.removeEventListener("contextmenu", handleContextMenu);
-        // Agregar nuevo listener
-        label.addEventListener("contextmenu", handleContextMenu);
+    const tecnicoElements = document.querySelectorAll(".fc-resource");
+    tecnicoElements.forEach((element) => {
+      element.addEventListener("contextmenu", (e) => {
+        const tecnicoId = element.getAttribute("data-resource-id");
+        const tecnico = tecnicos.find((t) => t.id === tecnicoId);
+        if (tecnico) {
+          showContextMenu(e, tecnico);
+        }
       });
-    };
-
-    // Función para manejar el evento contextmenu
-    const handleContextMenu = (e) => {
-      e.preventDefault();
-      const resourceId = e.target.getAttribute("data-resource-id");
-      const tecnico = tecnicos.find((t) => t.id === resourceId);
-      if (tecnico) {
-        handleResourceContextMenu({ resource: tecnico }, e);
-      }
-    };
-
-    // Agregar los listeners inicialmente
-    attachContextMenuListeners();
-
-    // Observer para detectar cambios en el DOM y reagregar los listeners
-    const observer = new MutationObserver(() => {
-      attachContextMenuListeners();
     });
-
-    // Observar cambios en el calendario
-    const calendario = document.getElementById("calendario");
-    if (calendario) {
-      observer.observe(calendario, {
-        childList: true,
-        subtree: true,
-      });
-    }
-
-    // Cleanup
-    return () => {
-      observer.disconnect();
-      const resourceLabels = document.querySelectorAll(".resource-label");
-      resourceLabels.forEach((label) => {
-        label.removeEventListener("contextmenu", handleContextMenu);
-      });
-    };
-  }, [tecnicos]); // Dependencia del useEffect
+  }, [tecnicos]);
 
   // Contenido personalizado para las etiquetas de recursos
   const resourceLabelContent = useCallback((arg) => {
@@ -494,14 +466,14 @@ const Calendar = () => {
 
     return {
       html: `<div class="resource-label" 
-                style="cursor: context-menu;" 
-                data-resource-id="${arg.resource.id}" 
-                title="${fullName}">
-                <div class="tecnico-nombre">
-                  <span class="tecnico-nombre-first">${firstName}</span>
-                  <span class="tecnico-nombre-last">${lastName}</span>
-                </div>
-            </div>`,
+              style="cursor: context-menu;" 
+              data-resource-id="${arg.resource.id}" 
+              title="${fullName}">
+              <div class="tecnico-nombre">
+                <span class="tecnico-nombre-first">${firstName}</span>
+                <span class="tecnico-nombre-last">${lastName}</span>
+              </div>
+          </div>`,
     };
   }, []);
 
@@ -546,49 +518,49 @@ const Calendar = () => {
     const { value: formValues } = await mostrarAlerta({
       title: "Agregar Servicio",
       html: `
-        <form id="servicioForm">
-          <input 
-            type="text" 
-            id="nombreServicio" 
-            class="form-control" 
-            placeholder="Nombre del servicio"
-            required
-          >
-          
-          <textarea 
-            id="descripcionServicio" 
-            class="form-control"
-            placeholder="Descripción del servicio"
-          ></textarea>
-          
-          <div class="estados-section">
-            <div id="estadosContainer">
-              ${Object.entries(estadosServicio)
-                .map(
-                  ([key, estado]) => `
-                  <button 
-                    type="button" 
-                    class="estado-btn" 
-                    data-estado="${key}" 
-                    style="background: ${estado.gradient};"
-                  >
-                    <i class="fas ${estado.icon}"></i>
-                    ${estado.nombre}
-                  </button>
-                `
-                )
-                .join("")}
-            </div>
-            <input type="hidden" id="estadoServicio" value="">
+      <form id="servicioForm">
+        <input 
+          type="text" 
+          id="nombreServicio" 
+          class="form-control" 
+          placeholder="Nombre del servicio"
+          required
+        >
+        
+        <textarea 
+          id="descripcionServicio" 
+          class="form-control"
+          placeholder="Descripción del servicio"
+        ></textarea>
+        
+        <div class="estados-section">
+          <div id="estadosContainer">
+            ${Object.entries(estadosServicio)
+              .map(
+                ([key, estado]) => `
+                <button 
+                  type="button" 
+                  class="estado-btn" 
+                  data-estado="${key}" 
+                  style="background: ${estado.gradient};"
+                >
+                  <i class="fas ${estado.icon}"></i>
+                  ${estado.nombre}
+                </button>
+              `
+              )
+              .join("")}
           </div>
-          
-          <div class="text-muted">
-            <small><i class="fas fa-user"></i>${tecnico.title}</small>
-            <small><i class="fas fa-clock"></i>${fechaInicio.toLocaleTimeString()}</small>
-            <small><i class="fas fa-hourglass-end"></i>${fechaFin.toLocaleTimeString()}</small>
-          </div>
-        </form>
-      `,
+          <input type="hidden" id="estadoServicio" value="">
+        </div>
+        
+        <div class="text-muted">
+          <small><i class="fas fa-user"></i>${tecnico.title}</small>
+          <small><i class="fas fa-clock"></i>${fechaInicio.toLocaleTimeString()}</small>
+          <small><i class="fas fa-hourglass-end"></i>${fechaFin.toLocaleTimeString()}</small>
+        </div>
+      </form>
+    `,
       showCancelButton: true,
       confirmButtonText: '<i class="fas fa-save"></i> Guardar',
       cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
@@ -714,37 +686,37 @@ const Calendar = () => {
     mostrarAlerta({
       title: evento.title,
       html: `
-        <div class="detalles-content">
-          <div class="detalle-row">
-            <div class="detalle-label">
-              <i class="fas fa-user"></i>
-              <span>Técnico:</span>
-            </div>
-            <div class="detalle-value">${tecnico?.title}</div>
+      <div class="detalles-content">
+        <div class="detalle-row">
+          <div class="detalle-label">
+            <i class="fas fa-user"></i>
+            <span>Técnico:</span>
           </div>
-          
-          <div class="detalle-row">
-            <div class="detalle-label">
-              <i class="fas fa-clock"></i>
-              <span>Horario:</span>
-            </div>
-            <div class="detalle-value">
-              <div>Inicio: ${fechaInicio.toLocaleTimeString()}</div>
-              <div>Fin: ${fechaFin.toLocaleTimeString()}</div>
-            </div>
+          <div class="detalle-value">${tecnico?.title}</div>
+        </div>
+        
+        <div class="detalle-row">
+          <div class="detalle-label">
+            <i class="fas fa-clock"></i>
+            <span>Horario:</span>
           </div>
-          
-          <div class="detalle-row">
-            <div class="detalle-label">
-              <i class="fas fa-align-left"></i>
-              <span>Descripción:</span>
-            </div>
-            <div class="detalle-value">
-              ${evento.extendedProps.descripcion || "Sin descripción"}
-            </div>
+          <div class="detalle-value">
+            <div>Inicio: ${fechaInicio.toLocaleTimeString()}</div>
+            <div>Fin: ${fechaFin.toLocaleTimeString()}</div>
           </div>
         </div>
-      `,
+        
+        <div class="detalle-row">
+          <div class="detalle-label">
+            <i class="fas fa-align-left"></i>
+            <span>Descripción:</span>
+          </div>
+          <div class="detalle-value">
+            ${evento.extendedProps.descripcion || "Sin descripción"}
+          </div>
+        </div>
+      </div>
+    `,
       showCancelButton: true,
       confirmButtonText: '<i class="fas fa-edit"></i> Editar',
       cancelButtonText: '<i class="fas fa-trash"></i> Eliminar',
@@ -818,57 +790,53 @@ const Calendar = () => {
     const { value: formValues } = await mostrarAlerta({
       title: "Editar Servicio",
       html: `
-        <form id="servicioForm" class="text-left">
-          <div class="mb-3">
-            <label class="form-label required" style="color: #004122;">Nombre del servicio</label>
-            <input type="text" id="nombreServicio" class="form-control" required style="border-color: #c5f198;" value="${
-              evento.title
-            }">
+      <form id="servicioForm" class="text-left">
+        <div class="mb-3">
+          <input type="text" id="nombreServicio" class="form-control" placeholder="Nombre del servicio" required style="border-color: #c5f198;" value="${
+            evento.title
+          }">
+        </div>
+        
+        <div class="mb-3">
+          <textarea id="descripcionServicio" class="form-control" placeholder="Descripción del servicio" style="border-color: #c5f198;">${
+            evento.extendedProps.descripcion || ""
+          }</textarea>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label required" style="color: #004122;">Estado del Servicio</label>
+          <div id="estadosContainer">
+            ${Object.entries(estadosServicio)
+              .map(
+                ([key, estado]) => `
+                <button type="button" class="estado-btn ${
+                  key === evento.extendedProps.estado ? "active" : ""
+                }" 
+                  data-estado="${key}" 
+                  style="background: ${estado.gradient}; color: ${
+                  key === "pendiente" ? "#2c3e50" : "white"
+                }; opacity: ${
+                  key === evento.extendedProps.estado ? "1" : "0.6"
+                }">
+                  <i class="fas ${estado.icon}"></i>
+                  <span>${estado.nombre}</span>
+                </button>
+              `
+              )
+              .join("")}
           </div>
-          
-          <div class="mb-3">
-            <label class="form-label" style="color: #004122;">Descripción</label>
-            <textarea id="descripcionServicio" class="form-control" style="border-color: #c5f198;">${
-              evento.extendedProps.descripcion || ""
-            }</textarea>
-          </div>
-          
-          <div class="mb-3">
-            <label class="form-label required" style="color: #004122;">Estado del Servicio</label>
-            <div id="estadosContainer">
-              ${Object.entries(estadosServicio)
-                .map(
-                  ([key, estado]) => `
-                  <button type="button" class="estado-btn ${
-                    key === evento.extendedProps.estado ? "active" : ""
-                  }" 
-                    data-estado="${key}" 
-                    style="background: ${estado.gradient}; color: ${
-                    key === "pendiente" ? "#2c3e50" : "white"
-                  }; opacity: ${
-                    key === evento.extendedProps.estado ? "1" : "0.6"
-                  }">
-                    <i class="fas ${estado.icon}"></i>
-                    <span>${estado.nombre}</span>
-                  </button>
-                `
-                )
-                .join("")}
-            </div>
-            <input type="hidden" id="estadoServicio" value="${
-              evento.extendedProps.estado || ""
-            }">
-          </div>
-          
-          <div class="text-muted">
-            <small><i class="fas fa-user"></i> Técnico: ${
-              tecnico?.title
-            }</small>
-            <small><i class="fas fa-clock"></i> Inicio: ${fechaInicio.toLocaleTimeString()}</small>
-            <small><i class="fas fa-hourglass-end"></i> Fin: ${fechaFin.toLocaleTimeString()}</small>
-          </div>
-        </form>
-      `,
+          <input type="hidden" id="estadoServicio" value="${
+            evento.extendedProps.estado || ""
+          }">
+        </div>
+        
+        <div class="text-muted">
+          <small><i class="fas fa-user"></i> Técnico: ${tecnico?.title}</small>
+          <small><i class="fas fa-clock"></i> Inicio: ${fechaInicio.toLocaleTimeString()}</small>
+          <small><i class="fas fa-hourglass-end"></i> Fin: ${fechaFin.toLocaleTimeString()}</small>
+        </div>
+      </form>
+    `,
       showCancelButton: true,
       confirmButtonText: '<i class="fas fa-save"></i> Guardar',
       cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
@@ -1205,21 +1173,21 @@ const Calendar = () => {
     Swal.fire({
       title: servicio.title,
       html: `
-        <div class="text-left">
-          <p>
-            <strong><i class="fas fa-info-circle" style="color: #87c947; margin-right: 1rem;"></i>Descripción:</strong><br>
-            ${servicio.descripcion || "Sin descripción"}
-          </p>
-        </div>
-        <div class="action-buttons">
-          <button type="button" id="btnAsignar" class="asignar-btn">
-            <i class="fas fa-calendar-plus"></i> Asignar al Calendario
-          </button>
-          <button type="button" id="btnEliminar" class="eliminar-btn">
-            <i class="fas fa-trash-alt"></i> Eliminar
-          </button>
-        </div>
-      `,
+      <div class="text-left">
+        <p>
+          <strong><i class="fas fa-info-circle" style="color: #87c947; margin-right: 1rem;"></i>Descripción:</strong><br>
+          ${servicio.descripcion || "Sin descripción"}
+        </p>
+      </div>
+      <div class="action-buttons">
+        <button type="button" id="btnAsignar" class="asignar-btn">
+          <i class="fas fa-calendar-plus"></i> Asignar al Calendario
+        </button>
+        <button type="button" id="btnEliminar" class="eliminar-btn">
+          <i class="fas fa-trash-alt"></i> Eliminar
+        </button>
+      </div>
+    `,
       showConfirmButton: false,
       showCancelButton: false,
       customClass: {
@@ -1257,34 +1225,34 @@ const Calendar = () => {
     mostrarAlerta({
       title: servicio.title,
       html: `
-        <div class="detalles-content">
-          <div class="detalle-row">
-            <div class="detalle-label">
-              <i class="fas fa-user"></i>Técnico
-            </div>
-            <div class="detalle-value">${servicio.resourceId}</div>
+      <div class="detalles-content">
+        <div class="detalle-row">
+          <div class="detalle-label">
+            <i class="fas fa-user"></i>Técnico
           </div>
-          
-          <div class="detalle-row">
-            <div class="detalle-label">
-              <i class="fas fa-clock"></i>Horario
-            </div>
-            <div class="detalle-value">
-              <div>Inicio: ${servicio.start}</div>
-              <div>Fin: ${servicio.end}</div>
-            </div>
+          <div class="detalle-value">${servicio.resourceId}</div>
+        </div>
+        
+        <div class="detalle-row">
+          <div class="detalle-label">
+            <i class="fas fa-clock"></i>Horario
           </div>
-          
-          <div class="detalle-row">
-            <div class="detalle-label">
-              <i class="fas fa-align-left"></i>Descripción
-            </div>
-            <div class="detalle-value">
-              ${servicio.description || "Sin descripción"}
-            </div>
+          <div class="detalle-value">
+            <div>Inicio: ${servicio.start}</div>
+            <div>Fin: ${servicio.end}</div>
           </div>
         </div>
-      `,
+        
+        <div class="detalle-row">
+          <div class="detalle-label">
+            <i class="fas fa-align-left"></i>Descripción
+          </div>
+          <div class="detalle-value">
+            ${servicio.description || "Sin descripción"}
+          </div>
+        </div>
+      </div>
+    `,
       showCancelButton: true,
       confirmButtonText: '<i class="fas fa-edit"></i>Editar',
       cancelButtonText: '<i class="fas fa-trash"></i>Eliminar',
@@ -1297,6 +1265,26 @@ const Calendar = () => {
         cancelButton: "detalles-cancel",
       },
     });
+  };
+
+  const cargarTecnicos = async () => {
+    try {
+      const response = await fetch("/api/tecnicos");
+      if (response.ok) {
+        const data = await response.json();
+        setTecnicos(data);
+      } else {
+        throw new Error("Error al cargar técnicos");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Error al cargar los técnicos",
+        confirmButtonColor: "#87c947",
+      });
+    }
   };
 
   return (
@@ -1353,23 +1341,34 @@ const Calendar = () => {
                 eventContent: (arg) => {
                   return {
                     html: `
-                      <div class="fc-event-main-frame" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        <div class="fc-event-time" style="display: inline;">${arg.timeText}</div>
-                        <div class="fc-event-title" style="display: inline; margin-left: 4px;">${arg.event.title}</div>
-                      </div>
-                    `,
+                    <div class="fc-event-main-frame" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      <div class="fc-event-time" style="display: inline;">${arg.timeText}</div>
+                      <div class="fc-event-title" style="display: inline; margin-left: 4px;">${arg.event.title}</div>
+                    </div>
+                  `,
                   };
                 },
               },
               multiMonthYear: {
                 type: "multiMonth",
                 buttonText: "Año",
-                multiMonthMaxColumns: 3,
-                multiMonthMinWidth: 350,
+                multiMonthMaxColumns: 1,
+                multiMonthMinWidth: 300,
                 editable: false,
-                dayMaxEvents: 3,
+                dayMaxEvents: 2,
+                multiMonthTitleFormat: { year: "numeric", month: "long" },
+                eventMaxStack: 2,
                 moreLinkContent: (args) => {
                   return `+${args.num} más`;
+                },
+                eventContent: (arg) => {
+                  return {
+                    html: `
+                    <div class="fc-event-main-frame year-view-event">
+                        <div class="fc-event-title">${arg.event.title}</div>
+                    </div>
+                    `,
+                  };
                 },
               },
             }}

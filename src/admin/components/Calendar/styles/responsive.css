@@ -50,3 +50,258 @@
 
   /* ... resto de estilos responsive ... */
 }
+
+/* ===== Dispositivos muy pequeños (móviles pequeños, menos de 576px) ===== */
+@media (max-width: 575.98px) {
+  .calendar-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    max-height: 250px;
+    margin-bottom: 0.5rem;
+  }
+
+  .main-content {
+    width: 100%;
+    padding: 0.25rem;
+  }
+
+  .fc-toolbar {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 0.5rem;
+  }
+
+  .fc-toolbar-title {
+    font-size: 1.1rem !important;
+  }
+
+  .btn-export {
+    padding: 6px;
+    min-width: auto;
+  }
+
+  .btn-export span {
+    display: none;
+  }
+
+  .sidebar .btn-agregar-servicio,
+  .sidebar .btn-primary.btn-servicio {
+    width: 95%;
+    padding: 0.6rem 0.4rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* ===== Dispositivos pequeños (móviles en horizontal, 576px y superior) ===== */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .calendar-container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    max-height: 300px;
+  }
+
+  .main-content {
+    padding: 0.5rem;
+  }
+
+  .fc-toolbar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .sidebar .btn-agregar-servicio,
+  .sidebar .btn-primary.btn-servicio {
+    width: 48%;
+    font-size: 0.9rem;
+  }
+}
+
+/* ===== Dispositivos medianos (tablets, 768px y superior) ===== */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .calendar-container {
+    flex-direction: row;
+  }
+
+  .sidebar {
+    width: 280px;
+    min-width: 280px;
+  }
+
+  .main-content {
+    padding: 0.75rem;
+  }
+
+  .fc-toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .sidebar .btn-agregar-servicio,
+  .sidebar .btn-primary.btn-servicio {
+    width: 90%;
+    font-size: 0.95rem;
+  }
+}
+
+/* ===== Dispositivos grandes (desktops, 992px y superior) ===== */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .sidebar {
+    width: 300px;
+    min-width: 300px;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+
+  .fc-toolbar {
+    justify-content: space-between;
+  }
+}
+
+/* ===== Dispositivos extra grandes (desktops grandes, 1200px y superior) ===== */
+@media (min-width: 1200px) {
+  .sidebar {
+    width: 320px;
+    min-width: 320px;
+  }
+
+  .main-content {
+    padding: 1.25rem;
+  }
+
+  .fc-toolbar {
+    padding: 1rem;
+  }
+
+  .sidebar .btn-agregar-servicio,
+  .sidebar .btn-primary.btn-servicio {
+    width: 85%;
+    font-size: 1rem;
+  }
+}
+
+/* ===== Ajustes comunes para todos los breakpoints ===== */
+.fc-toolbar-chunk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fc-button {
+  padding: 0.5rem 0.75rem !important;
+}
+
+.fc-event {
+  margin: 2px 0;
+  padding: 2px 4px;
+}
+
+/* ===== Orientación del dispositivo ===== */
+@media (orientation: landscape) and (max-height: 576px) {
+  .sidebar {
+    max-height: 200px;
+  }
+
+  .fc-toolbar {
+    padding: 0.25rem;
+  }
+
+  .fc-toolbar-title {
+    font-size: 1rem !important;
+  }
+}
+
+/* ===== Dispositivos con pantalla retina ===== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .fc-event {
+    border-width: 0.5px;
+  }
+}
+
+/* ===== Preferencias de reducción de movimiento ===== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ===== Estilos para las alertas de confirmación ===== */
+.swal2-popup {
+  background-color: #ffffff !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+}
+
+.swal2-title {
+  color: #004122 !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+}
+
+.swal2-html-container {
+  color: #2c3e50 !important;
+}
+
+.swal2-input,
+.swal2-select,
+.swal2-textarea {
+  border: 2px solid #c5f198 !important;
+  border-radius: 8px !important;
+}
+
+.swal2-input:focus,
+.swal2-select:focus,
+.swal2-textarea:focus {
+  border-color: #87c947 !important;
+  box-shadow: 0 0 0 3px rgba(135, 201, 71, 0.2) !important;
+}
+
+/* Botones de la alerta */
+.swal2-confirm {
+  background-color: #87c947 !important;
+  color: white !important;
+}
+
+.swal2-cancel {
+  background-color: #e74c3c !important;
+  color: white !important;
+}
+
+.swal2-confirm,
+.swal2-cancel {
+  border-radius: 8px !important;
+  padding: 0.75rem 1.5rem !important;
+  font-weight: 600 !important;
+}
+
+/* Responsive para las alertas */
+@media (max-width: 575.98px) {
+  .swal2-popup {
+    padding: 1rem !important;
+    width: 90% !important;
+    margin: 0.5rem !important;
+  }
+
+  .swal2-title {
+    font-size: 1.1rem !important;
+  }
+
+  .swal2-confirm,
+  .swal2-cancel {
+    padding: 0.6rem 1rem !important;
+    font-size: 0.9rem !important;
+  }
+}

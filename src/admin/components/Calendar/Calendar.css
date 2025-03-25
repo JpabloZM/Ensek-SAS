@@ -1,8 +1,7 @@
 @import "./styles/variables.css";
-@import "./styles/layout.css";
 @import "./styles/sidebar.css";
 @import "./styles/buttons.css";
 @import "./styles/services.css";
-@import "./styles/fullcalendar.css";
+@import "./styles/calendar.css";
 @import "./styles/responsive.css";
 @import "./styles/forms.css";
