@@ -3,14 +3,50 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAlertas } from "../hooks/useAlertas";
 import "./Auth.css";
 
+
+
+
+//LOGIN PARA DESARROLLO
+
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: "admin@test.com",
+    password: "admin123",
   });
 
   const { mostrarAlerta } = useAlertas();
   const navigate = useNavigate();
+
+  // Crear usuario administrador de prueba al cargar el componente
+  React.useEffect(() => {
+    // Verificar si ya existen usuarios
+    const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+    // Verificar si el usuario admin ya existe
+    const adminExists = usuarios.some((u) => u.email === "admin@test.com");
+
+    // Si no existe, lo creamos
+    if (!adminExists) {
+      const adminUser = {
+        id: "admin-test",
+        nombre: "Administrador",
+        email: "admin@test.com",
+        password: "admin123",
+        role: "admin",
+      };
+
+      // Agregar el usuario administrador
+      localStorage.setItem(
+        "usuarios",
+        JSON.stringify([...usuarios, adminUser])
+      );
+      console.log("Usuario administrador de prueba creado");
+    }
+  }, [navigate]);
+//FINAL DE COGIDO LOGIN DESARROLLO
+
+
+
 
   const handleChange = (e) => {
     setFormData({
