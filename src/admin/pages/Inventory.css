@@ -1,63 +1,12 @@
-.inventory {
+.inventory-page {
   padding: 2rem;
 }
 
-.inventory-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
+.inventory-content {
+  margin-top: 1rem;
 }
 
-.inventory-header h1 {
-  color: #004122;
-  margin: 0;
-}
-
-.add-button {
-  background-color: #87c947;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.add-button:hover {
-  background-color: #78b33d;
-}
-
-.add-button i {
-  font-size: 1rem;
-}
-
-.filters {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.search-input,
-.filter-select {
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.875rem;
-}
-
-.search-input {
-  flex: 1;
-  max-width: 300px;
-}
-
-.filter-select {
-  min-width: 150px;
-}
-
+/* Estilos básicos para el contenedor de la tabla */
 .table-container {
   background: white;
   border-radius: 8px;
@@ -65,10 +14,10 @@
   overflow-x: auto;
 }
 
+/* Estilos básicos para la tabla */
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 800px;
 }
 
 th {
@@ -88,57 +37,7 @@ tr:last-child td {
   border-bottom: none;
 }
 
-.estado-disponible {
-  background-color: #d4edda;
-  color: #155724;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-}
-
-.estado-bajo-stock {
-  background-color: #fff3cd;
-  color: #856404;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-}
-
-.estado-agotado {
-  background-color: #f8d7da;
-  color: #721c24;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-}
-
-.btn-editar,
-.btn-eliminar {
-  background: none;
-  border: none;
-  padding: 0.5rem;
-  margin: 0 0.25rem;
-  cursor: pointer;
-  transition: color 0.3s ease;
-}
-
-.btn-editar {
-  color: #87c947;
-}
-
-.btn-eliminar {
-  color: #dc3545;
-}
-
-.btn-editar:hover {
-  color: #78b33d;
-}
-
-.btn-eliminar:hover {
-  color: #c82333;
-}
-
-/* Modal styles */
+/* Estilos básicos para el modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -161,85 +60,13 @@ tr:last-child td {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.modal-content h2 {
-  color: #004122;
-  margin-bottom: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #333;
-  font-weight: 500;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.875rem;
-}
-
-.form-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.form-buttons button {
-  padding: 0.5rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.form-buttons button[type="button"] {
-  background: none;
-  border: 1px solid #ddd;
-}
-
-.form-buttons .submit-button {
-  background-color: #87c947;
-  color: white;
-  border: none;
-}
-
-.form-buttons .submit-button:hover {
-  background-color: #78b33d;
-}
-
+/* Media queries básicos */
 @media (max-width: 768px) {
-  .inventory {
+  .inventory-page {
     padding: 1rem;
   }
 
-  .inventory-header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-  }
-
-  .filters {
-    flex-direction: column;
-  }
-
-  .search-input {
-    max-width: none;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
+  .table-container {
+    overflow-x: auto;
   }
 }

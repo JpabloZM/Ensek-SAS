@@ -29,8 +29,8 @@ const API_MOCK = {
 
 const Calendar = () => {
   const tecnicosIniciales = [
-    { id: "1", title: "Francisco Londoño", order: 1 },
-    { id: "2", title: "Oscar Morales", order: 2 },
+    { id: "1", title: "Oscar Morales", order: 1 },
+    { id: "2", title: "Francisco Londoño", order: 2 },
     { id: "3", title: "Yeyferson Villada", order: 3 },
     { id: "4", title: "Santiago Henao", order: 4 },
     { id: "5", title: "German Oyola", order: 5 },
@@ -662,7 +662,7 @@ const Calendar = () => {
         backgroundColor: formValues.color,
         borderColor: formValues.color,
         textColor: "white",
-        className: `estado-${formValues.estado}`, // Usar className en vez de classNames
+        className: `estado-${formValues.estado}`,
         display: "block",
       };
 

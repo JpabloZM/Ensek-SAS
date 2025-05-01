@@ -7,7 +7,6 @@ import "./Auth.css";
 
 
 //LOGIN PARA DESARROLLO
-
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "admin@test.com",
