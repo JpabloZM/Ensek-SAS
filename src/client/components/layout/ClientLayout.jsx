@@ -1,4 +1,5 @@
 import { Outlet, Link } from "react-router-dom";
+import { FaFacebook, FaInstagram } from "react-icons/fa";
 import "./ClientLayout.css";
 
 const ClientLayout = () => {
@@ -6,12 +7,19 @@ const ClientLayout = () => {
     <div className="client-layout">
       <header className="client-header">
         <nav className="client-nav">
-          <div className="logo">
-            <Link to="/">ENSEK</Link>
+          <div className="social-icons">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+              <FaFacebook className="icon" />
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+              <FaInstagram className="icon" />
+            </a>
           </div>
-          <div className="nav-links">
+          <div className="nav-buttons">
             <Link to="/">Inicio</Link>
-            <Link to="/servicios">Servicios</Link>
+            <Link to="/servicios">Nuestros Servicios</Link>
+            <Link to="/agenda">Agenda tu Servicio</Link>
+            <Link to="/contacto">Contáctanos</Link>
           </div>
         </nav>
       </header>

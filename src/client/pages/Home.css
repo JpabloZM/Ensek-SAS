@@ -1,116 +1,48 @@
-.home {
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-.hero {
-  background-color: #004122;
-  color: white;
-  padding: 4rem 2rem;
-  text-align: center;
-  position: relative;
-}
-
-.hero-content {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.hero h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.hero p {
-  font-size: 1.25rem;
-  margin-bottom: 2rem;
-  opacity: 0.9;
-}
-
-.cta-button {
-  display: inline-block;
-  padding: 1rem 2rem;
-  background-color: #87c947;
-  color: white;
-  text-decoration: none;
-  border-radius: 4px;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
-}
-
-.cta-button:hover {
-  background-color: #78b33d;
-}
-
-.features {
-  padding: 4rem 2rem;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.feature-card {
-  text-align: center;
-  padding: 2rem;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-5px);
-}
-
-.feature-card i {
-  font-size: 2.5rem;
-  color: #004122;
-  margin-bottom: 1rem;
-}
-
-.feature-card h3 {
-  color: #004122;
-  margin-bottom: 1rem;
-}
-
-.contact-info {
-  background-color: #f5f5f5;
-  padding: 4rem 2rem;
-  text-align: center;
-}
-
-.contact-info h2 {
-  color: #004122;
-  margin-bottom: 1rem;
-}
-
-.contact-details {
+.navbar {
+  background-color: var(--bg-green); /* Fondo claro */
+  padding: 5rem 0;
   display: flex;
   justify-content: center;
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.contact-details div {
-  display: flex;
   align-items: center;
-  gap: 0.5rem;
 }
 
-.contact-details i {
-  color: #004122;
+.card-container {
+  display: flex;
+  gap: 5rem; /* Incrementar el espacio entre tarjetas */
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.card {
+  background-color: #87c947; /* Fondo verde relacionado al control de plagas */
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 200px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.card h3 {
+  margin-bottom: 0.5rem;
   font-size: 1.25rem;
 }
 
-@media (max-width: 768px) {
-  .hero h1 {
-    font-size: 2rem;
-  }
+.card p {
+  font-size: 0.9rem;
+}
 
-  .contact-details {
-    flex-direction: column;
-    gap: 1rem;
-  }
+.welcome-header {
+  position: absolute;
+  top: 6rem;
+  left: 1rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #004122; /* Verde oscuro */
 }
