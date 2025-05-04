@@ -98,18 +98,18 @@ td {
   white-space: nowrap;
 }
 
-/* Tooltip solo para la columna nombre */
-td:first-child {
+/* Tooltip solo para la columna nombre en la tabla de inventario */
+.inventory .table-container td:first-child {
   position: relative;
 }
 
-td:first-child:hover {
+.inventory .table-container td:first-child:hover {
   overflow: visible;
   white-space: normal;
   z-index: 1;
 }
 
-td:first-child:hover::after {
+.inventory .table-container td:first-child:hover::after {
   content: attr(title);
   position: absolute;
   left: 0;
@@ -124,45 +124,45 @@ td:first-child:hover::after {
   z-index: 2;
 }
 
-/* Definir anchos específicos para cada columna */
-th:nth-child(1),
-td:nth-child(1) {
+/* Definir anchos específicos para cada columna en la tabla de inventario */
+.inventory th:nth-child(1),
+.inventory td:nth-child(1) {
   /* Nombre */
   width: 20%;
 }
 
-th:nth-child(2),
-td:nth-child(2) {
+.inventory th:nth-child(2),
+.inventory td:nth-child(2) {
   /* Cantidad */
   width: 10%;
 }
 
-th:nth-child(3),
-td:nth-child(3) {
+.inventory th:nth-child(3),
+.inventory td:nth-child(3) {
   /* Unidad */
   width: 10%;
 }
 
-th:nth-child(4),
-td:nth-child(4) {
+.inventory th:nth-child(4),
+.inventory td:nth-child(4) {
   /* Stock Mínimo */
   width: 12%;
 }
 
-th:nth-child(5),
-td:nth-child(5) {
+.inventory th:nth-child(5),
+.inventory td:nth-child(5) {
   /* Estado */
   width: 15%;
 }
 
-th:nth-child(6),
-td:nth-child(6) {
+.inventory th:nth-child(6),
+.inventory td:nth-child(6) {
   /* Ubicación */
   width: 18%;
 }
 
-th:nth-child(7),
-td:nth-child(7) {
+.inventory th:nth-child(7),
+.inventory td:nth-child(7) {
   /* Acciones */
   width: 15%;
   text-align: center;
@@ -380,38 +380,37 @@ tr:last-child td {
   font-style: italic;
 }
 
-/* Estilos para la barra de scroll */
-.table-container::-webkit-scrollbar {
-  width: 8px; /* Para scroll vertical */
-  height: 8px; /* Para scroll horizontal */
+/* Estilos para la barra de scroll específicos del inventario */
+.inventory .table-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.table-container::-webkit-scrollbar-track {
+.inventory .table-container::-webkit-scrollbar-track {
   background: #f5f5f5;
   border-radius: 4px;
 }
 
-.table-container::-webkit-scrollbar-thumb {
+.inventory .table-container::-webkit-scrollbar-thumb {
   background-color: #87c947;
   border-radius: 4px;
 }
 
-.table-container::-webkit-scrollbar-thumb:hover {
+.inventory .table-container::-webkit-scrollbar-thumb:hover {
   background-color: #78b33d;
 }
 
 /* Mantener el encabezado de la tabla fijo */
-thead {
+.inventory thead {
   position: sticky;
   top: 0;
   background-color: white;
   z-index: 1;
 }
 
-th {
+.inventory th {
   background-color: #f5f5f5;
   color: #004122;
   font-weight: 600;
-  /* Agregar borde inferior al encabezado */
   border-bottom: 2px solid #eee;
 }
