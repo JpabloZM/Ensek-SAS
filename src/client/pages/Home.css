@@ -1,49 +1,74 @@
+:root {
+  /* Colores principales */
+  --primary-green: #87c947;
+  --dark-green: #66b417;
+  --dark-green2: #004122;
+  --light-green: #c5f198;
+  --hover-green: #66b417;
+  --bg-green: #f8ffec;
+
+  /* Espaciado */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+
+  /* Bordes y sombras */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  /* Tipografía */
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+}
+
 .navbar {
-  background-color: var(--bg-green); /* Fondo claro */
-  padding: 5rem 0;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-}
-
-.card-container {
-  display: flex;
-  gap: 5rem; /* Incrementar el espacio entre tarjetas */
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.card {
-  background-color: #87c947; /* Fondo verde relacionado al control de plagas */
+  background-color: black; /* Fondo negro */
   color: white;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  width: 200px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-}
-
-.card h3 {
-  margin-bottom: 0.5rem;
-  font-size: 1.25rem;
-}
-
-.card p {
-  font-size: 0.9rem;
-}
-
-.welcome-header {
-  position: absolute;
-  top: 6rem;
-  left: 1rem;
-  font-size: 0.8rem;
+.navbar-logo {
+  font-size: 1.5rem;
   font-weight: bold;
-  color: #004122; /* Verde oscuro */
+  color: white;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 2rem;
+}
+
+.navbar-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.navbar-links a:hover {
+  color: #87c947; /* Verde claro al pasar el cursor */
+}
+
+.navbar-icons {
+  display: flex;
+  gap: 1rem;
+}
+
+.navbar-icons a {
+  color: white;
+  font-size: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+.navbar-icons a:hover {
+  color: #87c947; /* Verde claro al pasar el cursor */
 }
