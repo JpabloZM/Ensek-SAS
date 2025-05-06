@@ -9,15 +9,15 @@ const Home = () => {
         <div className="hero-content">
           <h1>Bienvenido a ENSEK</h1>
           <p>
-            Servicios especializados en manejo integrado de plagas y jardineria.
+            Servicios especializados en manejo integrado de plagas y jardinería.
           </p>
           <div className="cta-buttons">
             <Link to="/servicios" className="cta-button primary">
               Nuestros Servicios
             </Link>
-            <Link to="/contacto" className="cta-button secondary">
+            <a href="#contact-section" className="cta-button secondary">
               Contáctanos
-            </Link>
+            </a>
           </div>
         </div>
       </div>
@@ -43,8 +43,39 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="">
-        <h2>Contactanos</h2>
+      <section id="contact-section" className="contact-section">
+        <h2>Contáctanos</h2>
+        <div className="contact-container">
+          <form className="contact-form">
+            <div className="form-group">
+              <input
+                type="text"
+                placeholder="Nombre completo"
+                className="form-input"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <input
+                type="email"
+                placeholder="Correo electrónico"
+                className="form-input"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <textarea
+                placeholder="Mensaje"
+                className="form-input"
+                rows="4"
+                required
+              ></textarea>
+            </div>
+            <button type="submit" className="cta-button primary">
+              Enviar
+            </button>
+          </form>
+        </div>
       </section>
     </div>
   );

@@ -93,13 +93,39 @@
   scrollbar-width: none; /* Para Firefox */
 }
 
+.home.light-theme {
+  background-color: var(--bg-green);
+  color: black;
+}
+
 .home::-webkit-scrollbar {
   display: none; /* Para Chrome, Safari y Opera */
 }
 
+.theme-toggle {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.theme-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  background-color: var(--primary-green);
+  color: white;
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.theme-button:hover {
+  background-color: var(--hover-green);
+}
+
 .hero-section {
   position: relative;
-  min-height: 80vh;
+  min-height: 90vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -254,6 +280,61 @@
   transform: scale(1.1);
 }
 
+.contact-section {
+  height: 95vh;
+  padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem);
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.contact-section h2 {
+  color: var(--primary-green);
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  margin-bottom: clamp(2rem, 5vw, 3rem);
+}
+
+.contact-container {
+  max-width:500px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  width: 100%;
+}
+
+.form-input {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 120px;
+}
+
 /* Ajustes responsive específicos */
 @media (max-width: 1024px) {
   .hero-content {
@@ -316,6 +397,14 @@
   .social-proof {
     padding: 3rem 1rem;
   }
+
+  .contact-container {
+    padding: 0;
+  }
+
+  .form-input {
+    padding: 0.875rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -369,6 +458,10 @@
     font-size: clamp(1.5rem, 3.5vw, 2rem);
     padding: 0.4rem;
   }
+
+  .contact-section {
+    padding: 2rem 1rem;
+  }
 }
 
 /* Ajustes para pantallas grandes */
@@ -381,3 +474,4 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+

@@ -1,3 +1,5 @@
+import "@fortawesome/fontawesome-free/css/all.min.css";
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -9,6 +11,8 @@ import AdminLayout from "./admin/components/layout/AdminLayout";
 
 // Client Pages
 import Home from "./client/pages/Home";
+import Services from "./client/pages/Services";
+import FormServices from "./client/pages/FormServices";
 
 // Admin Pages
 import Login from "./admin/auth/Login";
@@ -25,6 +29,8 @@ function App() {
         {/* Rutas públicas (cliente) */}
         <Route path="/" element={<ClientLayout />}>
           <Route index element={<Home />} />
+          <Route path="servicios" element={<Services />} />
+          <Route path="servicios/formulario" element={<FormServices />} />
         </Route>
 
         {/* Rutas administrativas */}
