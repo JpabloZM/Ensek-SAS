@@ -50,11 +50,19 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .search-input {
   flex: 1;
   max-width: 300px;
+}
+
+.search-input:focus,
+.filter-select:focus {
+  border-color: #87c947;
+  box-shadow: 0 0 0 2px rgba(135, 201, 71, 0.2);
 }
 
 .filter-select {
@@ -98,30 +106,40 @@ td {
   white-space: nowrap;
 }
 
-/* Tooltip solo para la columna nombre en la tabla de inventario */
+/* Tooltip para la columna nombre */
 .inventory .table-container td:first-child {
   position: relative;
 }
 
-.inventory .table-container td:first-child:hover {
-  overflow: visible;
-  white-space: normal;
-  z-index: 1;
+/* Deshabilitar el tooltip nativo */
+.inventory .table-container td:first-child[title] {
+  position: relative;
 }
 
-.inventory .table-container td:first-child:hover::after {
+.inventory .table-container td:first-child[title]::before {
+  content: none;
+}
+
+.inventory .table-container td:first-child[title]::after {
+  content: none;
+}
+
+/* Crear tooltip personalizado */
+.inventory .table-container td:first-child:hover::before {
   content: attr(title);
   position: absolute;
   left: 0;
-  top: 100%;
+  bottom: 100%;
+  margin-bottom: 5px;
   background: #333;
   color: white;
-  padding: 5px;
+  padding: 5px 10px;
   border-radius: 4px;
   font-size: 0.875rem;
   white-space: normal;
   max-width: 200px;
-  z-index: 2;
+  z-index: 1000;
+  pointer-events: none;
 }
 
 /* Definir anchos específicos para cada columna en la tabla de inventario */

@@ -1,3 +1,7 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100..900;1,100..900&family=Jost:ital,wght@0,100..900;1,100..900&family=Marcellus&family=Outfit:wght@100..900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
+
+
 :root {
   /* Variables de color */
   --primary-green: #87c947;
@@ -6,9 +10,10 @@
   --light-green: #c5f198;
   --hover-green: #66b417;
   --bg-green: #f8ffec;
+  --bg-dark: #2c2e35;
 
   /* Variables de tipografía */
-  --font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --font-family: "Chivo", sans-serif;
   --line-height: 1.5;
   --font-weight: 400;
   --font-size-xs: 0.75rem;

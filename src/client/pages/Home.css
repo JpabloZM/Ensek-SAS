@@ -55,7 +55,8 @@
 }
 
 .navbar-links a:hover {
-  color: #87c947; /* Verde claro al pasar el cursor */
+  color: var(--hover-green);
+  transition: color 0.3s ease;
 }
 
 .navbar-icons {
@@ -70,5 +71,6 @@
 }
 
 .navbar-icons a:hover {
-  color: #87c947; /* Verde claro al pasar el cursor */
+  color: var(--hover-green);
+  transition: color 0.3s ease;
 }
