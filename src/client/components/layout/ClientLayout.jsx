@@ -1,34 +1,61 @@
-import { Link } from "react-router-dom";
-import { FaFacebook, FaInstagram } from "react-icons/fa"; // Asegúrate de tener react-icons instalado
+import { Link, Outlet } from "react-router-dom";
+import { FaFacebook, FaInstagram, FaBars } from "react-icons/fa";
+import { useState } from "react";
 import "./ClientLayout.css";
 
-const Home = () => {
+const ClientLayout = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   return (
-    <div className="home">
+    <div className="layout">
       <header className="navbar">
-        <div className="navbar-logo">ENSEK</div>
-        <nav className="navbar-links">
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-          <Link to="/projects">Projects</Link>
-          <Link to="/services">Services</Link>
+        <button className="menu-button" onClick={toggleMenu}>
+          <FaBars />
+        </button>
+
+        <div className="navbar-logo">
+          <Link to="/">ENSEK</Link>
+        </div>
+
+        <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
+          <Link to="/" onClick={() => setIsMenuOpen(false)}>
+            Inicio
+          </Link>
+          <Link to="/servicios" onClick={() => setIsMenuOpen(false)}>
+            Servicios
+          </Link>
+          <Link to="/contacto" onClick={() => setIsMenuOpen(false)}>
+            Contacto
+          </Link>
         </nav>
+
         <div className="navbar-icons">
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://facebook.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <FaFacebook />
           </a>
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://instagram.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <FaInstagram />
           </a>
         </div>
       </header>
-      <main className="content">
-        <h1>Bienvenido a ENSEK</h1>
-        <p>Servicios especializados en jardinería y control de plagas.</p>
+
+      <main>
+        <Outlet />
       </main>
     </div>
   );
 };
 
-export default Home;
-
+export default ClientLayout;

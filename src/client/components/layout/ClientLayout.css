@@ -1,47 +1,160 @@
-html{
-  background-color: var(--bg-dark);
-}
-
-.home {
-  background-color: var(--bg-dark); /* Fondo negro */
-  color: white;
+.layout {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  position: relative;
 }
 
-.content {
+.layout main {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  z-index: 2; /* Asegura que el contenido esté por encima de la imagen */
-  padding: 2rem;
+  overflow-y: auto;
 }
 
-.content h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+/* Asegurar que el contenido principal tenga scroll */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-y: auto;
 }
 
-.content p {
-  font-size: 1.25rem;
-}
-
-.home::before {
-  content: "";
-  position: absolute;
+/* Estilos del navbar */
+.navbar {
+  position: sticky;
   top: 0;
-  left: 0;
-  width: 100%;
-  height: 70%; /* La imagen ocupa el 70% del área del Home */
-  background-image: url("../assets/jardineria.jpg"); /* Ruta de la imagen */
-  background-size: cover;
-  background-position: center;
-  opacity: 0.5; /* Ajusta la opacidad para que el fondo negro sea visible */
-  z-index: 1; /* Coloca la imagen detrás del contenido */
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bg-dark);
+  padding: 1rem 8rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logo a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 2rem;
+}
+
+.navbar-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.navbar-links a:hover {
+  color: var(--hover-green);
+}
+
+.navbar-icons {
+  display: flex;
+  gap: 1rem;
+}
+
+.navbar-icons a {
+  color: white;
+  font-size: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+.navbar-icons a:hover {
+  color: var(--hover-green);
+}
+
+/* Botón de menú hamburguesa */
+.menu-button {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-right: 1rem;
+  transition: color 0.3s ease;
+}
+
+.menu-button:hover {
+  color: var(--hover-green);
+}
+
+/* Media queries para responsive */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1rem 2rem;
+  }
+
+  .menu-button {
+    display: flex;
+    align-items: center;
+  }
+
+  .navbar-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 0;
+    background-color: var(--bg-dark);
+    padding: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .navbar-links.active {
+    display: flex;
+  }
+
+  .navbar-links a {
+    padding: 1rem 2rem;
+    width: 100%;
+    text-align: left;
+  }
+
+  .navbar-links a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .navbar-icons {
+    gap: 0.5rem;
+  }
+
+  .navbar-icons a {
+    font-size: 1.25rem;
+    padding: 0.5rem;
+  }
+}
+
+/* Ajustes para pantallas muy pequeñas */
+@media (max-width: 480px) {
+  .navbar-logo a {
+    font-size: 1.25rem;
+  }
+
+  .navbar {
+    padding: 0.75rem 1rem;
+  }
+
+  .menu-button {
+    margin-right: 0.5rem;
+  }
+
+  .navbar-icons {
+    gap: 0.25rem;
+  }
 }

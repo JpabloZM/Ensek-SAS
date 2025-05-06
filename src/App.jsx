@@ -9,8 +9,6 @@ import AdminLayout from "./admin/components/layout/AdminLayout";
 
 // Client Pages
 import Home from "./client/pages/Home";
-import Services from "./client/pages/Services";
-import RequestService from "./client/pages/RequestService";
 
 // Admin Pages
 import Login from "./admin/auth/Login";
@@ -27,8 +25,6 @@ function App() {
         {/* Rutas públicas (cliente) */}
         <Route path="/" element={<ClientLayout />}>
           <Route index element={<Home />} />
-          <Route path="servicios" element={<Services />} />
-          <Route path="solicitar/:serviceId" element={<RequestService />} />
         </Route>
 
         {/* Rutas administrativas */}
