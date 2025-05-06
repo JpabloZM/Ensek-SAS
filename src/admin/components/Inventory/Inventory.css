@@ -84,7 +84,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow-x: auto;
   width: 100%;
-  max-height: calc(100vh - 360px);
+  max-height: calc(100vh - 280px);
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #87c947 #f5f5f5;
@@ -99,11 +99,31 @@ table {
 
 th,
 td {
-  padding: 1rem;
+  padding: 1.25rem 1rem;
   text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.5;
+}
+
+tr {
+  transition: background-color 0.2s ease;
+}
+
+tr:hover {
+  background-color: #f8f9fa;
+}
+
+th {
+  background-color: #f5f5f5;
+  color: #004122;
+  font-weight: 600;
+  padding: 1.5rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* Tooltip para la columna nombre */
@@ -187,12 +207,6 @@ td {
 }
 
 /* Mantener los estilos existentes */
-th {
-  background-color: #f5f5f5;
-  color: #004122;
-  font-weight: 600;
-}
-
 td {
   border-bottom: 1px solid #eee;
 }
@@ -416,19 +430,4 @@ tr:last-child td {
 
 .inventory .table-container::-webkit-scrollbar-thumb:hover {
   background-color: #78b33d;
-}
-
-/* Mantener el encabezado de la tabla fijo */
-.inventory thead {
-  position: sticky;
-  top: 0;
-  background-color: white;
-  z-index: 1;
-}
-
-.inventory th {
-  background-color: #f5f5f5;
-  color: #004122;
-  font-weight: 600;
-  border-bottom: 2px solid #eee;
 }
