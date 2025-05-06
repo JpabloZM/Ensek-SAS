@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FaFacebook, FaInstagram, FaBars } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import "./ClientLayout.css";
@@ -6,6 +6,7 @@ import "./ClientLayout.css";
 const ClientLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Cerrar el menú cuando cambie la ruta
   useEffect(() => {
@@ -50,6 +51,23 @@ const ClientLayout = () => {
     setIsMenuOpen(false);
   };
 
+  const handleContactClick = () => {
+    if (location.pathname !== "/") {
+      navigate("/");
+      setTimeout(() => {
+        const contactSection = document.getElementById("contact-section");
+        if (contactSection) {
+          contactSection.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100); // Espera un poco para que la navegación ocurra antes de desplazarte
+    } else {
+      const contactSection = document.getElementById("contact-section");
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  };
+
   return (
     <div className="layout">
       <header className="navbar">
@@ -76,9 +94,10 @@ const ClientLayout = () => {
           <Link to="/servicios" onClick={handleLinkClick}>
             Servicios
           </Link>
-          <Link to="/contacto" onClick={handleLinkClick}>
+          {/* Cambiamos el enlace de contacto para manejar la navegación */}
+          <button className="contact-button" onClick={handleContactClick}>
             Contacto
-          </Link>
+          </button>
         </nav>
 
         <div className="navbar-icons">
