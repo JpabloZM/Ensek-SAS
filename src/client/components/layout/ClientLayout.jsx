@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { FaFacebook, FaInstagram } from "react-icons/fa"; // Asegúrate de tener react-icons instalado
-
-
+import "./ClientLayout.css";
 
 const Home = () => {
   return (
@@ -23,6 +22,10 @@ const Home = () => {
           </a>
         </div>
       </header>
+      <main className="content">
+        <h1>Bienvenido a ENSEK</h1>
+        <p>Servicios especializados en jardinería y control de plagas.</p>
+      </main>
     </div>
   );
 };
