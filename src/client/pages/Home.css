@@ -85,8 +85,16 @@
 .home {
   background-color: var(--bg-dark);
   color: white;
-  min-height: 100%;
+  min-height: 100vh;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  -ms-overflow-style: none; /* Para Internet Explorer y Edge */
+  scrollbar-width: none; /* Para Firefox */
+}
+
+.home::-webkit-scrollbar {
+  display: none; /* Para Chrome, Safari y Opera */
 }
 
 .hero-section {
@@ -247,51 +255,119 @@
 }
 
 /* Ajustes responsive específicos */
+@media (max-width: 1024px) {
+  .hero-content {
+    max-width: 800px;
+    padding: 0 2rem;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .hero-section {
     min-height: 60vh;
     background-attachment: scroll;
+    padding: 4rem 1rem;
+  }
+
+  .hero-content {
+    padding: 0 1rem;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+  }
+
+  .hero-content p {
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
   }
 
   .cta-buttons {
     flex-direction: column;
     align-items: stretch;
-    padding: 0 1rem;
+    padding: 0;
+    gap: 1rem;
   }
 
   .cta-button {
     width: 100%;
     text-align: center;
     min-width: auto;
+    padding: 0.75rem 1.5rem;
+  }
+
+  .features {
+    padding: 3rem 1rem;
   }
 
   .features-grid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
     padding: 0;
   }
 
   .feature-card {
-    margin: 0 1rem;
+    margin: 0;
+  }
+
+  .social-proof {
+    padding: 3rem 1rem;
   }
 }
 
-/* Ajustes para pantallas muy pequeñas */
 @media (max-width: 480px) {
+  .hero-section {
+    min-height: 50vh;
+    padding: 3rem 1rem;
+  }
+
   .hero-content {
     padding: 0;
   }
 
-  .hero-section {
-    padding: 1rem;
+  .hero-content h1 {
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    margin-bottom: 0.75rem;
+  }
+
+  .hero-content p {
+    font-size: clamp(0.8rem, 1.8vw, 1rem);
+    margin-bottom: 1.5rem;
+  }
+
+  .features h2,
+  .social-proof h2 {
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    margin-bottom: 1.5rem;
   }
 
   .features,
   .social-proof {
-    padding: 2rem 0.5rem;
+    padding: 2rem 1rem;
+  }
+
+  .feature-card {
+    padding: 1.25rem;
+  }
+
+  .feature-card h3 {
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
+  }
+
+  .feature-card p {
+    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
   }
 
   .social-links {
     gap: 1rem;
+  }
+
+  .social-links a {
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    padding: 0.4rem;
   }
 }
 

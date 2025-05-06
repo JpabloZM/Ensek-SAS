@@ -2,11 +2,24 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  -ms-overflow-style: none; /* Para Internet Explorer y Edge */
+  scrollbar-width: none; /* Para Firefox */
+}
+
+.layout::-webkit-scrollbar {
+  display: none; /* Para Chrome, Safari y Opera */
 }
 
 .layout main {
   flex: 1;
   overflow-y: auto;
+  position: relative;
+  -ms-overflow-style: none; /* Para Internet Explorer y Edge */
+  scrollbar-width: none; /* Para Firefox */
+}
+
+.layout main::-webkit-scrollbar {
+  display: none; /* Para Chrome, Safari y Opera */
 }
 
 /* Asegurar que el contenido principal tenga scroll */
@@ -46,6 +59,7 @@ body {
 .navbar-links {
   display: flex;
   gap: 2rem;
+  transition: none;
 }
 
 .navbar-links a {
@@ -93,6 +107,12 @@ body {
 }
 
 /* Media queries para responsive */
+@media (max-width: 1024px) {
+  .navbar {
+    padding: 1rem 4rem;
+  }
+}
+
 @media (max-width: 768px) {
   .navbar {
     padding: 1rem 2rem;
@@ -105,8 +125,8 @@ body {
 
   .navbar-links {
     display: none;
-    position: absolute;
-    top: 100%;
+    position: fixed;
+    top: 60px;
     left: 0;
     right: 0;
     flex-direction: column;
@@ -114,10 +134,18 @@ body {
     background-color: var(--bg-dark);
     padding: 1rem 0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
   }
 
   .navbar-links.active {
     display: flex;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
   }
 
   .navbar-links a {
@@ -140,21 +168,44 @@ body {
   }
 }
 
-/* Ajustes para pantallas muy pequeñas */
-@media (max-width: 480px) {
-  .navbar-logo a {
-    font-size: 1.25rem;
+@media (min-width: 769px) {
+  .menu-button {
+    display: none !important;
   }
 
+  .navbar-links {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    display: flex;
+    pointer-events: all;
+    background: none;
+    padding: 0;
+    box-shadow: none;
+    transition: none;
+  }
+}
+
+@media (max-width: 480px) {
   .navbar {
     padding: 0.75rem 1rem;
   }
 
+  .navbar-logo a {
+    font-size: 1.25rem;
+  }
+
   .menu-button {
     margin-right: 0.5rem;
+    font-size: 1.25rem;
   }
 
   .navbar-icons {
     gap: 0.25rem;
+  }
+
+  .navbar-icons a {
+    font-size: 1.2rem;
+    padding: 0.4rem;
   }
 }

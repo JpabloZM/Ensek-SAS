@@ -1,6 +1,4 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100..900;1,100..900&family=Jost:ital,wght@0,100..900;1,100..900&family=Marcellus&family=Outfit:wght@100..900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
-
+@import url("https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,100..900;1,100..900&family=Jost:ital,wght@0,100..900;1,100..900&family=Marcellus&family=Outfit:wght@100..900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap");
 
 :root {
   /* Variables de color */
@@ -46,6 +44,24 @@
   box-sizing: border-box;
 }
 
+/* Ocultar scrollbar pero mantener funcionalidad */
+/* Para Chrome, Safari y Opera */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+
+/* Para Firefox */
+* {
+  scrollbar-width: none;
+}
+
+/* Para Internet Explorer y Edge */
+* {
+  -ms-overflow-style: none;
+}
+
 body {
   font-family: var(--font-family);
   line-height: var(--line-height);
@@ -54,18 +70,16 @@ body {
   color: var(--dark-green2);
   min-height: 100vh;
   overflow-x: hidden;
+  overflow-y: auto;
 }
 
 #root {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Estilos de scrollbar personalizados */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
 ::-webkit-scrollbar-track {
   background: var(--bg-green);
 }

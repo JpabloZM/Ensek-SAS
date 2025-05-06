@@ -8,7 +8,9 @@ const Home = () => {
       <div className="hero-section">
         <div className="hero-content">
           <h1>Bienvenido a ENSEK</h1>
-          <p>Servicios especializados en manejo integrado de plagas y jardineria.</p>
+          <p>
+            Servicios especializados en manejo integrado de plagas y jardineria.
+          </p>
           <div className="cta-buttons">
             <Link to="/servicios" className="cta-button primary">
               Nuestros Servicios
@@ -43,7 +45,6 @@ const Home = () => {
 
       <section className="">
         <h2>Contactanos</h2>
-        
       </section>
     </div>
   );
