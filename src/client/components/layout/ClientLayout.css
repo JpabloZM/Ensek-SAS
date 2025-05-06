@@ -1,0 +1,47 @@
+html{
+  background-color: var(--bg-dark);
+}
+
+.home {
+  background-color: var(--bg-dark); /* Fondo negro */
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 2; /* Asegura que el contenido esté por encima de la imagen */
+  padding: 2rem;
+}
+
+.content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.content p {
+  font-size: 1.25rem;
+}
+
+.home::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70%; /* La imagen ocupa el 70% del área del Home */
+  background-image: url("../assets/jardineria.jpg"); /* Ruta de la imagen */
+  background-size: cover;
+  background-position: center;
+  opacity: 0.5; /* Ajusta la opacidad para que el fondo negro sea visible */
+  z-index: 1; /* Coloca la imagen detrás del contenido */
+}
