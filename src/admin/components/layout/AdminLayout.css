@@ -1,14 +1,17 @@
 .admin-layout {
   min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: var(--bg-green);
+  overflow: hidden;
 }
 
 .admin-header {
   background-color: #004122;
   padding: 1rem 2rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .admin-nav {
@@ -77,6 +80,22 @@
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+  overflow: hidden;
+  position: relative;
+  height: calc(100vh - 64px); /* Altura total menos el header */
+}
+
+/* Contenedor para el contenido con scroll si es necesario */
+.admin-content {
+  height: 100%;
+  overflow-y: auto;
+  padding: 1rem;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.admin-content::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 /* Estilos para la página de login */

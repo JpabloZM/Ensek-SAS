@@ -1,68 +1,130 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
+import { inventoryService } from "../../../admin/services/api";
 import "./Inventory.css";
 
-const Inventory = () => {
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      nombre: "Aspersora",
-      cantidad: 7,
-      unidad: "unidad",
-      minimo: 7,
-      estado: "Disponible",
-      ubicacion: "Bodega 2",
-    },
-    {
-      id: 2,
-      nombre: "Borax",
-      cantidad: 500,
-      unidad: "ml",
-      minimo: 1000,
-      estado: "Bajo Stock",
-      ubicacion: "Bodega 1",
-    },
-    {
-      id: 3,
-      nombre: "Cebos",
-      cantidad: 500,
-      unidad: "gr",
-      minimo: 250,
-      estado: "Disponible",
-      ubicacion: "Bodega 1",
-    },
-    {
-      id: 4,
-      nombre: "Fertilizante NPK",
-      cantidad: 0,
-      unidad: "gr",
-      minimo: 1000,
-      estado: "Agotado",
-      ubicacion: "Bodega 2",
-    },
-  ]);
+// Datos de ejemplo para el inventario
+const datosEjemplo = [
+  {
+    id: 1,
+    name: "Insecticida Multiusos Premium",
+    quantity: 50,
+    unit: "ml",
+    unit_price: 45000,
+    minimum_stock: 15,
+    description:
+      "Insecticida de amplio espectro para control de plagas domésticas y jardín",
+    status: "available",
+  },
+  {
+    id: 2,
+    name: "Gel Cucarachicida Profesional",
+    quantity: 5,
+    unit: "gr",
+    unit_price: 120000,
+    minimum_stock: 8,
+    description: "Gel especial para el control de cucarachas en áreas críticas",
+    status: "low_stock",
+  },
+  {
+    id: 3,
+    name: "Trampa UV para Insectos",
+    quantity: 0,
+    unit: "un",
+    unit_price: 280000,
+    minimum_stock: 5,
+    description:
+      "Trampa de luz UV para control de insectos voladores, uso comercial",
+    status: "out_of_stock",
+  },
+  {
+    id: 4,
+    name: "Rodenticida en Bloque",
+    quantity: 75,
+    unit: "gr",
+    unit_price: 35000,
+    minimum_stock: 20,
+    description: "Cebo en bloque para control de roedores, uso profesional",
+    status: "available",
+  },
+  {
+    id: 5,
+    name: "Nebulizador ULV Portátil",
+    quantity: 8,
+    unit: "un",
+    unit_price: 1200000,
+    minimum_stock: 3,
+    description: "Equipo nebulizador ULV para aplicación de insecticidas",
+    status: "available",
+  },
+  {
+    id: 6,
+    name: "Insecticida Concentrado",
+    quantity: 25,
+    unit: "ml",
+    unit_price: 85000,
+    minimum_stock: 10,
+    description: "Insecticida concentrado para dilución, uso profesional",
+    status: "available",
+  },
+  {
+    id: 7,
+    name: "Estación Cebo Roedores",
+    quantity: 120,
+    unit: "un",
+    unit_price: 15000,
+    minimum_stock: 30,
+    description: "Estación de cebo segura para control de roedores",
+    status: "available",
+  },
+  {
+    id: 8,
+    name: "Larvicida Biológico",
+    quantity: 4,
+    unit: "gr",
+    unit_price: 95000,
+    minimum_stock: 6,
+    description: "Control biológico de larvas de mosquitos y otros insectos",
+    status: "low_stock",
+  },
+];
 
-  // Estados para el buscador y filtro
+const Inventory = () => {
+  const [items, setItems] = useState(datosEjemplo);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterState, setFilterState] = useState("");
-
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    nombre: "",
-    cantidad: "",
-    unidad: "",
-    minimo: "",
-    ubicacion: "",
+    name: "",
+    quantity: "",
+    unit: "un",
+    unit_price: "",
+    minimum_stock: "",
+    description: "",
+    status: "available",
   });
-
-  // Estado para mensajes de error y éxito
-  const [mensaje, setMensaje] = useState({ tipo: "", texto: "" });
-
-  // Nuevo estado para modo edición
   const [editMode, setEditMode] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Función para mostrar mensajes
+  // Cargar datos al montar el componente
+  useEffect(() => {
+    loadInventory();
+  }, []);
+
+  const loadInventory = async () => {
+    try {
+      // Simulamos una carga de datos
+      setTimeout(() => {
+        setItems(datosEjemplo);
+        setLoading(false);
+      }, 1000);
+    } catch (error) {
+      mostrarMensaje("error", "Error al cargar el inventario");
+      setLoading(false);
+    }
+  };
+
   const mostrarMensaje = async (tipo, texto) => {
     await Swal.fire({
       title: tipo === "exito" ? "¡Éxito!" : "Error",
@@ -73,61 +135,35 @@ const Inventory = () => {
     });
   };
 
-  // Función para validar el formulario
   const validarFormulario = async () => {
-    if (parseInt(formData.cantidad) <= 0) {
-      await Swal.fire({
-        title: "Error de validación",
-        text: "La cantidad debe ser un número positivo",
-        icon: "error",
-        confirmButtonColor: "#87c947",
-        confirmButtonText: "Entendido",
-      });
+    if (parseInt(formData.quantity) < 0) {
+      await mostrarMensaje("error", "La cantidad debe ser un número positivo");
       return false;
     }
 
-    if (parseInt(formData.minimo) <= 0) {
-      await Swal.fire({
-        title: "Error de validación",
-        text: "El stock mínimo debe ser un número positivo",
-        icon: "error",
-        confirmButtonColor: "#87c947",
-        confirmButtonText: "Entendido",
-      });
+    if (parseInt(formData.minimum_stock) < 0) {
+      await mostrarMensaje(
+        "error",
+        "El stock mínimo debe ser un número positivo"
+      );
       return false;
     }
 
-    if (!formData.nombre || !formData.ubicacion || !formData.unidad) {
-      await Swal.fire({
-        title: "Error de validación",
-        text: "Todos los campos son obligatorios",
-        icon: "error",
-        confirmButtonColor: "#87c947",
-        confirmButtonText: "Entendido",
-      });
+    if (!formData.name || !formData.description || formData.unit_price === "") {
+      await mostrarMensaje("error", "Todos los campos son obligatorios");
       return false;
     }
 
     return true;
   };
 
-  // Función para calcular el estado basado en la cantidad y mínimo
-  const calcularEstado = (cantidad, minimo) => {
-    if (cantidad === 0) return "Agotado";
-    if (cantidad <= minimo) return "Bajo Stock";
-    return "Disponible";
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validar formulario
-    if (!validarFormulario()) return;
+    if (!(await validarFormulario())) return;
 
-    // Cerrar el modal antes de mostrar la confirmación
     setShowForm(false);
 
-    // Confirmar antes de agregar
     const result = await Swal.fire({
       title: "¿Agregar nuevo item?",
       text: "¿Estás seguro de agregar este item al inventario?",
@@ -140,48 +176,39 @@ const Inventory = () => {
     });
 
     if (!result.isConfirmed) {
-      // Si cancela, volver a mostrar el formulario
       setShowForm(true);
       return;
     }
 
     try {
-      const cantidad = parseInt(formData.cantidad);
-      const minimo = parseInt(formData.minimo);
-
-      // Crear nuevo item
+      // Simulamos la creación de un nuevo item
       const newItem = {
+        ...formData,
         id: items.length + 1,
-        nombre: formData.nombre,
-        cantidad: cantidad,
-        unidad: formData.unidad,
-        minimo: minimo,
-        estado: calcularEstado(cantidad, minimo),
-        ubicacion: formData.ubicacion,
+        status:
+          parseInt(formData.quantity) === 0
+            ? "out_of_stock"
+            : parseInt(formData.quantity) <= parseInt(formData.minimum_stock)
+            ? "low_stock"
+            : "available",
       };
-
-      // Actualizar la lista de items
       setItems([...items, newItem]);
-
-      // Mostrar mensaje de éxito
       mostrarMensaje("exito", "Item agregado correctamente");
-
-      // Limpiar el formulario
       setFormData({
-        nombre: "",
-        cantidad: "",
-        unidad: "",
-        minimo: "",
-        ubicacion: "",
+        name: "",
+        quantity: "",
+        unit: "un",
+        unit_price: "",
+        minimum_stock: "",
+        description: "",
+        status: "available",
       });
     } catch (error) {
-      mostrarMensaje("error", "Error al agregar el item. Intente nuevamente.");
-      // Si hay error, volver a mostrar el formulario
+      mostrarMensaje("error", "Error al agregar el item");
       setShowForm(true);
     }
   };
 
-  // Función para eliminar items
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "¿Eliminar item?",
@@ -197,35 +224,35 @@ const Inventory = () => {
     if (!result.isConfirmed) return;
 
     try {
+      // Simulamos la eliminación
       const newItems = items.filter((item) => item.id !== id);
       setItems(newItems);
       mostrarMensaje("exito", "Item eliminado correctamente");
     } catch (error) {
-      mostrarMensaje("error", "Error al eliminar el item. Intente nuevamente.");
+      mostrarMensaje("error", "Error al eliminar el item");
     }
   };
 
-  // Función para iniciar la edición
   const handleEdit = (item) => {
     setEditMode(true);
     setEditingItem(item);
     setFormData({
-      nombre: item.nombre,
-      cantidad: item.cantidad,
-      unidad: item.unidad,
-      minimo: item.minimo,
-      ubicacion: item.ubicacion,
+      name: item.name,
+      quantity: item.quantity,
+      unit: item.unit,
+      unit_price: item.unit_price,
+      minimum_stock: item.minimum_stock,
+      description: item.description,
+      status: item.status,
     });
     setShowForm(true);
   };
 
-  // Función para actualizar un item
   const handleUpdate = async (e) => {
     e.preventDefault();
 
-    if (!validarFormulario()) return;
+    if (!(await validarFormulario())) return;
 
-    // Cerrar el modal antes de mostrar la confirmación
     setShowForm(false);
 
     const result = await Swal.fire({
@@ -240,65 +267,81 @@ const Inventory = () => {
     });
 
     if (!result.isConfirmed) {
-      // Si cancela, volver a mostrar el formulario
       setShowForm(true);
       return;
     }
 
     try {
-      const cantidad = parseInt(formData.cantidad);
-      const minimo = parseInt(formData.minimo);
-
-      // Crear item actualizado
+      // Simulamos la actualización
       const updatedItem = {
-        ...editingItem,
-        nombre: formData.nombre,
-        cantidad: cantidad,
-        unidad: formData.unidad,
-        minimo: minimo,
-        estado: calcularEstado(cantidad, minimo),
-        ubicacion: formData.ubicacion,
+        ...formData,
+        id: editingItem.id,
+        status:
+          parseInt(formData.quantity) === 0
+            ? "out_of_stock"
+            : parseInt(formData.quantity) <= parseInt(formData.minimum_stock)
+            ? "low_stock"
+            : "available",
       };
-
-      // Actualizar la lista de items
       const newItems = items.map((item) =>
         item.id === editingItem.id ? updatedItem : item
       );
       setItems(newItems);
-
-      // Mostrar mensaje de éxito
       mostrarMensaje("exito", "Item actualizado correctamente");
-
-      // Limpiar estados
       setFormData({
-        nombre: "",
-        cantidad: "",
-        unidad: "",
-        minimo: "",
-        ubicacion: "",
+        name: "",
+        quantity: "",
+        unit: "un",
+        unit_price: "",
+        minimum_stock: "",
+        description: "",
+        status: "available",
       });
       setEditMode(false);
       setEditingItem(null);
     } catch (error) {
-      mostrarMensaje(
-        "error",
-        "Error al actualizar el item. Intente nuevamente."
-      );
-      // Si hay error, volver a mostrar el formulario
+      mostrarMensaje("error", "Error al actualizar el item");
       setShowForm(true);
     }
   };
 
-  // Función para filtrar items
+  const getStatusClass = (status) => {
+    switch (status.toLowerCase()) {
+      case "available":
+        return "estado-disponible";
+      case "low_stock":
+        return "estado-bajo-stock";
+      case "out_of_stock":
+        return "estado-agotado";
+      default:
+        return "";
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case "available":
+        return "Disponible";
+      case "low_stock":
+        return "Bajo Stock";
+      case "out_of_stock":
+        return "Agotado";
+      default:
+        return status;
+    }
+  };
+
   const filteredItems = items.filter((item) => {
-    const matchesSearch = item.nombre
+    const matchesSearch = item.name
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesFilter =
       filterState === "" ||
-      item.estado.toLowerCase().includes(filterState.toLowerCase());
+      item.status.toLowerCase() === filterState.toLowerCase();
     return matchesSearch && matchesFilter;
   });
+
+  if (loading) return <div className="loading">Cargando...</div>;
 
   return (
     <div className="inventory">
@@ -316,83 +359,100 @@ const Inventory = () => {
             <h2>{editMode ? "Editar Item" : "Agregar Nuevo Item"}</h2>
             <form onSubmit={editMode ? handleUpdate : handleSubmit}>
               <div className="form-group">
-                <label htmlFor="nombre">Nombre</label>
+                <label htmlFor="name">Nombre</label>
                 <input
                   type="text"
-                  id="nombre"
-                  name="nombre"
-                  value={formData.nombre}
+                  id="name"
+                  name="name"
+                  value={formData.name}
                   onChange={(e) =>
-                    setFormData({ ...formData, nombre: e.target.value })
+                    setFormData({ ...formData, name: e.target.value })
                   }
                   required
                 />
               </div>
+
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="cantidad">Cantidad</label>
+                  <label htmlFor="quantity">Cantidad</label>
                   <input
                     type="number"
-                    id="cantidad"
-                    name="cantidad"
-                    min="1"
-                    value={formData.cantidad}
+                    id="quantity"
+                    name="quantity"
+                    min="0"
+                    value={formData.quantity}
                     onChange={(e) =>
-                      setFormData({ ...formData, cantidad: e.target.value })
+                      setFormData({ ...formData, quantity: e.target.value })
                     }
                     required
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="unidad">Unidad de Medida</label>
+                  <label htmlFor="unit">Unidad de medida</label>
                   <select
-                    id="unidad"
-                    name="unidad"
-                    value={formData.unidad}
+                    id="unit"
+                    name="unit"
+                    value={formData.unit}
                     onChange={(e) =>
-                      setFormData({ ...formData, unidad: e.target.value })
+                      setFormData({ ...formData, unit: e.target.value })
                     }
                     required
                   >
-                    <option value="">Seleccionar unidad</option>
-                    <option value="gr">Gramos (gr)</option>
+                    <option value="un">Unidades (un)</option>
                     <option value="ml">Mililitros (ml)</option>
-                    <option value="unidad">Unidad</option>
+                    <option value="gr">Gramos (gr)</option>
                   </select>
                 </div>
               </div>
+
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="minimo">Stock Mínimo</label>
+                  <label htmlFor="unit_price">Precio Unitario</label>
                   <input
                     type="number"
-                    id="minimo"
-                    name="minimo"
-                    min="1"
-                    value={formData.minimo}
+                    id="unit_price"
+                    name="unit_price"
+                    min="0"
+                    step="0.01"
+                    value={formData.unit_price}
                     onChange={(e) =>
-                      setFormData({ ...formData, minimo: e.target.value })
+                      setFormData({ ...formData, unit_price: e.target.value })
                     }
                     required
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="ubicacion">Ubicación</label>
-                  <select
-                    id="ubicacion"
-                    name="ubicacion"
-                    value={formData.ubicacion}
+                  <label htmlFor="minimum_stock">Stock Mínimo</label>
+                  <input
+                    type="number"
+                    id="minimum_stock"
+                    name="minimum_stock"
+                    min="0"
+                    value={formData.minimum_stock}
                     onChange={(e) =>
-                      setFormData({ ...formData, ubicacion: e.target.value })
+                      setFormData({
+                        ...formData,
+                        minimum_stock: e.target.value,
+                      })
                     }
                     required
-                  >
-                    <option value="">Seleccionar ubicación</option>
-                    <option value="Bodega 1">Bodega 1</option>
-                    <option value="Bodega 2">Bodega 2</option>
-                  </select>
+                  />
                 </div>
               </div>
+
+              <div className="form-group">
+                <label htmlFor="description">Descripción</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
               <div className="form-buttons">
                 <button
                   type="button"
@@ -401,21 +461,18 @@ const Inventory = () => {
                     setEditMode(false);
                     setEditingItem(null);
                     setFormData({
-                      nombre: "",
-                      cantidad: "",
-                      unidad: "",
-                      minimo: "",
-                      ubicacion: "",
+                      name: "",
+                      quantity: "",
+                      unit_price: "",
+                      minimum_stock: "",
+                      description: "",
+                      status: "available",
                     });
                   }}
                 >
                   Cancelar
                 </button>
-                <button
-                  type="submit"
-                  className="submit-button"
-                  onClick={editMode ? handleUpdate : handleSubmit}
-                >
+                <button type="submit" className="submit-button">
                   {editMode ? "Actualizar" : "Guardar"}
                 </button>
               </div>
@@ -439,9 +496,9 @@ const Inventory = () => {
             onChange={(e) => setFilterState(e.target.value)}
           >
             <option value="">Todos los estados</option>
-            <option value="disponible">Disponible</option>
-            <option value="bajo stock">Bajo Stock</option>
-            <option value="agotado">Agotado</option>
+            <option value="available">Disponible</option>
+            <option value="low_stock">Bajo Stock</option>
+            <option value="out_of_stock">Agotado</option>
           </select>
         </div>
 
@@ -452,9 +509,9 @@ const Inventory = () => {
                 <th>Nombre</th>
                 <th>Cantidad</th>
                 <th>Unidad</th>
+                <th>Precio Unitario</th>
                 <th>Stock Mínimo</th>
                 <th>Estado</th>
-                <th>Ubicación</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -462,30 +519,30 @@ const Inventory = () => {
               {filteredItems.length > 0 ? (
                 filteredItems.map((item) => (
                   <tr key={item.id}>
-                    <td title={item.nombre}>{item.nombre}</td>
-                    <td>{item.cantidad}</td>
-                    <td>{item.unidad}</td>
-                    <td>{item.minimo}</td>
+                    <td title={item.name}>{item.name}</td>
+                    <td>{item.quantity}</td>
+                    <td>{item.unit}</td>
                     <td>
-                      <span
-                        className={`estado-${item.estado
-                          .toLowerCase()
-                          .replace(" ", "-")}`}
-                      >
-                        {item.estado}
+                      ${new Intl.NumberFormat("es-CO").format(item.unit_price)}
+                    </td>
+                    <td>{item.minimum_stock}</td>
+                    <td>
+                      <span className={getStatusClass(item.status)}>
+                        {getStatusText(item.status)}
                       </span>
                     </td>
-                    <td>{item.ubicacion}</td>
                     <td>
                       <button
                         className="btn-editar"
                         onClick={() => handleEdit(item)}
+                        title="Editar"
                       >
                         <i className="fas fa-edit"></i>
                       </button>
                       <button
                         className="btn-eliminar"
                         onClick={() => handleDelete(item.id)}
+                        title="Eliminar"
                       >
                         <i className="fas fa-trash"></i>
                       </button>
