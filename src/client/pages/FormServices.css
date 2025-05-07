@@ -1,3 +1,4 @@
+/* Estilo principal del formulario */
 .form-services {
   max-width: 600px;
   margin: 2rem auto;
@@ -30,11 +31,35 @@
 .form-group label {
   margin-bottom: 0.5rem;
   font-weight: bold;
-  color: rgba(255, 255, 255, 0.9); /* Texto más claro */
+  color: white; /* Texto blanco */
 }
 
+/* Estilo para el campo desplegable */
+.form-group select {
+  padding: 0.75rem;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-sm);
+  background: rgba(0, 0, 0, 0.8); /* Fondo oscuro */
+  color: white; /* Texto blanco */
+  font-size: 1rem;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+  appearance: none; /* Elimina el estilo predeterminado del navegador */
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  background: rgba(0, 0, 0, 0.9); /* Fondo más oscuro al enfocarse */
+}
+
+/* Estilo para las opciones del desplegable */
+.form-group select option {
+  background: rgba(0, 0, 0, 0.8); /* Fondo oscuro */
+  color: white; /* Texto blanco */
+}
+
+/* Estilo para los campos de entrada y área de texto */
 .form-group input,
-.form-group select,
 .form-group textarea {
   padding: 0.75rem;
   border: 2px solid rgba(255, 255, 255, 0.1);
@@ -46,7 +71,6 @@
 }
 
 .form-group input:focus,
-.form-group select:focus,
 .form-group textarea:focus {
   outline: none;
   border-color: var(--primary-green);
