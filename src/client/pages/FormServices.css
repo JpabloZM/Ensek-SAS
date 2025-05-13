@@ -1,130 +1,527 @@
-/* Estilo principal del formulario */
-.form-services {
-  max-width: 600px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: rgba(0, 0, 0, 0.8); /* Fondo oscuro */
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--border-radius-md);
-  color: white;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); /* Sombra para resaltar */
-}
-
-.form-services h2 {
-  text-align: center;
-  color: var(--primary-green);
-  margin-bottom: 1.5rem;
-  font-size: 1.8rem;
-}
-
-.form {
+/* Contenedor principal con efecto de glass morphism */
+.form-container {
+  min-height: 100vh;
+  width: 100%;
+  background-color: rgba(18, 18, 18, 0.95);
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 1rem;
+  position: relative;
+  overflow: hidden;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
+/* Decoraciones laterales */
+.form-container::after,
+.form-container::before {
+  content: '';
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(
+    circle at center,
+    rgba(var(--primary-green-rgb), 0.1) 0%,
+    rgba(18, 18, 18, 0) 70%
+  );
+  pointer-events: none;
 }
 
-.form-group label {
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-  color: whitesmoke;
-  background-color: rgb(227, 188, 91);
+.form-container::before {
+  top: -50px;
+  left: -50px;
+  animation: floatLeft 15s infinite ease-in-out;
 }
 
-
-/* Estilo para el campo desplegable */
-.form-group select {
-  padding: 0.75rem;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--border-radius-sm);
-  background: rgba(0, 0, 0, 0.8); /* Fondo oscuro */
-  color: white; /* Texto blanco */
-  font-size: 1rem;
-  transition: border-color 0.3s ease, background-color 0.3s ease;
-  appearance: none; /* Elimina el estilo predeterminado del navegador */
+.form-container::after {
+  bottom: -50px;
+  right: -50px;
+  animation: floatRight 15s infinite ease-in-out;
 }
 
-.form-group select:focus {
-  outline: none;
-  border-color: var(--primary-green);
-  background: rgba(0, 0, 0, 0.9); /* Fondo más oscuro al enfocarse */
+/* Líneas decorativas */
+.form-container .decoration-line {
+  position: absolute;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(var(--primary-green-rgb), 0.2),
+    transparent
+  );
+  height: 1px;
+  width: 100%;
+  max-width: 1200px;
+  pointer-events: none;
 }
 
-/* Estilo para las opciones del desplegable */
-.form-group select option {
-  background: rgba(0, 0, 0, 0.8); /* Fondo oscuro */
-  color: white; /* Texto blanco */
+.form-container .decoration-line:nth-child(1) {
+  top: 15%;
+  transform: rotate(-15deg);
 }
 
-/* Estilo para los campos de entrada y área de texto */
-.form-group input,
-.form-group textarea {
-  padding: 0.75rem;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--border-radius-sm);
-  background: rgba(255, 255, 255, 0.05);
-  color: white;
-  font-size: 1rem;
-  transition: border-color 0.3s ease, background-color 0.3s ease;
+.form-container .decoration-line:nth-child(2) {
+  bottom: 15%;
+  transform: rotate(15deg);
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: var(--primary-green);
-  background: rgba(255, 255, 255, 0.1);
+/* Animaciones para los elementos decorativos */
+@keyframes floatLeft {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(30px, 30px) rotate(180deg);
+  }
 }
 
-.cta-button.primary {
-  background-color: var(--primary-green);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+@keyframes floatRight {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(-30px, -30px) rotate(-180deg);
+  }
 }
 
-.cta-button.primary:hover {
-  background-color: var(--hover-green);
-  transform: scale(1.05); /* Efecto de zoom al pasar el cursor */
+/* Puntos decorativos externos */
+.decoration-dots {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  pointer-events: none;
+  opacity: 0.3;
+  z-index: 1;
 }
 
-.back-link {
-  display: block;
-  margin-top: 1rem;
-  text-align: center;
-  color: var(--primary-green);
-  text-decoration: none;
-  font-weight: bold;
+.decoration-dots::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle, var(--primary-green) 1px, transparent 1px),
+    radial-gradient(circle, var(--primary-green) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+  animation: dotsFloat 15s infinite linear;
 }
 
-.back-link:hover {
-  text-decoration: underline;
-  color: var(--hover-green);
+.decoration-dots.left {
+  top: 20%;
+  left: 5%;
+  transform: rotate(-15deg);
+}
+
+.decoration-dots.right {
+  bottom: 20%;
+  right: 5%;
+  transform: rotate(15deg);
+}
+
+/* Puntos decorativos internos del formulario */
+.form-decoration-dots {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  pointer-events: none;
+  opacity: 0.1;
+  z-index: 0;
+}
+
+.form-decoration-dots::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle, var(--primary-green) 1px, transparent 1px),
+    radial-gradient(circle, var(--primary-green) 1px, transparent 1px);
+  background-size: 15px 15px;
+  background-position: 0 0, 7.5px 7.5px;
+  animation: dotsFloat 20s infinite linear reverse;
+}
+
+.form-decoration-dots.top-left {
+  top: 20px;
+  left: 20px;
+  transform: rotate(-5deg);
+}
+
+.form-decoration-dots.bottom-right {
+  bottom: 20px;
+  right: 20px;
+  transform: rotate(5deg);
+}
+
+@keyframes dotsFloat {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Asegúrate de que el contenido del formulario esté por encima */
+.form-services form {
+  position: relative;
+  z-index: 2;
 }
 
 /* Ajustes responsivos */
 @media (max-width: 768px) {
-  .form-services {
-    padding: 1.5rem;
+  .decoration-dots {
+    width: 150px;
+    height: 150px;
   }
 
-  .form-services h2 {
-    font-size: 1.5rem;
+  .form-decoration-dots {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .decoration-dots {
+    display: none;
   }
 
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    font-size: 0.9rem;
+  .form-decoration-dots {
+    width: 80px;
+    height: 80px;
   }
+}
 
-  .cta-button.primary {
-    padding: 0.6rem 1.2rem;
+/* Efecto de luz ambiental */
+.form-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at center,
+    rgba(var(--primary-green-rgb), 0.1) 0%,
+    rgba(18, 18, 18, 0) 70%
+  );
+  pointer-events: none;
+  animation: ambientLight 15s infinite linear;
+}
+
+@keyframes ambientLight {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Partículas flotantes */
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--primary-green);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.3;
+  animation: float 15s infinite;
+}
+
+.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+.particle:nth-child(2) { left: 20%; animation-delay: 2s; }
+.particle:nth-child(3) { left: 30%; animation-delay: 4s; }
+.particle:nth-child(4) { right: 10%; animation-delay: 6s; }
+.particle:nth-child(5) { right: 20%; animation-delay: 8s; }
+.particle:nth-child(6) { right: 30%; animation-delay: 10s; }
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.3;
   }
+  50% {
+    transform: translateY(-100vh) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* Estilo principal del formulario con efecto de glass */
+.form-services {
+  max-width: 600px;
+  width: 100%;
+  padding: 2.5rem;
+  background: rgba(32, 32, 32, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-md);
+  color: white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  transform: translateY(0);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-services:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Título con efecto de neón */
+.form-services h2 {
+  text-align: center;
+  color: var(--primary-green);
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  text-shadow: 
+    0 0 5px rgba(var(--primary-green-rgb), 0.5),
+    0 0 10px rgba(var(--primary-green-rgb), 0.3),
+    0 0 15px rgba(var(--primary-green-rgb), 0.2);
+  animation: neonPulse 2s infinite;
+}
+
+@keyframes neonPulse {
+  0%, 100% {
+    text-shadow: 
+      0 0 5px rgba(var(--primary-green-rgb), 0.5),
+      0 0 10px rgba(var(--primary-green-rgb), 0.3),
+      0 0 15px rgba(var(--primary-green-rgb), 0.2);
+  }
+  50% {
+    text-shadow: 
+      0 0 10px rgba(var(--primary-green-rgb), 0.7),
+      0 0 20px rgba(var(--primary-green-rgb), 0.5),
+      0 0 30px rgba(var(--primary-green-rgb), 0.3);
+  }
+}
+
+/* Grupos de formulario con animación */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.form-group:hover {
+  transform: translateX(5px);
+}
+
+/* Labels con efecto hover */
+.form-group label {
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  letter-spacing: 1px;
+  transition: color 0.3s ease;
+}
+
+.form-group:hover label {
+  color: var(--primary-green);
+}
+
+/* Inputs con efecto de energía */
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-sm);
+  background: rgba(45, 45, 45, 0.9);
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-green);
+  background: rgba(55, 55, 55, 0.9);
+  box-shadow: 
+    0 0 15px rgba(var(--primary-green-rgb), 0.2),
+    inset 0 0 10px rgba(var(--primary-green-rgb), 0.1);
+  transform: translateY(-2px);
+}
+
+/* Contenedor de botones */
+.form-actions {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+/* Botón épico con efectos */
+.cta-button.primary {
+  background: linear-gradient(45deg, 
+    var(--primary-green), 
+    var(--hover-green),
+    var(--primary-green));
+  background-size: 200% 200%;
+  color: white;
+  padding: 1.2rem 2.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.5s ease;
+  box-shadow: 
+    0 5px 15px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(var(--primary-green-rgb), 0.2),
+    inset 0 0 10px rgba(255, 255, 255, 0.1);
+  animation: gradientMove 3s ease infinite;
+  z-index: 1;
+}
+
+/* Efecto de brillo */
+.cta-button.primary::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.3) 0%,
+    transparent 60%
+  );
+  transform: rotate(45deg);
+  animation: shine 3s infinite;
+  z-index: -1;
+}
+
+/* Efecto de borde brillante */
+.cta-button.primary::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg,
+    transparent,
+    rgba(var(--primary-green-rgb), 0.3),
+    transparent
+  );
+  border-radius: 8px;
+  animation: borderGlow 2s infinite;
+  z-index: -2;
+}
+
+/* Efectos al hover */
+.cta-button.primary:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 
+    0 15px 30px rgba(0, 0, 0, 0.4),
+    0 0 50px rgba(var(--primary-green-rgb), 0.4),
+    inset 0 0 20px rgba(255, 255, 255, 0.2);
+  letter-spacing: 3px;
+}
+
+.cta-button.primary:active {
+  transform: translateY(-2px) scale(0.98);
+}
+
+/* Animaciones */
+@keyframes shine {
+  0% {
+    transform: rotate(45deg) translateY(100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: rotate(45deg) translateY(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes borderGlow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Efecto de pulso al cargar */
+.cta-button.primary {
+  animation: buttonPulse 2s infinite;
+}
+
+@keyframes buttonPulse {
+  0%, 100% {
+    box-shadow: 
+      0 5px 15px rgba(0, 0, 0, 0.3),
+      0 0 20px rgba(var(--primary-green-rgb), 0.2);
+  }
+  50% {
+    box-shadow: 
+      0 5px 15px rgba(0, 0, 0, 0.3),
+      0 0 40px rgba(var(--primary-green-rgb), 0.4);
+  }
+}
+
+/* Link de regreso */
+.back-link {
+  color: var(--primary-green);
+  text-decoration: none;
+  font-weight: bold;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  opacity: 0.8;
+  flex: 0 0 auto; /* Evita que el enlace se estire */
+}
+
+/* Link de regreso con efecto de desvanecimiento */
+.back-link:hover {
+  color: var(--hover-green);
+  text-shadow: 0 0 10px rgba(var(--primary-green-rgb), 0.5);
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+/* Efecto de desenfoque en el fondo al enfocar elementos */
+.form-group:focus-within ~ .form-group {
+  filter: blur(1px);
+  opacity: 0.7;
+}
+
+/* Animación de entrada */
+@keyframes formAppear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-services {
+  animation: formAppear 0.5s ease-out;
 }
