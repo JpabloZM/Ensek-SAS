@@ -31,8 +31,10 @@
 .form-group label {
   margin-bottom: 0.5rem;
   font-weight: bold;
-  color: white; /* Texto blanco */
+  color: whitesmoke;
+  background-color: rgb(227, 188, 91);
 }
+
 
 /* Estilo para el campo desplegable */
 .form-group select {
