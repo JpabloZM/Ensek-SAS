@@ -60,35 +60,6 @@ const Calendar = () => {
     // Forzar la carga de técnicos iniciales
     setTecnicos(tecnicosIniciales);
     localStorage.setItem("tecnicos", JSON.stringify(tecnicosIniciales));
-
-    const fetchEvents = async () => {
-      try {
-        // Simular llamada a la API
-        const data = API_MOCK.eventos;
-
-        const formattedEvents = data.map((event) => ({
-          title: event.titulo,
-          start: new Date(event.fecha_inicio),
-          end: new Date(event.fecha_fin),
-          display: "auto",
-          backgroundColor: event.color || "#87c947",
-          borderColor: event.color || "#87c947",
-          extendedProps: {
-            estado: event.estado,
-            description: event.descripcion,
-          },
-        }));
-
-        setEventos(formattedEvents);
-      } catch (error) {
-        console.error("Error al cargar eventos:", error);
-        const eventosLocales =
-          JSON.parse(localStorage.getItem("eventos")) || [];
-        setEventos(eventosLocales);
-      }
-    };
-
-    fetchEvents();
   }, []);
 
   const handleAgregarTecnico = async () => {
@@ -1267,24 +1238,10 @@ const Calendar = () => {
     });
   };
 
-  const cargarTecnicos = async () => {
-    try {
-      const response = await fetch("/api/tecnicos");
-      if (response.ok) {
-        const data = await response.json();
-        setTecnicos(data);
-      } else {
-        throw new Error("Error al cargar técnicos");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Error al cargar los técnicos",
-        confirmButtonColor: "#87c947",
-      });
-    }
+  const cargarTecnicos = () => {
+    const tecnicosGuardados =
+      JSON.parse(localStorage.getItem("tecnicos")) || tecnicosIniciales;
+    setTecnicos(tecnicosGuardados);
   };
 
   return (

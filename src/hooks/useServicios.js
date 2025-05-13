@@ -1,9 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAlertas } from "./useAlertas";
 
 export const useServicios = () => {
   const [serviciosPendientes, setServiciosPendientes] = useState([]);
   const { mostrarAlerta, mostrarConfirmacion } = useAlertas();
+
+  useEffect(() => {
+    const serviciosGuardados =
+      JSON.parse(localStorage.getItem("serviciosPendientes")) || [];
+    setServiciosPendientes(serviciosGuardados);
+  }, []);
 
   const agregarServicioPendiente = async () => {
     const { value: formValues } = await mostrarConfirmacion({
@@ -45,7 +51,12 @@ export const useServicios = () => {
         ...formValues,
       };
 
-      setServiciosPendientes([...serviciosPendientes, nuevoServicio]);
+      const serviciosActualizados = [...serviciosPendientes, nuevoServicio];
+      setServiciosPendientes(serviciosActualizados);
+      localStorage.setItem(
+        "serviciosPendientes",
+        JSON.stringify(serviciosActualizados)
+      );
 
       mostrarAlerta({
         position: "top-end",
@@ -58,7 +69,14 @@ export const useServicios = () => {
   };
 
   const eliminarServicioPendiente = (id) => {
-    setServiciosPendientes(serviciosPendientes.filter((s) => s.id !== id));
+    const serviciosActualizados = serviciosPendientes.filter(
+      (s) => s.id !== id
+    );
+    setServiciosPendientes(serviciosActualizados);
+    localStorage.setItem(
+      "serviciosPendientes",
+      JSON.stringify(serviciosActualizados)
+    );
   };
 
   return {

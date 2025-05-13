@@ -1,6 +1,7 @@
 import React from "react";
 import { useAlertas } from "../../hooks/useAlertas";
 import Swal from "sweetalert2";
+import "./styles/servicio-card.css";
 
 const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
   const { mostrarAlerta, mostrarConfirmacion } = useAlertas();

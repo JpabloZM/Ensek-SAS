@@ -1,15 +1,15 @@
 import axios from "axios";
 
-const axiosInstance = axios.create({
-  baseURL: "http://localhost:3000/api", // Ajusta esta URL según tu API
-  timeout: 5000,
+const client = axios.create({
+  baseURL: "http://localhost:8000/api", // Ajusta esto según tu URL de Laravel
   headers: {
     "Content-Type": "application/json",
+    Accept: "application/json",
   },
 });
 
-// Interceptor para añadir el token a las peticiones
-axiosInstance.interceptors.request.use(
+// Interceptor para manejar tokens
+client.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -23,15 +23,16 @@ axiosInstance.interceptors.request.use(
 );
 
 // Interceptor para manejar errores
-axiosInstance.interceptors.response.use(
+client.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Manejar error de autenticación
       localStorage.removeItem("token");
-      window.location.href = "/login";
+      window.location.href = "/admin/login";
     }
     return Promise.reject(error);
   }
 );
 
-export default axiosInstance;
+export default client;
