@@ -115,6 +115,9 @@ const ClientLayout = () => {
           >
             <FaInstagram />
           </a>
+          <Link to="/login" className="login-button">
+            Iniciar sesión
+          </Link>
         </div>
       </header>
 

@@ -1,7 +1,22 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import "./FormServices.css";
 
 const FormServices = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    // Simular envío del formulario
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Aquí iría tu lógica de envío real
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="form-container">
       {/* Partículas flotantes */}
@@ -23,7 +38,7 @@ const FormServices = () => {
         <div className="circle-trail right"></div>
 
         <h2>Agendar una Cita</h2>
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="name">Nombre Completo</label>
             <input type="text" id="name" placeholder="Tu nombre" required />
@@ -60,8 +75,21 @@ const FormServices = () => {
             ></textarea>
           </div>
           <div className="form-actions">
-            <button type="submit" className="cta-button primary">
-              Agendar Cita
+            <button 
+              type="submit" 
+              className={`cta-button primary ${isLoading ? 'loading' : ''}`}
+              disabled={isLoading}
+            >
+              <span className="button-content">
+                {isLoading ? (
+                  <div className="loader-container">
+                    <div className="loader"></div>
+                    <span>Enviando...</span>
+                  </div>
+                ) : (
+                  'Agendar Cita'
+                )}
+              </span>
             </button>
             <Link to="/servicios" className="back-link">
               Volver a Servicios

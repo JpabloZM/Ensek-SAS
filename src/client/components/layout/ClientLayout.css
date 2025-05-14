@@ -76,6 +76,7 @@ body {
 
 .navbar-icons {
   display: flex;
+  align-items: center;
   gap: 1rem;
 }
 
@@ -87,6 +88,31 @@ body {
 
 .navbar-icons a:hover {
   color: var(--hover-green);
+}
+
+/* Estilos base para el botón de inicio de sesión */
+.navbar-icons .login-button {
+  color: var(--text-light);
+  text-decoration: none;
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+  padding: clamp(0.4rem, 1vw, 0.5rem) clamp(0.8rem, 2vw, 1rem);
+  margin-right: clamp(0.5rem, 2vw, 1rem);
+  border: 1px solid var(--primary-green);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  background: transparent;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Efecto hover */
+.navbar-icons .login-button:hover {
+  background: var(--primary-green);
+  color: var(--text-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Botón de menú hamburguesa */
@@ -166,6 +192,18 @@ body {
     font-size: 1.25rem;
     padding: 0.5rem;
   }
+
+  .navbar-icons .login-button {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    margin-right: 0.8rem;
+  }
+
+  /* Cuando el menú móvil está activo */
+  .navbar.active .navbar-icons .login-button {
+    margin-right: 0;
+    width: auto;
+  }
 }
 
 @media (min-width: 769px) {
@@ -201,11 +239,24 @@ body {
   }
 
   .navbar-icons {
-    gap: 0.25rem;
+    gap: 0.5rem;
   }
 
   .navbar-icons a {
     font-size: 1.2rem;
     padding: 0.4rem;
+  }
+
+  .navbar-icons .login-button {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    margin-right: 0.5rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .navbar-icons .login-button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
   }
 }

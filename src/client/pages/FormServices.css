@@ -525,3 +525,75 @@
 .form-services {
   animation: formAppear 0.5s ease-out;
 }
+
+/* Loader Styles */
+.loader-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.loader {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Estilos del botón durante la carga */
+.cta-button.primary.loading {
+  cursor: not-allowed;
+  opacity: 0.9;
+  transform: translateY(0) !important;
+}
+
+.cta-button.primary.loading::before,
+.cta-button.primary.loading::after {
+  animation: none;
+}
+
+.cta-button.primary.loading .button-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Efecto de pulso durante la carga */
+.cta-button.primary.loading {
+  animation: loadingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loadingPulse {
+  0%, 100% {
+    box-shadow: 
+      0 5px 15px rgba(0, 0, 0, 0.3),
+      0 0 20px rgba(var(--primary-green-rgb), 0.2);
+  }
+  50% {
+    box-shadow: 
+      0 5px 15px rgba(0, 0, 0, 0.3),
+      0 0 40px rgba(var(--primary-green-rgb), 0.4);
+    background-position: 100% 50%;
+  }
+}
+
+/* Desactivar hover effects durante la carga */
+.cta-button.primary.loading:hover {
+  transform: none;
+  letter-spacing: 2px;
+}
+
+/* Efecto de desenfoque del formulario durante la carga */
+form:has(.cta-button.loading) .form-group {
+  filter: blur(1px);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
