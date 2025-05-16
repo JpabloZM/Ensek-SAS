@@ -1,17 +1,54 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import Swal from 'sweetalert2';
 import "./FormServices.css";
 
 const FormServices = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simular envío del formulario
+
     try {
+      // Simular envío del formulario
       await new Promise(resolve => setTimeout(resolve, 2000));
-      // Aquí iría tu lógica de envío real
+      
+      // Mostrar alerta de éxito
+      await Swal.fire({
+        title: '¡Cita Agendada!',
+        text: 'Tu solicitud ha sido enviada exitosamente',
+        icon: 'success',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#00a884',
+        background: '#1a1a1a',
+        color: '#ffffff',
+        showClass: {
+          popup: 'animate__animated animate__fadeInDown'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOutUp'
+        },
+        customClass: {
+          confirmButton: 'swal-button'
+        }
+      });
+
+      // Redireccionar a la página de servicios
+      navigate('/servicios');
+      
+    } catch (error) {
+      // Mostrar alerta de error
+      Swal.fire({
+        title: '¡Ups!',
+        text: 'Hubo un error al enviar tu solicitud. Por favor, intenta nuevamente.',
+        icon: 'error',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#00a884',
+        background: '#1a1a1a',
+        color: '#ffffff'
+      });
     } finally {
       setIsLoading(false);
     }

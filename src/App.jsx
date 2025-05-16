@@ -27,7 +27,10 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="servicios" element={<Services />} />
           <Route path="servicios/formulario" element={<FormServices />} />
-        </Route>
+          <Route path="login" element={<Login />} />
+        </Route> 
+
+        
 
         {/* Rutas del admin */}
         <Route path="admin" element={<AdminLayout />}>

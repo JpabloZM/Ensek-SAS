@@ -6,6 +6,13 @@ const Home = () => {
   return (
     <div className="home">
       <div className="hero-section">
+        {/* Add particle container */}
+        <div className="particles-background">
+          {[...Array(50)].map((_, index) => (
+            <div key={index} className="particle" />
+          ))}
+        </div>
+
         <div className="hero-content">
           <h1>Bienvenido a ENSEK</h1>
           <p>

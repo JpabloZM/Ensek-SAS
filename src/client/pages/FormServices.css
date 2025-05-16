@@ -343,6 +343,7 @@
     0 0 15px rgba(var(--primary-green-rgb), 0.2),
     inset 0 0 10px rgba(var(--primary-green-rgb), 0.1);
   transform: translateY(-2px);
+  color: white;
 }
 
 /* Contenedor de botones */
@@ -596,4 +597,54 @@ form:has(.cta-button.loading) .form-group {
   filter: blur(1px);
   opacity: 0.7;
   transition: all 0.3s ease;
+}
+
+/* Estilos personalizados para SweetAlert */
+.swal2-popup {
+  border: 1px solid rgba(var(--primary-green-rgb), 0.2) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.swal2-title {
+  color: var(--primary-green) !important;
+  font-size: 1.8rem !important;
+}
+
+.swal2-html-container {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.swal-button {
+  background: linear-gradient(45deg, 
+    var(--primary-green), 
+    var(--hover-green)) !important;
+  padding: 0.8rem 2rem !important;
+  font-size: 1rem !important;
+  transition: all 0.3s ease !important;
+}
+
+.swal-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 15px rgba(var(--primary-green-rgb), 0.3) !important;
+}
+
+/* Animaciones para SweetAlert */
+@keyframes swalEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(-60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.swal2-popup.swal2-show {
+  animation: swalEntrance 0.3s ease-out;
+}
+
+.swal2-backdrop-show {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(5px) !important;
 }

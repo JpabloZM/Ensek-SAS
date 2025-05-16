@@ -315,7 +315,7 @@
   border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-sm);
   background: rgba(255, 255, 255, 0.05);
-  color: white;
+  color: rgb(0, 0, 0);
   font-size: 1rem;
   transition: all 0.3s ease;
 }
@@ -324,7 +324,8 @@
   outline: none;
   border-color: var(--primary-green);
   background: rgba(255, 255, 255, 0.1);
-}
+  
+};
 
 .form-input::placeholder {
   color: rgba(255, 255, 255, 0.6);
@@ -335,8 +336,104 @@ textarea.form-input {
   min-height: 120px;
 }
 
-/* Ajustes responsive específicos */
-@media (max-width: 1024px) {
+/* Particle container styles */
+.particles-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Individual particle styles */
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--primary-green);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* Particle animations and positions */
+.particle:nth-child(3n) {
+  animation: moveUpLeft 20s infinite;
+  left: 10%;
+}
+
+.particle:nth-child(3n + 1) {
+  animation: moveUpRight 25s infinite;
+  left: 50%;
+}
+
+.particle:nth-child(3n + 2) {
+  animation: moveUp 15s infinite;
+  left: 80%;
+}
+
+/* Distribute particles across the screen */
+.particle:nth-child(4n) { animation-delay: -5s; }
+.particle:nth-child(4n + 1) { animation-delay: -10s; }
+.particle:nth-child(4n + 2) { animation-delay: -15s; }
+.particle:nth-child(4n + 3) { animation-delay: -20s; }
+
+/* Particle movement animations */
+@keyframes moveUp {
+  0% {
+    transform: translateY(100vh) scale(1);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.3;
+  }
+  80% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-20vh) scale(0.5);
+    opacity: 0;
+  }
+}
+
+@keyframes moveUpLeft {
+  0% {
+    transform: translate(0, 100vh) scale(1);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.3;
+  }
+  80% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translate(-200px, -20vh) scale(0.5);
+    opacity: 0;
+  }
+}
+
+@keyframes moveUpRight {
+  0% {
+    transform: translate(0, 100vh) scale(1);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.3;
+  }
+  80% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translate(200px, -20vh) scale(0.5);
+    opacity: 0;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
   .hero-content {
     max-width: 800px;
     padding: 0 2rem;
@@ -345,9 +442,7 @@ textarea.form-input {
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-}
 
-@media (max-width: 768px) {
   .hero-section {
     min-height: 60vh;
     background-attachment: scroll;
@@ -374,7 +469,7 @@ textarea.form-input {
   }
 
   .cta-button {
-  width: 100%;
+    width: 100%;
     text-align: center;
     min-width: auto;
     padding: 0.75rem 1.5rem;
@@ -404,6 +499,14 @@ textarea.form-input {
 
   .form-input {
     padding: 0.875rem;
+  }
+
+  .particle {
+    display: none;
+  }
+  
+  .particle:nth-child(4n) {
+    display: block;
   }
 }
 
@@ -461,6 +564,14 @@ textarea.form-input {
 
   .contact-section {
     padding: 2rem 1rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .particle {
+    animation: none;
+    opacity: 0.2;
   }
 }
 
