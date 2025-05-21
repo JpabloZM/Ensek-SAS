@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAlertas } from "../../hooks/useAlertas";
 import { useAuth } from "../../hooks/useAuth";
-import "./Auth.css";
+import "../../admin/auth/Auth.css";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -57,9 +57,9 @@ const Register = () => {
         name: formData.nombre,
         email: formData.email,
         password: formData.password,
-        role: "admin", // Registramos como administrador
-        phone: "",
-        address: ""
+        role: "user", // Por defecto registramos usuarios normales
+        phone: "",    // Campos opcionales que podríamos agregar al formulario
+        address: ""   // en el futuro
       };
 
       // Llamar a la API para registrar al usuario
@@ -67,10 +67,10 @@ const Register = () => {
 
       await mostrarAlerta(
         "¡Éxito!",
-        "Registro de administrador completado correctamente",
+        "Registro completado correctamente",
         "success"
       );
-      navigate("/admin/login");
+      navigate("/login");
     } catch (error) {
       console.error("Error durante el registro:", error);
       mostrarAlerta(
@@ -84,7 +84,7 @@ const Register = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>Registro de Administrador</h2>
+        <h2>Registro de Cliente</h2>
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="nombre">Nombre completo</label>
@@ -135,12 +135,12 @@ const Register = () => {
           </div>
 
           <button type="submit" className="auth-button">
-            Registrarse como Administrador
+            Registrarse
           </button>
         </form>
 
         <p className="auth-link">
-          ¿Ya tienes una cuenta? <Link to="/admin/login">Iniciar sesión</Link>
+          ¿Ya tienes una cuenta? <Link to="/login">Iniciar sesión</Link>
         </p>
       </div>
     </div>

@@ -1,0 +1,28 @@
+{
+  "name": "ensek-server",
+  "version": "1.0.0",
+  "description": "Backend for ENSEK-SAS project",
+  "main": "index.js",
+  "type": "module",  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "seed": "node seeder.js",
+    "test": "node testAPI.js",
+    "test:auth": "node testAuth.js",
+    "test:auth:full": "node fullAuthTest.js",
+    "create-test-user": "node testUser.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.3",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "node-fetch": "^3.3.2",
+    "nodemon": "^3.0.2"
+  }
+}

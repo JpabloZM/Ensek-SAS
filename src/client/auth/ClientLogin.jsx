@@ -1,17 +1,30 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAlertas } from "../../admin/hooks/useAlertas";
 import { useAuth } from "../../hooks/useAuth";
 import "../../admin/auth/Auth.css";
 
 const ClientLogin = () => {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const { mostrarAlerta } = useAlertas();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/cliente";
 
+  // If already logged in, redirect
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'admin') {
+        navigate("/admin/dashboard", { replace: true });
+      } else {
+        navigate("/cliente", { replace: true });
+      }
+    }
+  }, [user, navigate]);
+  
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: "user@test.com",  // Pre-fill with test user
+    password: "user123",     // Pre-fill with test password
   });
 
   const handleChange = (e) => {
@@ -19,9 +32,7 @@ const ClientLogin = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-  };
-
-  const handleSubmit = async (e) => {
+  };  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
@@ -30,17 +41,25 @@ const ClientLogin = () => {
     }
 
     try {
-      const user = await login(formData.email, formData.password);
-
+      console.log('Attempting login with:', { email: formData.email });
+      const user = await login(formData.email, formData.password);      console.log('Login successful, user data:', { 
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        hasToken: !!user.token
+      });
+      
       mostrarAlerta(
         "¡Bienvenido!",
-        `Has iniciado sesión como ${formData.email}`,
+        `Has iniciado sesión como ${user.name || user.email}`,
         "success"
       );
 
-      // Los usuarios normales son redirigidos al home
+      // Root redirect will now handle the routing based on role
+      // No need for complex logic here - just go to root
       setTimeout(() => {
-        navigate("/");
+        console.log('Redirecting to root for role-based routing');
+        navigate("/", { replace: true });
       }, 1500);
     } catch (error) {
       console.error("Error durante el inicio de sesión:", error);

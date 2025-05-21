@@ -1,0 +1,15 @@
+{
+  "name": "ensek-start",
+  "version": "1.0.0",
+  "description": "Script to run both frontend and backend",
+  "main": "index.js",
+  "scripts": {
+    "frontend": "cd .. && npm run dev",
+    "backend": "cd ../server && npm run dev",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "start": "cd ../server && npm start"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

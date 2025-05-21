@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, button {
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        pre {
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>ENSEK-SAS API Test</h1>
+    
+    <h2>Register User</h2>
+    <form id="registerForm">
+        <div class="form-group">
+            <label for="regName">Name:</label>
+            <input type="text" id="regName" value="Test User" placeholder="Enter name">
+        </div>
+        <div class="form-group">
+            <label for="regEmail">Email:</label>
+            <input type="email" id="regEmail" value="testuserx@test.com" placeholder="Enter email">
+        </div>
+        <div class="form-group">
+            <label for="regPassword">Password:</label>
+            <input type="password" id="regPassword" value="password123" placeholder="Enter password">
+        </div>
+        <div class="form-group">
+            <label for="regRole">Role:</label>
+            <select id="regRole">
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+            </select>
+        </div>
+        <button type="submit">Register</button>
+    </form>
+    <div id="registerResult" class="result">
+        <h3>Register Result:</h3>
+        <pre id="registerOutput">Results will appear here...</pre>
+    </div>
+    
+    <h2>Login</h2>
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="loginEmail">Email:</label>
+            <input type="email" id="loginEmail" value="testuserx@test.com" placeholder="Enter email">
+        </div>
+        <div class="form-group">
+            <label for="loginPassword">Password:</label>
+            <input type="password" id="loginPassword" value="password123" placeholder="Enter password">
+        </div>
+        <button type="submit">Login</button>
+    </form>
+    <div id="loginResult" class="result">
+        <h3>Login Result:</h3>
+        <pre id="loginOutput">Results will appear here...</pre>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        
+        // Register form
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const userData = {
+                name: document.getElementById('regName').value,
+                email: document.getElementById('regEmail').value,
+                password: document.getElementById('regPassword').value,
+                role: document.getElementById('regRole').value,
+                phone: '',
+                address: ''
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const result = await response.json();
+                document.getElementById('registerOutput').innerText = JSON.stringify(result, null, 2);
+                
+                // If registration successful, update login form
+                if (result.success) {
+                    document.getElementById('loginEmail').value = userData.email;
+                    document.getElementById('loginPassword').value = userData.password;
+                }
+            } catch (error) {
+                document.getElementById('registerOutput').innerText = `Error: ${error.message}`;
+            }
+        });
+        
+        // Login form
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const loginData = {
+                email: document.getElementById('loginEmail').value,
+                password: document.getElementById('loginPassword').value
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
+                });
+                
+                const result = await response.json();
+                document.getElementById('loginOutput').innerText = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('loginOutput').innerText = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

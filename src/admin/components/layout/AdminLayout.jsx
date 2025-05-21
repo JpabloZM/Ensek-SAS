@@ -1,21 +1,17 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useAuth } from "../../../hooks/useAuth";
 import "./AdminLayout.css";
 
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const isAuthPage =
     location.pathname === "/admin/login" ||
     location.pathname === "/admin/registro";
-  const user = JSON.parse(localStorage.getItem("usuarioActual")); // Cambiado a usuarioActual para mantener consistencia
-
-  useEffect(() => {
-    // Si no hay usuario y no estamos en una página de autenticación, redirigir a login
-    if (!user && !isAuthPage) {
-      navigate("/admin/login");
-    }
-  }, [user, isAuthPage, navigate]);
+  
+  // Removed authentication checks since they're now handled by AuthRoute
 
   // Renderizar solo el contenido para páginas de autenticación
   if (isAuthPage) {
@@ -33,12 +29,11 @@ const AdminLayout = () => {
             <Link to="/admin/dashboard">Panel de Control</Link>
             <Link to="/admin/calendario">Calendario</Link>
             <Link to="/admin/inventario">Inventario</Link>
-          </div>
-          <div className="user-menu">
-            <span>{user?.nombre}</span>
+          </div>          <div className="user-menu">
+            <span>{user?.name}</span>
             <button
-              onClick={() => {
-                localStorage.removeItem("usuarioActual");
+              onClick={async () => {
+                await logout();
                 navigate("/admin/login");
               }}
             >

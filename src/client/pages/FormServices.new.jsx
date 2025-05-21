@@ -27,7 +27,9 @@ const FormServices = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);    try {
+    setIsLoading(true);
+
+    try {
       // Send form data to the API
       await apiService.services.create({
         name: formData.name,
@@ -99,7 +101,8 @@ const FormServices = () => {
         <div className="circle-trail right"></div>
 
         <h2>Agendar una Cita</h2>
-        <form onSubmit={handleSubmit}>          <div className="form-group">
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
             <label htmlFor="name">Nombre Completo</label>
             <input 
               type="text" 
@@ -206,4 +209,3 @@ const FormServices = () => {
 };
 
 export default FormServices;
-

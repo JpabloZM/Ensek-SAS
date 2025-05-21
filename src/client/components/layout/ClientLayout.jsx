@@ -1,12 +1,16 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FaFacebook, FaInstagram, FaBars } from "react-icons/fa";
 import { useState, useEffect } from "react";
+import { useAuth } from "../../../hooks/useAuth";
 import "./ClientLayout.css";
 
 const ClientLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  
+  // Removed the redundant authentication check here since AuthRoute handles it
 
   // Cerrar el menú cuando cambie la ruta
   useEffect(() => {
@@ -46,9 +50,13 @@ const ClientLayout = () => {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [isMenuOpen]);
-
   const handleLinkClick = () => {
     setIsMenuOpen(false);
+  };
+  const handleLogout = async () => {
+    await logout();
+    // Redirect to public home page after logout
+    navigate("/");
   };
 
   const handleContactClick = () => {
@@ -85,14 +93,15 @@ const ClientLayout = () => {
           <Link to="/" onClick={handleLinkClick}>
             ENSEK
           </Link>
-        </div>
-
-        <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
-          <Link to="/" onClick={handleLinkClick}>
+        </div>        <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
+          <Link to="/cliente" onClick={handleLinkClick}>
             Inicio
           </Link>
-          <Link to="/servicios" onClick={handleLinkClick}>
+          <Link to="/cliente/servicios" onClick={handleLinkClick}>
             Servicios
+          </Link>
+          <Link to="/cliente/servicios/formulario" onClick={handleLinkClick}>
+            Solicitar Servicio
           </Link>
           {/* Cambiamos el enlace de contacto para manejar la navegación */}
           <button className="contact-button" onClick={handleContactClick}>
@@ -107,17 +116,22 @@ const ClientLayout = () => {
             rel="noopener noreferrer"
           >
             <FaFacebook />
-          </a>
-          <a
+          </a>          <a
             href="https://instagram.com"
             target="_blank"
             rel="noopener noreferrer"
           >
             <FaInstagram />
           </a>
-          <Link to="/login" className="login-button">
-            Iniciar sesión
-          </Link>
+          {user ? (
+            <button onClick={handleLogout} className="login-button">
+              Cerrar sesión
+            </button>
+          ) : (
+            <Link to="/login" className="login-button">
+              Iniciar sesión
+            </Link>
+          )}
         </div>
       </header>
 

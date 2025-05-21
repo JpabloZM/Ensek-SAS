@@ -1,12 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAlertas } from "../hooks/useAlertas";
+import { useAuth } from "../../hooks/useAuth";
 import "./Auth.css";
 
-
-
-
-//LOGIN PARA DESARROLLO
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "admin@test.com",
@@ -14,35 +11,8 @@ const Login = () => {
   });
 
   const { mostrarAlerta } = useAlertas();
+  const { login } = useAuth();
   const navigate = useNavigate();
-
-  // Crear usuario administrador de prueba al cargar el componente
-  React.useEffect(() => {
-    // Verificar si ya existen usuarios
-    const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-
-    // Verificar si el usuario admin ya existe
-    const adminExists = usuarios.some((u) => u.email === "admin@test.com");
-
-    // Si no existe, lo creamos
-    if (!adminExists) {
-      const adminUser = {
-        id: "admin-test",
-        nombre: "Administrador",
-        email: "admin@test.com",
-        password: "admin123",
-        role: "admin",
-      };
-
-      // Agregar el usuario administrador
-      localStorage.setItem(
-        "usuarios",
-        JSON.stringify([...usuarios, adminUser])
-      );
-      console.log("Usuario administrador de prueba creado");
-    }
-  }, [navigate]);
-//FINAL DE COGIDO LOGIN DESARROLLO
 
 
 
@@ -53,48 +23,32 @@ const Login = () => {
       [e.target.name]: e.target.value,
     });
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
       mostrarAlerta("Error", "Por favor complete todos los campos", "error");
       return;
-    }
+    }    try {
+      // Usar la función login del hook de autenticación
+      const user = await login(formData.email, formData.password);
 
-    try {
-      // Obtener usuarios del localStorage
-      const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-      const usuario = usuarios.find(
-        (u) => u.email === formData.email && u.password === formData.password
-      );
-
-      if (!usuario) {
-        mostrarAlerta("Error", "Credenciales inválidas", "error");
+      // Verificar si el usuario es administrador
+      if (user.role !== 'admin') {
+        mostrarAlerta("Error", "No tienes permisos de administrador", "error");
         return;
       }
 
-      // Guardar información de sesión
-      localStorage.setItem(
-        "usuarioActual",
-        JSON.stringify({
-          id: usuario.id,
-          nombre: usuario.nombre,
-          email: usuario.email,
-          role: usuario.role,
-        })
-      );
-
-      await mostrarAlerta(
+      mostrarAlerta(
         "¡Bienvenido!",
-        `Has iniciado sesión como ${usuario.nombre}`,
+        `Has iniciado sesión como ${user.name}`,
         "success"
       );
 
-      // Asegurarnos de que la redirección ocurra después de que se complete el alert
+      // Root redirect will now handle the routing based on role
       setTimeout(() => {
-        navigate("/admin/calendario");
-      }, 100);
+        navigate("/", { replace: true });
+      }, 1500);
     } catch (error) {
       console.error("Error durante el inicio de sesión:", error);
       mostrarAlerta(
