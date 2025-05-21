@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Swal from "sweetalert2";
-import { inventoryService } from "../../../api/services";
+import { useInventory } from "../../../hooks/useInventory";
+import { useAlertas } from "../../hooks/useAlertas";
 import "./Inventory.css";
 
 // Datos de ejemplo para el inventario
@@ -106,6 +106,8 @@ const Inventory = () => {
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const { mostrarMensaje } = useAlertas();
+
   // Cargar datos al montar el componente
   useEffect(() => {
     loadInventory();
@@ -120,16 +122,6 @@ const Inventory = () => {
       mostrarMensaje("error", "Error al cargar el inventario");
       setLoading(false);
     }
-  };
-
-  const mostrarMensaje = async (tipo, texto) => {
-    await Swal.fire({
-      title: tipo === "exito" ? "¡Éxito!" : "Error",
-      text: texto,
-      icon: tipo === "exito" ? "success" : "error",
-      confirmButtonColor: "#87c947",
-      confirmButtonText: "Aceptar",
-    });
   };
 
   const validarFormulario = async () => {
@@ -204,10 +196,12 @@ const Inventory = () => {
         });
       }
     } catch (error) {
-      console.error('Error al agregar item:', error);
+      console.error("Error al agregar item:", error);
       await mostrarMensaje(
         "error",
-        `Error al agregar el item: ${error.response?.data?.message || error.message}`
+        `Error al agregar el item: ${
+          error.response?.data?.message || error.message
+        }`
       );
     }
   };
@@ -228,7 +222,7 @@ const Inventory = () => {
       try {
         // Eliminar el item de la base de datos
         await inventoryService.delete(id);
-        
+
         // Recargar la lista
         await loadInventory();
 
@@ -414,14 +408,15 @@ const Inventory = () => {
                     min="0"
                     value={formData.minimum_stock}
                     onChange={(e) =>
-                      setFormData({ ...formData, minimum_stock: e.target.value })
+                      setFormData({
+                        ...formData,
+                        minimum_stock: e.target.value,
+                      })
                     }
                     required
                   />
                 </div>
               </div>
-
-
 
               <div className="form-buttons">
                 <button

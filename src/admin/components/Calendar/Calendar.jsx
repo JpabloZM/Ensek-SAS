@@ -10,6 +10,9 @@ import Swal from "sweetalert2";
 import Sidebar from "./Sidebar";
 import CalendarHeader from "./CalendarHeader";
 import { useAlertas } from "../../hooks/useAlertas";
+import { useAuth } from "../../../hooks/useAuth";
+import { useCalendar } from "../../../hooks/useCalendar";
+import { useServices } from "../../../hooks/useServices";
 import "./Calendar.css";
 import "./styles/forms.css";
 

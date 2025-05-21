@@ -1,39 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { inventoryService } from "../api/services";
+import { useServices } from "../hooks/useServices";
 import { useAlertas } from "../hooks/useAlertas";
 
 const ServicesList = () => {
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { services, loading, error, refetch } = useServices();
   const { mostrarAlerta } = useAlertas();
 
   useEffect(() => {
-    loadServices();
-  }, []);
-
-  const loadServices = async () => {
-    try {
-      setLoading(true);
-      const data = await inventoryService.getAll();
-      setServices(data);
-      setError(null);
-    } catch (err) {
-      setError("Error al cargar los servicios");
-      mostrarAlerta({
-        icon: "error",
-        title: "Error",
-        text: "No se pudieron cargar los servicios",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    refetch();
+  }, [refetch]);
 
   const handleDelete = async (id) => {
     try {
       await inventoryService.delete(id);
-      setServices(services.filter((service) => service.id !== id));
+      refetch();
       mostrarAlerta({
         icon: "success",
         title: "Éxito",
