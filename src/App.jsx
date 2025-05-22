@@ -4,8 +4,6 @@ import "./App.css";
 import { useAuth } from "./hooks/useAuth";
 
 // Importaciones de componentes
-import ClientLayout from "./client/components/layout/ClientLayout";
-import AdminLayout from "./admin/components/layout/AdminLayout";
 import WelcomeLayout from "./client/components/layout/WelcomeLayout";
 import Home from "./client/pages/Home";
 import Services from "./client/pages/Services";
@@ -18,44 +16,59 @@ import Dashboard from "./admin/pages/Dashboard";
 import Schedule from "./admin/pages/Schedule";
 import Inventory from "./admin/pages/Inventory";
 import AuthRoute from "./components/AuthRoute";
-import AuthDebug from "./components/AuthDebug";
-import AuthDebugPage from "./components/AuthDebugPage";
+import AdminLayout from "./admin/components/layout/AdminLayout";
+import ClientLayout from "./client/components/layout/ClientLayout";
 
-// Root level redirect based on authentication status
-const RootRedirect = () => {
+// Main route handler for "/"
+function MainRoute() {
   const { user, loading } = useAuth();
-  
   if (loading) return <div>Cargando...</div>;
-  
-  // Redirect based on user authentication and role
-  if (user) {
-    return user.role === 'admin' 
-      ? <Navigate to="/admin/dashboard" replace /> 
-      : <Navigate to="/cliente" replace />;
+  if (!user) {
+    // Not authenticated: redirect to /welcome so nested routes render Home in Outlet
+    return <Navigate to="/welcome" replace />;
   }
-  
-  // Not authenticated, show welcome page
-  return <Navigate to="/welcome" replace />;
-};
+  if (user.role === "admin") {
+    return <Navigate to="/admin" replace />;
+  }
+  return <Navigate to="/app" replace />;
+}
 
 function App() {
   return (
     <div className="app">
       <Router>
         <Routes>
-          {/* Root path redirects based on auth status */}
-          <Route path="/" element={<RootRedirect />} />
-          
-          {/* Welcome pages - for non-authenticated users */}
-          <Route path="/welcome" element={
-            <AuthRoute requiredAuth={false} redirectTo="/">
-              <WelcomeLayout />
+          {/* Unified "/" route for all roles */}
+          <Route path="/" element={<MainRoute />} />
+
+          {/* Welcome section for unauthenticated users */}
+          <Route element={<AuthRoute requiredAuth={false} redirectTo="/" />}>
+            <Route path="welcome" element={<WelcomeLayout />}>
+              <Route index element={<Home />} />
+            </Route>
+          </Route>
+
+          {/* Client dashboard and pages */}
+          <Route path="/app" element={
+            <AuthRoute requiredAuth={true} allowedRoles={['user']} redirectTo="/login">
+              <ClientLayout />
             </AuthRoute>
           }>
-            <Route index element={<Home />} />
-            <Route path="servicios" element={<Services />} />
+            <Route index element={<Dashboard />} />
+            {/* Add more client routes here as needed */}
           </Route>
-          
+
+          {/* Admin dashboard and pages */}
+          <Route path="/admin" element={
+            <AuthRoute requiredAuth={true} allowedRoles={['admin']} redirectTo="/login">
+              <AdminLayout />
+            </AuthRoute>
+          }>
+            <Route index element={<Dashboard />} />
+            <Route path="calendario" element={<Schedule />} />
+            <Route path="inventario" element={<Inventory />} />
+          </Route>
+
           {/* Auth pages */}
           <Route path="/login" element={
             <AuthRoute requiredAuth={false} redirectTo="/">
@@ -67,49 +80,22 @@ function App() {
               <Register />
             </AuthRoute>
           } />
-          
-          {/* Client routes - for authenticated users */}
-          <Route path="/cliente" element={
+
+          {/* Protected Servicios route for authenticated users */}
+          <Route path="/servicios" element={
             <AuthRoute requiredAuth={true} allowedRoles={['user', 'admin']} redirectTo="/login">
-              <ClientLayout />
+              <Services />
             </AuthRoute>
-          }>
-            <Route index element={<Home />} />
-            <Route path="servicios" element={<Services />} />
-            <Route path="servicios/formulario" element={<FormServices />} />
-          </Route>
+          } />
+          <Route path="/servicios/formulario" element={
+            <AuthRoute requiredAuth={true} allowedRoles={['user', 'admin']} redirectTo="/login">
+              <FormServices />
+            </AuthRoute>
+          } />
 
-          {/* Admin routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route path="login" element={
-              <AuthRoute requiredAuth={false} redirectTo="/admin/dashboard">
-                <AdminLogin />
-              </AuthRoute>
-            } />
-            <Route path="registro" element={
-              <AuthRoute requiredAuth={false} redirectTo="/admin/dashboard">
-                <AdminRegister />
-              </AuthRoute>
-            } />
-            <Route path="dashboard" element={
-              <AuthRoute requiredAuth={true} allowedRoles={['admin']} redirectTo="/admin/login">
-                <Dashboard />
-              </AuthRoute>
-            } />
-            <Route path="calendario" element={
-              <AuthRoute requiredAuth={true} allowedRoles={['admin']} redirectTo="/admin/login">
-                <Schedule />
-              </AuthRoute>
-            } />
-            <Route path="inventario" element={
-              <AuthRoute requiredAuth={true} allowedRoles={['admin']} redirectTo="/admin/login">
-                <Inventory />
-              </AuthRoute>
-            } />          </Route>
-
+          {/* Fallback: redirect unknown routes to "/" */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        
-       
       </Router>
     </div>
   );

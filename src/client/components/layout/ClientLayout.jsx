@@ -93,14 +93,15 @@ const ClientLayout = () => {
           <Link to="/" onClick={handleLinkClick}>
             ENSEK
           </Link>
-        </div>        <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
-          <Link to="/cliente" onClick={handleLinkClick}>
+        </div>
+        <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
+          <Link to="/dashboard" onClick={handleLinkClick}>
             Inicio
           </Link>
-          <Link to="/cliente/servicios" onClick={handleLinkClick}>
+          <Link to="/servicios" onClick={handleLinkClick}>
             Servicios
           </Link>
-          <Link to="/cliente/servicios/formulario" onClick={handleLinkClick}>
+          <Link to="/servicios/formulario" onClick={handleLinkClick}>
             Solicitar Servicio
           </Link>
           {/* Cambiamos el enlace de contacto para manejar la navegación */}
@@ -116,7 +117,8 @@ const ClientLayout = () => {
             rel="noopener noreferrer"
           >
             <FaFacebook />
-          </a>          <a
+          </a>
+          <a
             href="https://instagram.com"
             target="_blank"
             rel="noopener noreferrer"

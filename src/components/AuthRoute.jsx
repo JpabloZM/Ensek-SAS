@@ -1,5 +1,5 @@
 import { useAuth } from '../hooks/useAuth';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Outlet } from 'react-router-dom';
 
 /**
  * A component that handles role-based routing in a single place
@@ -60,7 +60,7 @@ const AuthRoute = ({
   }
 
   // Default: Allow access to the route
-  return children;
+  return children || <Outlet />;
 };
 
 export default AuthRoute;
