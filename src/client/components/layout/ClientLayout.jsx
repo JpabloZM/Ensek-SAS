@@ -95,13 +95,13 @@ const ClientLayout = () => {
           </Link>
         </div>
         <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
-          <Link to="/dashboard" onClick={handleLinkClick}>
+          <Link to="/app" onClick={handleLinkClick}>
             Inicio
           </Link>
-          <Link to="/servicios" onClick={handleLinkClick}>
+          <Link to="/app/servicios" onClick={handleLinkClick}>
             Servicios
           </Link>
-          <Link to="/servicios/formulario" onClick={handleLinkClick}>
+          <Link to="/app/servicios/formulario" onClick={handleLinkClick}>
             Solicitar Servicio
           </Link>
           {/* Cambiamos el enlace de contacto para manejar la navegación */}

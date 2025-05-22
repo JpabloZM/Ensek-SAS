@@ -54,8 +54,9 @@ function App() {
               <ClientLayout />
             </AuthRoute>
           }>
-            <Route index element={<Dashboard />} />
-            {/* Add more client routes here as needed */}
+            <Route index element={<Home />} />
+            <Route path="servicios" element={<Services />} />
+            <Route path="servicios/formulario" element={<FormServices />} />
           </Route>
 
           {/* Admin dashboard and pages */}
@@ -78,18 +79,6 @@ function App() {
           <Route path="/registro" element={
             <AuthRoute requiredAuth={false} redirectTo="/">
               <Register />
-            </AuthRoute>
-          } />
-
-          {/* Protected Servicios route for authenticated users */}
-          <Route path="/servicios" element={
-            <AuthRoute requiredAuth={true} allowedRoles={['user', 'admin']} redirectTo="/login">
-              <Services />
-            </AuthRoute>
-          } />
-          <Route path="/servicios/formulario" element={
-            <AuthRoute requiredAuth={true} allowedRoles={['user', 'admin']} redirectTo="/login">
-              <FormServices />
             </AuthRoute>
           } />
 
