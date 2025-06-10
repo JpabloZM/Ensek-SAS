@@ -110,7 +110,21 @@ const ClientLayout = () => {
           </button>
         </nav>
 
-        <div className="navbar-icons">
+        <div className="navbar-icons" style={{ display: 'flex', alignItems: 'center' }}>
+          {user ? (
+            <>
+              <button onClick={handleLogout} className="login-button" style={{ marginRight: '0.75rem' }}>
+                Cerrar sesión
+              </button>
+              <span className="client-name" style={{ fontWeight: 500 }}>
+                {user.name}
+              </span>
+            </>
+          ) : (
+            <Link to="/login" className="login-button">
+              Iniciar sesión
+            </Link>
+          )}
           <a
             href="https://facebook.com"
             target="_blank"
@@ -125,15 +139,6 @@ const ClientLayout = () => {
           >
             <FaInstagram />
           </a>
-          {user ? (
-            <button onClick={handleLogout} className="login-button">
-              Cerrar sesión
-            </button>
-          ) : (
-            <Link to="/login" className="login-button">
-              Iniciar sesión
-            </Link>
-          )}
         </div>
       </header>
 
