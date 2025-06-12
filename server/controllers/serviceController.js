@@ -2,6 +2,7 @@
 import ServiceRequest from '../models/serviceRequestModel.js';
 import { isUsingMockDB } from '../config/db.js';
 import { mockDb } from '../config/mockDb.js';
+import Service from '../models/Service';
 
 // @desc    Create a new service request
 // @route   POST /api/services/request
@@ -202,5 +203,69 @@ export const updateServiceRequestStatus = async (req, res) => {
       message: 'Server Error',
       error: error.message,
     });
+  }
+};
+
+// Obtener todos los servicios
+exports.getServices = async (req, res) => {
+  try {
+    const services = await Service.find().sort({ createdAt: -1 });
+    res.json(services);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener los servicios', error: error.message });
+  }
+};
+
+// Crear un nuevo servicio
+exports.createService = async (req, res) => {
+  try {
+    const service = new Service(req.body);
+    await service.save();
+    res.status(201).json(service);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al crear el servicio', error: error.message });
+  }
+};
+
+// Actualizar un servicio
+exports.updateService = async (req, res) => {
+  try {
+    const service = await Service.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!service) {
+      return res.status(404).json({ message: 'Servicio no encontrado' });
+    }
+    res.json(service);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al actualizar el servicio', error: error.message });
+  }
+};
+
+// Eliminar un servicio
+exports.deleteService = async (req, res) => {
+  try {
+    const service = await Service.findByIdAndDelete(req.params.id);
+    if (!service) {
+      return res.status(404).json({ message: 'Servicio no encontrado' });
+    }
+    res.json({ message: 'Servicio eliminado correctamente' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al eliminar el servicio', error: error.message });
+  }
+};
+
+// Obtener un servicio por ID
+exports.getServiceById = async (req, res) => {
+  try {
+    const service = await Service.findById(req.params.id);
+    if (!service) {
+      return res.status(404).json({ message: 'Servicio no encontrado' });
+    }
+    res.json(service);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener el servicio', error: error.message });
   }
 };

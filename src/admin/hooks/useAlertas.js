@@ -9,6 +9,23 @@ export const useAlertas = () => {
     htmlContainer: "swal2-html-container",
   };
 
+  const mostrarMensaje = async (tipo, mensaje) => {
+    const iconos = {
+      exito: "success",
+      error: "error",
+      advertencia: "warning",
+      info: "info",
+    };
+
+    return await Swal.fire({
+      icon: iconos[tipo] || "info",
+      title: mensaje,
+      customClass: defaultClasses,
+      timer: 3000,
+      timerProgressBar: true,
+    });
+  };
+
   const mostrarAlerta = async (config) => {
     const configConClases = {
       ...config,
@@ -45,6 +62,7 @@ export const useAlertas = () => {
   };
 
   return {
+    mostrarMensaje,
     mostrarAlerta,
     mostrarConfirmacion,
     mostrarFormulario,

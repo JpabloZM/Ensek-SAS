@@ -1,44 +1,25 @@
 import { useState, useEffect } from "react";
+import inventoryService from "../services/inventoryService";
 
-const mockInventoryItems = [
-  {
-    id: 1,
-    name: "Insecticida MultiAction",
-    description: "Insecticida de amplio espectro",
-    quantity: 50,
-    unit: "litros",
-    minStock: 10,
-    category: "insecticidas",
-  },
-  {
-    id: 2,
-    name: "Raticida Block",
-    description: "Cebo rodenticida en bloques",
-    quantity: 100,
-    unit: "unidades",
-    minStock: 20,
-    category: "rodenticidas",
-  },
-];
+const calculateStatus = (quantity, minStock) => {
+  if (quantity <= 0) return "out_of_stock";
+  if (quantity <= minStock) return "low_stock";
+  return "available";
+};
 
 export const useInventory = () => {
-  const [inventory, setInventory] = useState(() => {
-    const stored = localStorage.getItem("inventory");
-    return stored ? JSON.parse(stored) : mockInventoryItems;
-  });
-  const [loading, setLoading] = useState(false);
+  const [inventory, setInventory] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    localStorage.setItem("inventory", JSON.stringify(inventory));
-  }, [inventory]);
 
   const getAllItems = async () => {
     try {
       setLoading(true);
-      return inventory;
+      const data = await inventoryService.getAll();
+      setInventory(data);
+      return data;
     } catch (error) {
-      setError("Error al cargar el inventario");
+      setError(error.message);
       throw error;
     } finally {
       setLoading(false);
@@ -48,14 +29,11 @@ export const useInventory = () => {
   const addItem = async (itemData) => {
     try {
       setLoading(true);
-      const newItem = {
-        id: inventory.length + 1,
-        ...itemData,
-      };
-      setInventory([...inventory, newItem]);
+      const newItem = await inventoryService.create(itemData);
+      setInventory((prev) => [...prev, newItem]);
       return newItem;
     } catch (error) {
-      setError("Error al agregar el item");
+      setError(error.message);
       throw error;
     } finally {
       setLoading(false);
@@ -65,16 +43,13 @@ export const useInventory = () => {
   const updateItem = async (id, itemData) => {
     try {
       setLoading(true);
-      const index = inventory.findIndex((item) => item.id === id);
-      if (index === -1) throw new Error("Item no encontrado");
-
-      const updatedInventory = [...inventory];
-      updatedInventory[index] = { ...updatedInventory[index], ...itemData };
-      setInventory(updatedInventory);
-
-      return updatedInventory[index];
+      const updatedItem = await inventoryService.update(id, itemData);
+      setInventory((prev) =>
+        prev.map((item) => (item.id === id ? updatedItem : item))
+      );
+      return updatedItem;
     } catch (error) {
-      setError("Error al actualizar el item");
+      setError(error.message);
       throw error;
     } finally {
       setLoading(false);
@@ -84,13 +59,10 @@ export const useInventory = () => {
   const deleteItem = async (id) => {
     try {
       setLoading(true);
-      const index = inventory.findIndex((item) => item.id === id);
-      if (index === -1) throw new Error("Item no encontrado");
-
-      const updatedInventory = inventory.filter((item) => item.id !== id);
-      setInventory(updatedInventory);
+      await inventoryService.delete(id);
+      setInventory((prev) => prev.filter((item) => item.id !== id));
     } catch (error) {
-      setError("Error al eliminar el item");
+      setError(error.message);
       throw error;
     } finally {
       setLoading(false);
@@ -100,30 +72,38 @@ export const useInventory = () => {
   const adjustStock = async (id, quantity, type = "add") => {
     try {
       setLoading(true);
-      const index = inventory.findIndex((item) => item.id === id);
-      if (index === -1) throw new Error("Item no encontrado");
+      const item = inventory.find((item) => item.id === id);
+      if (!item) throw new Error("Item no encontrado");
 
-      const updatedInventory = [...inventory];
-      const currentItem = updatedInventory[index];
+      const newQuantity =
+        type === "add" ? item.quantity + quantity : item.quantity - quantity;
 
-      if (type === "add") {
-        currentItem.quantity += quantity;
-      } else if (type === "subtract") {
-        if (currentItem.quantity < quantity) {
-          throw new Error("Stock insuficiente");
-        }
-        currentItem.quantity -= quantity;
+      if (newQuantity < 0) {
+        throw new Error("Stock insuficiente");
       }
 
-      setInventory(updatedInventory);
-      return currentItem;
+      const updatedItem = await inventoryService.update(id, {
+        ...item,
+        quantity: newQuantity,
+      });
+
+      setInventory((prev) =>
+        prev.map((item) => (item.id === id ? updatedItem : item))
+      );
+
+      return updatedItem;
     } catch (error) {
-      setError("Error al ajustar el stock");
+      setError(error.message);
       throw error;
     } finally {
       setLoading(false);
     }
   };
+
+  // Cargar el inventario al montar el componente
+  useEffect(() => {
+    getAllItems();
+  }, []);
 
   return {
     inventory,
