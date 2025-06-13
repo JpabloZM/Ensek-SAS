@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useInventory } from "../../../hooks/useInventory";
 import { useAlertas } from "../../hooks/useAlertas";
+import Swal from "sweetalert2";
 import "./Inventory.css";
 
 // Datos de ejemplo para el inventario
@@ -107,6 +108,7 @@ const Inventory = () => {
   const [loading, setLoading] = useState(true);
 
   const { mostrarMensaje } = useAlertas();
+  const { getAllItems, addItem, updateItem, deleteItem } = useInventory();
 
   // Cargar datos al montar el componente
   useEffect(() => {
@@ -115,7 +117,7 @@ const Inventory = () => {
 
   const loadInventory = async () => {
     try {
-      const data = await inventoryService.getAll();
+      const data = await getAllItems();
       setItems(data);
       setLoading(false);
     } catch (error) {
@@ -173,7 +175,7 @@ const Inventory = () => {
         };
 
         // Crear nuevo item en la base de datos
-        await inventoryService.create(itemToCreate);
+        await addItem(itemToCreate);
 
         // Recargar la lista de items
         await loadInventory();
@@ -197,12 +199,7 @@ const Inventory = () => {
       }
     } catch (error) {
       console.error("Error al agregar item:", error);
-      await mostrarMensaje(
-        "error",
-        `Error al agregar el item: ${
-          error.response?.data?.message || error.message
-        }`
-      );
+      await mostrarMensaje("error", "Error al agregar el item al inventario");
     }
   };
 
@@ -221,7 +218,7 @@ const Inventory = () => {
     if (result.isConfirmed) {
       try {
         // Eliminar el item de la base de datos
-        await inventoryService.delete(id);
+        await deleteItem(id);
 
         // Recargar la lista
         await loadInventory();
@@ -255,7 +252,7 @@ const Inventory = () => {
 
     try {
       // Actualizar el item en la base de datos
-      await inventoryService.update(editingItem.id, formData);
+      await updateItem(editingItem.id, formData);
 
       // Recargar la lista
       await loadInventory();
@@ -282,6 +279,8 @@ const Inventory = () => {
   };
 
   const getStatusClass = (status) => {
+    if (!status) return "estado-disponible";
+
     switch (status.toLowerCase()) {
       case "available":
         return "estado-disponible";
@@ -290,12 +289,14 @@ const Inventory = () => {
       case "out_of_stock":
         return "estado-agotado";
       default:
-        return "";
+        return "estado-disponible";
     }
   };
 
   const getStatusText = (status) => {
-    switch (status) {
+    if (!status) return "Disponible";
+
+    switch (status.toLowerCase()) {
       case "available":
         return "Disponible";
       case "low_stock":
@@ -303,7 +304,7 @@ const Inventory = () => {
       case "out_of_stock":
         return "Agotado";
       default:
-        return status;
+        return "Disponible";
     }
   };
 

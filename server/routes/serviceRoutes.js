@@ -1,25 +1,16 @@
 // Service routes
-import express from 'express';
-import {
-  createServiceRequest,
-  getServiceRequests,
-  getServiceRequestById,
-  updateServiceRequestStatus,
-} from '../controllers/serviceController.js';
-import { protect, admin } from '../middleware/authMiddleware.js';
-
+const express = require('express');
 const router = express.Router();
+const serviceController = require('../controllers/serviceController');
+const { protect } = require('../middleware/authMiddleware');
 
-// Create service request (public access)
-router.post('/request', createServiceRequest);
+// Rutas públicas
+router.post('/', serviceController.createService);
 
-// Get all service requests (admin only)
-router.get('/requests', protect, admin, getServiceRequests);
+// Rutas protegidas
+router.get('/', protect, serviceController.getServices);
+router.get('/:id', protect, serviceController.getServiceById);
+router.put('/:id', protect, serviceController.updateService);
+router.delete('/:id', protect, serviceController.deleteService);
 
-// Get service request by ID
-router.get('/requests/:id', protect, getServiceRequestById);
-
-// Update service request status (admin only)
-router.put('/requests/:id/status', protect, admin, updateServiceRequestStatus);
-
-export default router;
+module.exports = router;

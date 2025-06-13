@@ -1,0 +1,91 @@
+.App {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-green);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Estilos de la barra de navegación */
+.navbar {
+  background-color: white;
+  padding: 1rem 2rem;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar-brand {
+  color: var(--dark-green2);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-left: 2rem;
+}
+
+.nav-link {
+  color: var(--dark-green2);
+  text-decoration: none;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.3s ease;
+}
+
+.nav-link i {
+  font-size: var(--font-size-lg);
+}
+
+.nav-link:hover {
+  color: var(--primary-green);
+  background-color: var(--bg-green);
+}
+
+.nav-link.active {
+  color: var(--primary-green);
+  background-color: var(--bg-green);
+}
+
+/* Estilos del contenedor principal */
+.main-content {
+  flex: 1;
+  padding: var(--spacing-xl);
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1rem;
+  }
+
+  .nav-links {
+    margin-left: 1rem;
+    gap: 1rem;
+  }
+
+  .nav-link {
+    padding: 0.5rem;
+  }
+
+  .nav-link span {
+    display: none;
+  }
+
+  .nav-link i {
+    font-size: var(--font-size-xl);
+  }
+
+  .main-content {
+    padding: var(--spacing-md);
+  }
+}

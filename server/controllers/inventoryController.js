@@ -1,50 +1,18 @@
 // Inventory controller
-import InventoryItem from '../models/inventoryModel.js';
+import InventoryItem from "../models/InventoryItem.js";
 
 // @desc    Create a new inventory item
 // @route   POST /api/inventory
 // @access  Private/Admin
 export const createInventoryItem = async (req, res) => {
   try {
-    const {
-      name,
-      category,
-      quantity,
-      unitOfMeasure,
-      description,
-      minimumStock,
-      price,
-    } = req.body;
-
-    const inventoryItem = await InventoryItem.create({
-      name,
-      category,
-      quantity,
-      unitOfMeasure,
-      description,
-      minimumStock,
-      price,
-      lastRestockDate: new Date(),
-    });
-
-    if (inventoryItem) {
-      res.status(201).json({
-        success: true,
-        inventoryItem,
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        message: 'Invalid inventory data',
-      });
-    }
+    const item = new InventoryItem(req.body);
+    await item.save();
+    res.status(201).json(item);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: 'Server Error',
-      error: error.message,
-    });
+    res
+      .status(400)
+      .json({ message: "Error al crear el item", error: error.message });
   }
 };
 
@@ -53,18 +21,11 @@ export const createInventoryItem = async (req, res) => {
 // @access  Private/Admin
 export const getInventoryItems = async (req, res) => {
   try {
-    const inventoryItems = await InventoryItem.find({}).sort({ name: 1 });
-
-    res.json({
-      success: true,
-      count: inventoryItems.length,
-      inventoryItems,
-    });
+    const items = await InventoryItem.find().sort({ createdAt: -1 });
+    res.json(items);
   } catch (error) {
-    console.error(error);
     res.status(500).json({
-      success: false,
-      message: 'Server Error',
+      message: "Error al obtener los items del inventario",
       error: error.message,
     });
   }
@@ -75,26 +36,15 @@ export const getInventoryItems = async (req, res) => {
 // @access  Private/Admin
 export const getInventoryItemById = async (req, res) => {
   try {
-    const inventoryItem = await InventoryItem.findById(req.params.id);
-
-    if (!inventoryItem) {
-      return res.status(404).json({
-        success: false,
-        message: 'Inventory item not found',
-      });
+    const item = await InventoryItem.findById(req.params.id);
+    if (!item) {
+      return res.status(404).json({ message: "Item no encontrado" });
     }
-
-    res.json({
-      success: true,
-      inventoryItem,
-    });
+    res.json(item);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: 'Server Error',
-      error: error.message,
-    });
+    res
+      .status(500)
+      .json({ message: "Error al obtener el item", error: error.message });
   }
 };
 
@@ -103,52 +53,19 @@ export const getInventoryItemById = async (req, res) => {
 // @access  Private/Admin
 export const updateInventoryItem = async (req, res) => {
   try {
-    const inventoryItem = await InventoryItem.findById(req.params.id);
-
-    if (!inventoryItem) {
-      return res.status(404).json({
-        success: false,
-        message: 'Inventory item not found',
-      });
+    const item = await InventoryItem.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!item) {
+      return res.status(404).json({ message: "Item no encontrado" });
     }
-
-    // Update fields
-    const {
-      name,
-      category,
-      quantity,
-      unitOfMeasure,
-      description,
-      minimumStock,
-      price,
-    } = req.body;
-
-    inventoryItem.name = name || inventoryItem.name;
-    inventoryItem.category = category || inventoryItem.category;
-    inventoryItem.quantity = quantity !== undefined ? quantity : inventoryItem.quantity;
-    inventoryItem.unitOfMeasure = unitOfMeasure || inventoryItem.unitOfMeasure;
-    inventoryItem.description = description || inventoryItem.description;
-    inventoryItem.minimumStock = minimumStock !== undefined ? minimumStock : inventoryItem.minimumStock;
-    inventoryItem.price = price !== undefined ? price : inventoryItem.price;
-
-    // If quantity increased, update lastRestockDate
-    if (quantity > inventoryItem.quantity) {
-      inventoryItem.lastRestockDate = new Date();
-    }
-
-    const updatedInventoryItem = await inventoryItem.save();
-
-    res.json({
-      success: true,
-      inventoryItem: updatedInventoryItem,
-    });
+    res.json(item);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: 'Server Error',
-      error: error.message,
-    });
+    res
+      .status(400)
+      .json({ message: "Error al actualizar el item", error: error.message });
   }
 };
 
@@ -157,27 +74,14 @@ export const updateInventoryItem = async (req, res) => {
 // @access  Private/Admin
 export const deleteInventoryItem = async (req, res) => {
   try {
-    const inventoryItem = await InventoryItem.findById(req.params.id);
-
-    if (!inventoryItem) {
-      return res.status(404).json({
-        success: false,
-        message: 'Inventory item not found',
-      });
+    const item = await InventoryItem.findByIdAndDelete(req.params.id);
+    if (!item) {
+      return res.status(404).json({ message: "Item no encontrado" });
     }
-
-    await inventoryItem.deleteOne();
-
-    res.json({
-      success: true,
-      message: 'Inventory item removed',
-    });
+    res.json({ message: "Item eliminado correctamente" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: 'Server Error',
-      error: error.message,
-    });
+    res
+      .status(500)
+      .json({ message: "Error al eliminar el item", error: error.message });
   }
 };

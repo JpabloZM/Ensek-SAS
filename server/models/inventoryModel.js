@@ -1,27 +1,23 @@
 // Inventory item model
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const inventoryItemSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Please provide an item name'],
+      required: [true, "Please provide an item name"],
       trim: true,
-    },
-    category: {
-      type: String,
-      required: [true, 'Please select a category'],
-      enum: ['equipment', 'chemical', 'tool', 'uniform', 'other'],
     },
     quantity: {
       type: Number,
-      required: [true, 'Please enter quantity'],
-      min: [0, 'Quantity cannot be negative'],
+      required: [true, "Please enter quantity"],
+      min: [0, "Quantity cannot be negative"],
     },
     unitOfMeasure: {
       type: String,
-      required: [true, 'Please provide unit of measure'],
-      enum: ['units', 'liters', 'kilograms', 'packages', 'other'],
+      required: [true, "Please provide unit of measure"],
+      enum: ["unidad", "ml", "gr"],
+      default: "unidad",
     },
     description: {
       type: String,
@@ -36,7 +32,7 @@ const inventoryItemSchema = new mongoose.Schema(
     },
     price: {
       type: Number,
-      min: [0, 'Price cannot be negative'],
+      min: [0, "Price cannot be negative"],
     },
   },
   {
@@ -44,6 +40,6 @@ const inventoryItemSchema = new mongoose.Schema(
   }
 );
 
-const InventoryItem = mongoose.model('InventoryItem', inventoryItemSchema);
+const InventoryItem = mongoose.model("InventoryItem", inventoryItemSchema);
 
 export default InventoryItem;
