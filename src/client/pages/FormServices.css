@@ -505,11 +505,7 @@
   transform: scale(1.05);
 }
 
-/* Efecto de desenfoque en el fondo al enfocar elementos */
-.form-group:focus-within ~ .form-group {
-  filter: blur(1px);
-  opacity: 0.7;
-}
+
 
 /* Animación de entrada */
 @keyframes formAppear {

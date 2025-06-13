@@ -1,8 +1,6 @@
 // Authentication controller
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
-import { isUsingMockDB } from '../config/db.js';
-import { mockDb } from '../config/mockDb.js';
 
 // Generate JWT token
 const generateToken = (id) => {
@@ -19,13 +17,7 @@ export const registerUser = async (req, res) => {
     const { name, email, password, role, phone, address } = req.body;
 
     // Check if user exists
-    let userExists;
-    
-    if (isUsingMockDB()) {
-      userExists = await mockDb.findUserByEmail(email);
-    } else {
-      userExists = await User.findOne({ email });
-    }
+    const userExists = await User.findOne({ email });
 
     if (userExists) {
       return res.status(400).json({
@@ -34,33 +26,15 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    let user;
-    
     // Create user
-    if (isUsingMockDB()) {
-      // In MockDB, we need to hash the password manually
-      const bcrypt = await import('bcrypt');
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-      
-      user = await mockDb.createUser({
-        name,
-        email,
-        password: hashedPassword,
-        role: role || 'user',
-        phone,
-        address,
-      });
-    } else {
-      user = await User.create({
-        name,
-        email,
-        password,
-        role: role || 'user', // Default to user if role not specified
-        phone,
-        address,
-      });
-    }
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role: role || 'user', // Default to user if role not specified
+      phone,
+      address,
+    });
 
     if (user) {
       res.status(201).json({
@@ -98,24 +72,12 @@ export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    let user;
-    let isPasswordMatch = false;
-    
     // Check for user email
-    if (isUsingMockDB()) {
-      user = await mockDb.findUserByEmail(email);
-      
-      if (user) {
-        // In MockDB, we need to compare the password manually
-        const bcrypt = await import('bcrypt');
-        isPasswordMatch = await bcrypt.compare(password, user.password);
-      }
-    } else {
-      user = await User.findOne({ email }).select('+password');
-      
-      if (user) {
-        isPasswordMatch = await user.matchPassword(password);
-      }
+    const user = await User.findOne({ email }).select('+password');
+
+    let isPasswordMatch = false;
+    if (user) {
+      isPasswordMatch = await user.matchPassword(password);
     }
 
     if (user && isPasswordMatch) {
@@ -152,13 +114,7 @@ export const loginUser = async (req, res) => {
 // @access  Private
 export const getUserProfile = async (req, res) => {
   try {
-    let user;
-    
-    if (isUsingMockDB()) {
-      user = await mockDb.findUserById(req.user._id);
-    } else {
-      user = await User.findById(req.user._id);
-    }
+    const user = await User.findById(req.user._id);
 
     if (user) {
       res.json({

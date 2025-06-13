@@ -101,9 +101,6 @@ const ClientLayout = () => {
           <Link to="/app/servicios" onClick={handleLinkClick}>
             Servicios
           </Link>
-          <Link to="/app/servicios/formulario" onClick={handleLinkClick}>
-            Solicitar Servicio
-          </Link>
           {/* Cambiamos el enlace de contacto para manejar la navegación */}
           <button className="contact-button" onClick={handleContactClick}>
             Contacto
@@ -145,6 +142,44 @@ const ClientLayout = () => {
       <main>
         <Outlet />
       </main>
+
+      <footer className="welcome-footer">
+        <div className="welcome-container">
+          <div className="welcome-footer-content">
+            <div className="welcome-footer-logo">
+              <img src="/logo_ensek.png" alt="ENSEK Logo" />
+              <h2>ENSEK <span>SAS</span></h2>
+              <p>Control de plagas y jardinería profesional</p>
+            </div>
+            <div className="welcome-footer-links">
+              <h3>Enlaces</h3>
+              <ul>
+                <li><Link to="/">Inicio</Link></li>
+                <li><Link to="/servicios">Servicios</Link></li>
+                <li><Link to="/login">Iniciar Sesión</Link></li>
+                <li><Link to="/registro">Registrarse</Link></li>
+              </ul>
+            </div>
+            <div className="welcome-footer-contact">
+              <h3>Contacto</h3>
+              <p>Email: info@ensek.com</p>
+              <p>Teléfono: (123) 456-7890</p>
+              <p>Dirección: Calle Principal #123, Ciudad</p>
+              <div className="welcome-social-icons">
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                  <FaFacebook />
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                  <FaInstagram />
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="welcome-footer-bottom">
+            <p>&copy; {new Date().getFullYear()} ENSEK SAS. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

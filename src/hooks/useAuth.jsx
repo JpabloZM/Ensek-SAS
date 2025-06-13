@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { apiService } from "../utils/apiService";
 
 export const useAuth = () => {
   const [user, setUser] = useState(null);

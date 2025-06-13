@@ -1,8 +1,6 @@
 // Service request controller
 import ServiceRequest from '../models/serviceRequestModel.js';
-import { isUsingMockDB } from '../config/db.js';
-import { mockDb } from '../config/mockDb.js';
-import Service from '../models/Service';
+import Service from '../models/Service.js';
 
 // @desc    Create a new service request
 // @route   POST /api/services/request
@@ -16,34 +14,20 @@ export const createServiceRequest = async (req, res) => {
       address,
       serviceType,
       description,
-      preferredDate,    } = req.body;
-
-    let serviceRequest;
+      preferredDate,
+    } = req.body;
 
     // Create service request
-    if (isUsingMockDB()) {
-      serviceRequest = await mockDb.createServiceRequest({
-        user: req.user ? req.user._id : null,
-        name,
-        email,
-        phone,
-        address,
-        serviceType,
-        description,
-        preferredDate: new Date(preferredDate),
-      });
-    } else {
-      serviceRequest = await ServiceRequest.create({
-        user: req.user ? req.user._id : null,
-        name,
-        email,
-        phone,
-        address,
-        serviceType,
-        description,
-        preferredDate: new Date(preferredDate),
-      });
-    }
+    const serviceRequest = await ServiceRequest.create({
+      user: req.user ? req.user._id : null,
+      name,
+      email,
+      phone,
+      address,
+      serviceType,
+      description,
+      preferredDate: new Date(preferredDate),
+    });
 
     if (serviceRequest) {
       res.status(201).json({
@@ -71,29 +55,9 @@ export const createServiceRequest = async (req, res) => {
 // @access  Private/Admin
 export const getServiceRequests = async (req, res) => {
   try {
-    let serviceRequests;
-    
-    if (isUsingMockDB()) {
-      serviceRequests = await mockDb.getAllServiceRequests();
-      // In MockDB we need to manually handle the user population
-      serviceRequests = serviceRequests.map(request => {
-        if (request.user) {
-          const user = mockDb.findUserById(request.user);
-          if (user) {
-            request.user = {
-              _id: user._id,
-              name: user.name,
-              email: user.email
-            };
-          }
-        }
-        return request;
-      });
-    } else {
-      serviceRequests = await ServiceRequest.find({})
-        .sort({ createdAt: -1 }) // Sort by most recent
-        .populate('user', 'name email');
-    }
+    const serviceRequests = await ServiceRequest.find({})
+      .sort({ createdAt: -1 }) // Sort by most recent
+      .populate('user', 'name email');
 
     res.json({
       success: true,
@@ -115,28 +79,10 @@ export const getServiceRequests = async (req, res) => {
 // @access  Private
 export const getServiceRequestById = async (req, res) => {
   try {
-    let serviceRequest;
-    
-    if (isUsingMockDB()) {
-      serviceRequest = await mockDb.getServiceRequestById(req.params.id);
-      
-      // Manually populate user data if needed
-      if (serviceRequest && serviceRequest.user) {
-        const user = await mockDb.findUserById(serviceRequest.user);
-        if (user) {
-          serviceRequest.user = {
-            _id: user._id,
-            name: user.name,
-            email: user.email
-          };
-        }
-      }
-    } else {
-      serviceRequest = await ServiceRequest.findById(req.params.id).populate(
-        'user',
-        'name email'
-      );
-    }
+    const serviceRequest = await ServiceRequest.findById(req.params.id).populate(
+      'user',
+      'name email'
+    );
 
     // Check if service request exists
     if (!serviceRequest) {
@@ -206,8 +152,7 @@ export const updateServiceRequestStatus = async (req, res) => {
   }
 };
 
-// Obtener todos los servicios
-exports.getServices = async (req, res) => {
+export const getServices = async (req, res) => {
   try {
     const services = await Service.find().sort({ createdAt: -1 });
     res.json(services);
@@ -216,8 +161,7 @@ exports.getServices = async (req, res) => {
   }
 };
 
-// Crear un nuevo servicio
-exports.createService = async (req, res) => {
+export const createService = async (req, res) => {
   try {
     const service = new Service(req.body);
     await service.save();
@@ -227,8 +171,7 @@ exports.createService = async (req, res) => {
   }
 };
 
-// Actualizar un servicio
-exports.updateService = async (req, res) => {
+export const updateService = async (req, res) => {
   try {
     const service = await Service.findByIdAndUpdate(
       req.params.id,
@@ -244,8 +187,7 @@ exports.updateService = async (req, res) => {
   }
 };
 
-// Eliminar un servicio
-exports.deleteService = async (req, res) => {
+export const deleteService = async (req, res) => {
   try {
     const service = await Service.findByIdAndDelete(req.params.id);
     if (!service) {
@@ -257,8 +199,7 @@ exports.deleteService = async (req, res) => {
   }
 };
 
-// Obtener un servicio por ID
-exports.getServiceById = async (req, res) => {
+export const getServiceById = async (req, res) => {
   try {
     const service = await Service.findById(req.params.id);
     if (!service) {

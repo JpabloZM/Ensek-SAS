@@ -1,8 +1,8 @@
 // Service routes
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const serviceController = require('../controllers/serviceController');
-const { protect } = require('../middleware/authMiddleware');
+import * as serviceController from '../controllers/serviceController.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 // Rutas públicas
 router.post('/', serviceController.createService);
@@ -13,4 +13,4 @@ router.get('/:id', protect, serviceController.getServiceById);
 router.put('/:id', protect, serviceController.updateService);
 router.delete('/:id', protect, serviceController.deleteService);
 
-module.exports = router;
+export default router;

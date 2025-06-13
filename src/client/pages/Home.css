@@ -281,7 +281,6 @@
 }
 
 .contact-section {
-  height: 95vh;
   padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem);
   text-align: center;
   background: rgba(255, 255, 255, 0.05);

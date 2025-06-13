@@ -1,21 +1,24 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import { serviceService } from "../services/serviceService";
 import "./FormServices.css";
 
 const FormServices = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  // Si viene un tipo de servicio desde la navegación, úsalo como valor inicial
+  const initialServiceType = location.state?.serviceType || "";
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     email: "",
     preferredDate: "",
-    serviceType: "",
+    serviceType: initialServiceType,
     description: "",
     address: "",
   });
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -165,7 +168,8 @@ const FormServices = () => {
               <option value="">Selecciona una opción</option>
               <option value="pest-control">Control de Plagas</option>
               <option value="gardening">Jardinería</option>
-              <option value="fumigation">Fumigación</option>
+              <option value="residential-fumigation">Fumigación Residencial</option>
+              <option value="commercial-fumigation">Fumigación Comercial</option>
               <option value="other">Otro</option>
             </select>
           </div>

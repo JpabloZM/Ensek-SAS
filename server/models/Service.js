@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const serviceSchema = new mongoose.Schema({
   name: {
@@ -25,7 +25,7 @@ const serviceSchema = new mongoose.Schema({
   serviceType: {
     type: String,
     required: [true, 'El tipo de servicio es requerido'],
-    enum: ['pest-control', 'gardening', 'fumigation', 'other']
+    enum: ['pest-control', 'gardening', 'residential-fumigation', 'commercial-fumigation']
   },
   description: {
     type: String,
@@ -46,4 +46,5 @@ const serviceSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('Service', serviceSchema); 
+const Service = mongoose.model('Service', serviceSchema);
+export default Service;

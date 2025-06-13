@@ -53,44 +53,34 @@ const WelcomeLayout = () => {
 
   return (
     <div className="welcome-layout">
-      <header className="welcome-header">
-        <div className="welcome-container">
-          <div className="welcome-navbar">
-            <div className="welcome-logo" onClick={() => navigate("/")}>
-              <h1>ENSEK <span>SAS</span></h1>
-            </div>
-            <button
-              className="welcome-menu-button"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Menú"
-            >
-              <FaBars />
-            </button>
-            <nav className={`welcome-navbar-links ${isMenuOpen ? "active" : ""}`}>
-              <ul>
-                <li>
-                  <Link to="/" onClick={handleLinkClick}>
-                    Inicio
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/servicios" onClick={handleLinkClick}>
-                    Servicios
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/login" onClick={handleLinkClick}>
-                    Iniciar Sesión
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/registro" onClick={handleLinkClick} className="welcome-signup-btn">
-                    Registrarse
-                  </Link>
-                </li>
-              </ul>
-            </nav>
-          </div>
+      <header className="navbar">
+        <button
+          className="menu-button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsMenuOpen(!isMenuOpen);
+          }}
+        >
+          <FaBars />
+        </button>
+
+        <div className="navbar-logo">
+          <Link to="/">ENSEK</Link>
+        </div>
+        <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
+          <Link to="/">Inicio</Link>
+          <Link to="/servicios">Servicios</Link>
+          <Link to="/login">Iniciar sesión</Link>
+          <Link to="/registro">Registrarse</Link>
+        </nav>
+
+        <div className="navbar-icons" style={{ display: 'flex', alignItems: 'center' }}>
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+            <FaFacebook />
+          </a>
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+            <FaInstagram />
+          </a>
         </div>
       </header>
 

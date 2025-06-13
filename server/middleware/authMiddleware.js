@@ -1,8 +1,6 @@
 // Authentication middleware
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
-import { isUsingMockDB } from '../config/db.js';
-import { mockDb } from '../config/mockDb.js';
 
 export const protect = async (req, res, next) => {
   let token;
@@ -13,19 +11,12 @@ export const protect = async (req, res, next) => {
   ) {
     try {
       // Get token from header
-      token = req.headers.authorization.split(' ')[1];      // Verify token
+      token = req.headers.authorization.split(' ')[1];
+      // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // Get user from the token
-      if (isUsingMockDB()) {
-        req.user = await mockDb.findUserById(decoded.id);
-        // Remove password from user object
-        if (req.user) {
-          req.user.password = undefined;
-        }
-      } else {
-        req.user = await User.findById(decoded.id).select('-password');
-      }
+      req.user = await User.findById(decoded.id).select('-password');
 
       next();
     } catch (error) {

@@ -10,27 +10,31 @@ const Services = () => {
     {
       title: "Control de Plagas",
       description: "Eliminamos cucarachas, hormigas, roedores y más.",
+      link: "pest-control",
       icon: "fas fa-bug",
     },
     {
       title: "Fumigación Residencial",
       description: "Protege tu hogar con nuestros servicios de fumigación.",
+      link: "residential-fumigation",
       icon: "fas fa-home",
     },
     {
       title: "Fumigación Comercial",
       description: "Soluciones para mantener tu negocio libre de plagas.",
+      link: "commercial-fumigation",
       icon: "fas fa-building",
     },
     {
       title: "Jardinería",
       description: "Diseño y mantenimiento de jardines personalizados.",
+      link: "gardening",
       icon: "fas fa-leaf",
     },
   ];
 
-  const handleCardClick = () => {
-    navigate("/servicios/formulario"); // Navega a la página FormServices
+  const handleCardClick = (serviceType) => {
+    navigate("/app/servicios/formulario", { state: { serviceType } }); // Navega y pasa el tipo de servicio
   };
 
   return (
@@ -44,7 +48,7 @@ const Services = () => {
           <div
             className="service-card"
             key={index}
-            onClick={handleCardClick} // Maneja el clic en la tarjeta
+            onClick={() => handleCardClick(service.link)} // Pasa el título como tipo de servicio
           >
             <i className={service.icon}></i>
             <h3>{service.title}</h3>
