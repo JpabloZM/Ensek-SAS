@@ -4,7 +4,7 @@ import InventoryItem from "../models/InventoryItem.js";
 // Calculate item status based on quantity and minimum stock
 const calculateStatus = (quantity, minimum_stock) => {
   if (quantity <= 0) return "out_of_stock";
-  if (quantity <= minimum_stock) return "low_stock";
+  if (quantity < minimum_stock) return "low_stock";
   return "available";
 };
 
