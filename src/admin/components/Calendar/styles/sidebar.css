@@ -331,18 +331,129 @@
   background-color: #c0392b;
 }
 
-/* Responsive */
+/* Contenedor de servicios pendientes */
+.servicios-container {
+  margin-top: 1rem;
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Estilos para las tarjetas de servicio */
+.servicio-card {
+  background-color: white;
+  border: 1px solid var(--light-green);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.servicio-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.servicio-card .contenido-servicio h5 {
+  color: var(--dark-green);
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.servicio-card .contenido-servicio p {
+  color: #2c3e50;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.servicio-card .icon-primary {
+  color: var(--primary-green);
+  width: 20px;
+  margin-right: 0.5rem;
+}
+
+.servicio-card .botones-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.servicio-card .btn-link {
+  font-size: 1.2rem;
+  padding: 0.25rem;
+  transition: transform 0.2s ease;
+}
+
+.servicio-card .btn-link:hover {
+  transform: scale(1.1);
+}
+
+.servicio-card .asignar-servicio {
+  color: var(--primary-green);
+}
+
+.servicio-card .eliminar-servicio {
+  color: #e74c3c;
+}
+
+/* Formulario de asignación */
+#asignarForm {
+  padding: 1rem;
+}
+
+#asignarForm .form-label {
+  color: var(--dark-green);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+#asignarForm .form-control {
+  border: 2px solid var(--light-green);
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+#asignarForm .form-control:focus {
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 2px rgba(135, 201, 71, 0.2);
+  outline: none;
+}
+
+/* Detalles del servicio en modal */
+.detalles-servicio {
+  text-align: left;
+  padding: 1rem;
+}
+
+.detalles-servicio p {
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+}
+
+.detalles-servicio strong {
+  color: var(--dark-green);
+  margin-right: 0.5rem;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .context-menu {
-    min-width: 180px;
+  .servicios-container {
+    max-height: 300px;
   }
-
-  .context-menu-item {
-    padding: 0.625rem 0.875rem;
+  
+  .servicio-card {
+    padding: 0.75rem;
   }
-
-  .edit-tecnico-modal {
-    padding: 1rem;
-    margin: 0.5rem;
+  
+  .servicio-card .contenido-servicio h5 {
+    font-size: 0.9rem;
+  }
+  
+  .servicio-card .contenido-servicio p {
+    font-size: 0.8rem;
   }
 }

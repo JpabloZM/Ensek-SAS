@@ -1,256 +1,160 @@
 import React from "react";
 import { useAlertas } from "../../hooks/useAlertas";
 import Swal from "sweetalert2";
-import "./styles/servicio-card.css";
+import "./styles/services.css";
 
 const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
-  const { mostrarAlerta, mostrarConfirmacion } = useAlertas();
-
-  const handleClick = async (e) => {
-    if (!e.target.closest(".eliminar-servicio")) {
-      await mostrarAlerta({
-        title: servicio.nombre,
-        html: `
-          <div class="text-left">
-            <p style="color: #004122; margin-bottom: 1rem;">
-              <strong><i class="fas fa-clock" style="color: #87c947;"></i> Duración:</strong> 
-              ${servicio.duracion} minutos
-            </p>
-            <p style="color: #004122;">
-              <strong><i class="fas fa-info-circle" style="color: #87c947;"></i> Descripción:</strong>
-              ${servicio.descripcion}
-            </p>
-          </div>
-        `,
-        showConfirmButton: true,
-        confirmButtonText: "Cerrar",
-        confirmButtonColor: "#87c947",
-        background: "#ffffff",
-        color: "#004122",
-      });
-    }
+  const { mostrarAlerta } = useAlertas();
+  const handleClick = () => {
+    handleAsignar();
   };
 
-  const handleContextMenu = async (e) => {
-    e.preventDefault();
-
-    Swal.fire({
-      title: servicio.nombre,
-      html: `
-        <div class="d-flex gap-2" style="
-        justify-content: center;
-        display: flex;
-        flex-direction: row;
-        gap: 1rem;
-        ">
-          <button class="btn w-100" id="btnAsignar" 
-          style="
-          background-color: #87c947; color: white; 
-          border: none;
-          border-radius: 8px;
-          padding: 0.7rem 1rem;
-          ">
-
-            <i class="fas fa-calendar-plus me-2"></i>Asignar al Calendario
-          </button>
-
-          <button class="btn btn-danger w-100" id="btnEliminar" 
-          style="
-          background-color: #e74c3c; color: white; 
-          border: none; 
-          border-radius: 8px;
-          padding: 0.7rem 1rem;
-          ">
-
-            <i class="fas fa-trash-alt me-2"></i>Eliminar
-          </button>
-        </div>
-      `,
-      showConfirmButton: false,
-      showCancelButton: false,
-      background: "#ffffff",
-      color: "#004122",
-      didOpen: () => {
-        const btnAsignar = Swal.getPopup().querySelector("#btnAsignar");
-        const btnEliminar = Swal.getPopup().querySelector("#btnEliminar");
-
-        btnAsignar.addEventListener("mouseover", () => {
-          btnAsignar.style.backgroundColor = "#6fa33c";
-        });
-        btnAsignar.addEventListener("mouseout", () => {
-          btnAsignar.style.backgroundColor = "#87c947";
-        });
-        btnAsignar.addEventListener("click", () => {
-          Swal.close();
-          handleAsignarCalendario();
-        });
-        btnEliminar.addEventListener("click", () => {
-          Swal.close();
-          handleEliminar(e);
-        });
-      },
-    });
-  };
-
-  const handleAsignarCalendario = async () => {
-    const tecnicos = JSON.parse(localStorage.getItem("tecnicos")) || [];
-
+  const handleAsignar = async () => {
     const { value: formValues } = await mostrarAlerta({
-      title: "Asignar al Calendario",
-      html: `
-        <form id="asignarForm" class="text-left">
+      title: "Asignar Servicio al Calendario",      html: `
+        <div class="detalles-servicio mb-4">
+          <p><strong>Cliente:</strong> ${servicio.clientName}</p>
+          <p><strong>Contacto:</strong> ${servicio.clientEmail} | ${servicio.clientPhone}</p>
+          <p><strong>Dirección:</strong> ${servicio.address}</p>
+          <p><strong>Descripción:</strong> ${servicio.descripcion}</p>
+        </div>
+        <form id="asignarForm">
           <div class="mb-3">
-            <label class="form-label" style="color: #004122;">Técnico</label>
-            <select id="tecnicoSelect" class="form-control" required style="border-color: #c5f198;">
-              <option value="">Seleccione un técnico</option>
-              ${tecnicos
-                .map(
-                  (tecnico) => `
-                <option value="${tecnico.id}">${tecnico.title}</option>
-              `
-                )
-                .join("")}
+            <label class="form-label">Técnico</label>
+            <select id="tecnicoSelect" class="form-control" required>
+              <option value="">Seleccionar técnico...</option>
+              <option value="1">Oscar Morales</option>
+              <option value="2">Francisco Londoño</option>
+              <option value="3">Yeyferson Villada</option>
+              <option value="4">Santiago Henao</option>
+              <option value="5">German Oyola</option>
+              <option value="6">Jhoan Moreno</option>
             </select>
           </div>
           <div class="mb-3">
-            <label class="form-label" style="color: #004122;">Fecha</label>
-            <input type="date" id="fecha" class="form-control" required style="border-color: #c5f198;" value="${
-              new Date().toISOString().split("T")[0]
-            }">
+            <label class="form-label">Fecha</label>
+            <input 
+              type="date" 
+              id="fecha" 
+              class="form-control" 
+              required 
+              min="${new Date().toISOString().split('T')[0]}"
+              value="${new Date(servicio.preferredDate).toISOString().split('T')[0]}"
+            >
           </div>
           <div class="mb-3">
-            <label class="form-label" style="color: #004122;">Hora de inicio</label>
-            <input type="time" id="horaInicio" class="form-control" required style="border-color: #c5f198;">
+            <label class="form-label">Hora de inicio</label>
+            <input type="time" id="horaInicio" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Duración (minutos)</label>
+            <input 
+              type="number" 
+              id="duracion" 
+              class="form-control" 
+              required 
+              min="30" 
+              step="15" 
+              value="${servicio.duracion || 60}"
+            >
           </div>
         </form>
       `,
       showCancelButton: true,
       confirmButtonText: "Asignar",
-      cancelButtonText: "Cancelar",
       confirmButtonColor: "#87c947",
+      cancelButtonText: "Cancelar",
       cancelButtonColor: "#e74c3c",
-      background: "#ffffff",
-      color: "#004122",
       preConfirm: () => {
         const tecnicoId = document.getElementById("tecnicoSelect").value;
         const fecha = document.getElementById("fecha").value;
         const horaInicio = document.getElementById("horaInicio").value;
+        const duracion = document.getElementById("duracion").value;
 
-        if (!tecnicoId || !fecha || !horaInicio) {
-          mostrarAlerta({
-            icon: "error",
-            title: "Error",
-            text: "Por favor complete todos los campos",
-            confirmButtonColor: "#87c947",
-            background: "#f8ffec",
-            color: "#004122",
-          });
+        if (!tecnicoId || !fecha || !horaInicio || !duracion) {
+          Swal.showValidationMessage("Por favor complete todos los campos");
           return false;
         }
 
-        return { tecnicoId, fecha, horaInicio };
-      },
+        return { tecnicoId, fecha, horaInicio, duracion };
+      }
     });
 
     if (formValues) {
-      const { tecnicoId, fecha, horaInicio } = formValues;
-      const tecnico = tecnicos.find((t) => t.id === tecnicoId);
-
-      // Calcular fecha y hora de inicio y fin
+      const { tecnicoId, fecha, horaInicio, duracion } = formValues;
+      
+      // Create calendar event
       const fechaInicio = new Date(`${fecha}T${horaInicio}`);
-      const fechaFin = new Date(
-        fechaInicio.getTime() + servicio.duracion * 60000
-      );
+      const fechaFin = new Date(fechaInicio.getTime() + parseInt(duracion) * 60000);
 
-      // Crear nuevo evento
-      const nuevoEvento = {
-        id: Date.now().toString(),
-        title: servicio.nombre,
+      const eventoCalendario = {
+        id: `evento-${servicio.id}`,
+        title: `${servicio.nombre} - ${servicio.clientName}`,
         start: fechaInicio.toISOString(),
         end: fechaFin.toISOString(),
-        backgroundColor: servicio.color,
-        borderColor: servicio.color,
         resourceId: tecnicoId,
+        backgroundColor: "#87c947",
+        borderColor: "#87c947",
         extendedProps: {
+          estado: "confirmado",
           descripcion: servicio.descripcion,
-          tecnico: tecnico.title,
-          estado: "pendiente",
-        },
+          cliente: servicio.clientName,
+          telefono: servicio.clientPhone,
+          email: servicio.clientEmail,
+          direccion: servicio.address
+        }
       };
 
-      // Agregar el evento al calendario
-      onAsignarServicio(nuevoEvento);
-
-      // Eliminar el servicio de los pendientes
-      onEliminar();
+      onAsignarServicio(eventoCalendario, servicio.id);
 
       mostrarAlerta({
         icon: "success",
         title: "Servicio Asignado",
-        text: "El servicio ha sido asignado al calendario correctamente",
+        text: "El servicio ha sido asignado al calendario",
         timer: 1500,
-        showConfirmButton: false,
-        background: "#f8ffec",
-        color: "#004122",
-      });
-    }
-  };
-
-  const handleEliminar = async (e) => {
-    e.stopPropagation();
-    const result = await mostrarConfirmacion({
-      title: "¿Eliminar Servicio Pendiente?",
-      text: "¿Está seguro de que desea eliminar este servicio pendiente?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#e74c3c",
-      cancelButtonColor: "#87c947",
-      background: "#ffffff",
-      color: "#004122",
-    });
-
-    if (result.isConfirmed) {
-      onEliminar();
-      mostrarAlerta({
-        icon: "success",
-        title: "Eliminado",
-        text: "El servicio pendiente ha sido eliminado",
-        timer: 1500,
-        showConfirmButton: false,
-        background: "#f8ffec",
-        color: "#004122",
+        showConfirmButton: false
       });
     }
   };
 
   return (
-    <div
-      className="servicio-card"
-      draggable={true}
-      data-servicio={JSON.stringify(servicio)}
-      onClick={handleClick}
-      onContextMenu={handleContextMenu}
-    >
+    <div className="servicio-card" onClick={handleClick}>
       <div className="d-flex justify-content-between align-items-start">
         <div className="contenido-servicio">
           <h5>
             <i className="fas fa-tag icon-primary"></i> {servicio.nombre}
           </h5>
           <p className="mb-1">
-            <i className="fas fa-clock icon-primary"></i> {servicio.duracion} minutos
+            <i className="fas fa-user icon-primary"></i> {servicio.clientName}
+          </p>
+          <p className="mb-1">
+            <i className="fas fa-calendar-alt icon-primary"></i> {new Date(servicio.preferredDate).toLocaleDateString()}
           </p>
           <p className="mb-0 descripcion-truncada">
             <i className="fas fa-info-circle icon-primary"></i> {servicio.descripcion}
           </p>
         </div>
-        <button
-          className="btn btn-link text-danger p-0 eliminar-servicio"
-          onClick={handleEliminar}
-        >
-          <i className="fas fa-times"></i>
-        </button>
+        <div className="botones-container">          <button
+            className="btn btn-link text-primary p-0 ver-detalles"
+            onClick={(e) => {
+              e.stopPropagation();
+              mostrarDetallesServicio();
+            }}
+            title="Ver detalles"
+          >
+            <i className="fas fa-info-circle"></i>
+          </button>
+          <button
+            className="btn btn-link text-danger p-0 eliminar-servicio"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEliminar();
+            }}
+            title="Eliminar servicio"
+          >
+            <i className="fas fa-times-circle"></i>
+          </button>
+        </div>
       </div>
     </div>
   );

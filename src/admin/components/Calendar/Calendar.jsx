@@ -13,6 +13,7 @@ import { useAlertas } from "../../hooks/useAlertas";
 import { useAuth } from "../../../hooks/useAuth";
 import { useCalendar } from "../../../hooks/useCalendar";
 import { useServices } from "../../../hooks/useServices";
+import { serviceService } from "../../../client/services/serviceService";
 import "./Calendar.css";
 import "./styles/forms.css";
 
@@ -40,6 +41,8 @@ const Calendar = () => {
     { id: "6", title: "Jhoan Moreno", order: 6 },
   ];
 
+  // Services state and API integration
+  const { services, updateService } = useServices();
   const [serviciosPendientes, setServiciosPendientes] = useState([]);
   const [eventos, setEventos] = useState([]);
   const [tecnicos, setTecnicos] = useState(tecnicosIniciales);
@@ -64,6 +67,28 @@ const Calendar = () => {
     setTecnicos(tecnicosIniciales);
     localStorage.setItem("tecnicos", JSON.stringify(tecnicosIniciales));
   }, []);
+
+  // Load pending services when services change
+  useEffect(() => {
+    if (services && services.length > 0) {
+      const pendingServices = services
+        .filter((service) => service.status === "pending")
+        .map((service) => ({
+          id: service._id, // Use MongoDB _id
+          nombre: service.serviceType,
+          descripcion: service.description,
+          duracion: 60,
+          color: "#ffd54f",
+          estado: "pendiente",
+          clientName: service.name,
+          clientEmail: service.email,
+          clientPhone: service.phone,
+          address: service.address,
+          preferredDate: service.preferredDate,
+        }));
+      setServiciosPendientes(pendingServices);
+    }
+  }, [services]);
 
   const handleAgregarTecnico = async () => {
     const { value: nombreTecnico } = await mostrarAlerta({
@@ -138,26 +163,67 @@ const Calendar = () => {
         color: "#004122",
       });
     }
-  };
+  };  const handleAgregarServicio = async (nuevoServicio) => {
+    try {
+      // Create service in database
+      const createdService = await serviceService.saveService({
+        name: nuevoServicio.clientName,
+        email: nuevoServicio.clientEmail,
+        phone: nuevoServicio.clientPhone,
+        address: nuevoServicio.address || 'No especificada',
+        serviceType: nuevoServicio.serviceType || 'other',
+        description: nuevoServicio.descripcion,
+        preferredDate: nuevoServicio.preferredDate || new Date().toISOString(),
+        document: nuevoServicio.document || 'N/A',
+        status: 'pending'
+      });
 
-  const handleAgregarServicio = (nuevoServicio) => {
-    const serviciosActualizados = [...serviciosPendientes, nuevoServicio];
-    setServiciosPendientes(serviciosActualizados);
-    localStorage.setItem(
-      "serviciosPendientes",
-      JSON.stringify(serviciosActualizados)
-    );
+      // Map MongoDB document to local service format
+      const localService = {
+        id: createdService._id,
+        nombre: createdService.serviceType,
+        descripcion: createdService.description,
+        duracion: 60, // Default duration in minutes
+        color: "#ffd54f", // Color for pending state
+        estado: "pendiente",
+        clientName: createdService.name,
+        clientEmail: createdService.email,
+        clientPhone: createdService.phone,
+        address: createdService.address,
+        preferredDate: createdService.preferredDate
+      };
+      
+      // Add to local state
+      const serviciosActualizados = [...serviciosPendientes, localService];
+      setServiciosPendientes(serviciosActualizados);
+      
+      return createdService;
+    } catch (error) {
+      console.error("Error al crear servicio:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo crear el servicio. Por favor, intente nuevamente.",
+        confirmButtonColor: "#87c947",
+      });
+      throw error;
+    }
   };
-
-  const handleEliminarServicio = (id) => {
-    const serviciosActualizados = serviciosPendientes.filter(
-      (servicio) => servicio.id !== id
-    );
-    setServiciosPendientes(serviciosActualizados);
-    localStorage.setItem(
-      "serviciosPendientes",
-      JSON.stringify(serviciosActualizados)
-    );
+  const handleEliminarServicio = async (servicioId) => {
+    try {
+      await serviceService.deleteService(servicioId);
+      const serviciosActualizados = serviciosPendientes.filter(
+        (servicio) => servicio.id !== servicioId
+      );
+      setServiciosPendientes(serviciosActualizados);
+    } catch (error) {
+      console.error("Error al eliminar servicio:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo eliminar el servicio. Por favor, intente nuevamente.",
+      });
+    }
   };
 
   const handleEventDrop = async (info) => {
@@ -970,11 +1036,36 @@ const Calendar = () => {
       });
     }
   };
+  const handleAsignarServicio = async (eventoCalendario, servicioId) => {
+    try {
+      // Update service in MongoDB
+      const updatedService = await serviceService.updateService(servicioId, {
+        status: "confirmed",
+        assignedTechnician: eventoCalendario.resourceId,
+        scheduledStart: eventoCalendario.start,
+        scheduledEnd: eventoCalendario.end
+      });
 
-  const handleAsignarServicio = (nuevoEvento) => {
-    const eventosActualizados = [...eventos, nuevoEvento];
-    setEventos(eventosActualizados);
-    localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
+      // Update UI state
+      setEventos((prevEventos) => [...prevEventos, eventoCalendario]);
+      setServiciosPendientes((prevServicios) =>
+        prevServicios.filter((s) => s.id !== servicioId)
+      );
+
+      // Save events to localStorage for now (this can be moved to MongoDB later)
+      const eventosActualizados = [...eventos, eventoCalendario];
+      localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
+
+      return true;
+    } catch (error) {
+      console.error("Error al asignar servicio:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo asignar el servicio. Por favor, intente nuevamente.",
+      });
+      return false;
+    }
   };
 
   const handleDateClick = (info) => {
@@ -1084,7 +1175,6 @@ const Calendar = () => {
       text: `La duración del servicio ha sido actualizada.`,
       timer: 2000,
       timerProgressBar: true,
-      showConfirmButton: false,
       background: "#f8ffec",
       color: "#004122",
     });
