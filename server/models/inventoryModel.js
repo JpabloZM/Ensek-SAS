@@ -34,6 +34,11 @@ const inventoryItemSchema = new mongoose.Schema(
       type: Number,
       min: [0, "Price cannot be negative"],
     },
+    status: {
+      type: String,
+      enum: ["available", "low_stock", "out_of_stock"],
+      default: "available",
+    },
   },
   {
     timestamps: true,

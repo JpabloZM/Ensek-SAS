@@ -29,7 +29,12 @@ const inventoryService = {
 
   create: async (itemData) => {
     try {
-      const response = await axios.post(API_URL, itemData, getAuthConfig());
+      const data = {
+        ...itemData,
+        status: calculateStatus(itemData.quantity, itemData.minimum_stock),
+      };
+
+      const response = await axios.post(API_URL, data, getAuthConfig());
       return response.data;
     } catch (error) {
       throw new Error("Error al crear el item");
@@ -38,9 +43,14 @@ const inventoryService = {
 
   update: async (id, itemData) => {
     try {
+      const data = {
+        ...itemData,
+        status: calculateStatus(itemData.quantity, itemData.minimum_stock),
+      };
+
       const response = await axios.put(
         `${API_URL}/${id}`,
-        itemData,
+        data,
         getAuthConfig()
       );
       return response.data;

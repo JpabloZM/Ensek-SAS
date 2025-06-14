@@ -1,12 +1,24 @@
 // Inventory controller
 import InventoryItem from "../models/InventoryItem.js";
 
+// Calculate item status based on quantity and minimum stock
+const calculateStatus = (quantity, minimum_stock) => {
+  if (quantity <= 0) return "out_of_stock";
+  if (quantity <= minimum_stock) return "low_stock";
+  return "available";
+};
+
 // @desc    Create a new inventory item
 // @route   POST /api/inventory
 // @access  Private/Admin
 export const createInventoryItem = async (req, res) => {
   try {
-    const item = new InventoryItem(req.body);
+    const itemData = {
+      ...req.body,
+      status: calculateStatus(req.body.quantity, req.body.minimum_stock),
+    };
+
+    const item = new InventoryItem(itemData);
     await item.save();
     res.status(201).json(item);
   } catch (error) {
@@ -22,7 +34,18 @@ export const createInventoryItem = async (req, res) => {
 export const getInventoryItems = async (req, res) => {
   try {
     const items = await InventoryItem.find().sort({ createdAt: -1 });
-    res.json(items);
+
+    // Update status for each item
+    const updatedItems = items.map((item) => {
+      const status = calculateStatus(item.quantity, item.minimum_stock);
+      if (item.status !== status) {
+        // Update item status in database if it has changed
+        InventoryItem.findByIdAndUpdate(item._id, { status }).exec();
+      }
+      return { ...item.toObject(), status };
+    });
+
+    res.json(updatedItems);
   } catch (error) {
     res.status(500).json({
       message: "Error al obtener los items del inventario",
@@ -53,9 +76,14 @@ export const getInventoryItemById = async (req, res) => {
 // @access  Private/Admin
 export const updateInventoryItem = async (req, res) => {
   try {
+    const updateData = {
+      ...req.body,
+      status: calculateStatus(req.body.quantity, req.body.minimumStock),
+    };
+
     const item = await InventoryItem.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     );
     if (!item) {
