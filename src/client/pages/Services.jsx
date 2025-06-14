@@ -32,9 +32,9 @@ const Services = () => {
       icon: "fas fa-leaf",
     },
   ];
-
   const handleCardClick = (serviceType) => {
-    navigate("/app/servicios/formulario", { state: { serviceType } }); // Navega y pasa el tipo de servicio
+    // Pass the service type both in state and URL parameter for better compatibility
+    navigate(`/app/servicios/formulario?serviceType=${serviceType}`, { state: { serviceType } });
   };
 
   return (

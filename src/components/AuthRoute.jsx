@@ -27,11 +27,17 @@ const AuthRoute = ({
       </div>
     );
   }
-
   // Case 1: Route requires authentication but user is not logged in
   if (requiredAuth && !user) {
-    console.log('AuthRoute: Authentication required but no user found, redirecting to', redirectTo);
-    return <Navigate to={redirectTo} state={{ from: location.pathname }} replace />;
+    // Get service type from state or URL search params if they exist
+    const serviceType = location.state?.serviceType || 
+                        new URLSearchParams(location.search).get('serviceType');
+    
+    // Always redirect to login and preserve the full intended path and service type
+    return <Navigate to="/login" state={{ 
+      from: location, 
+      serviceType: serviceType // Pass service type to login
+    }} replace />;
   }
 
   // Case 2: Route requires authentication and specific roles

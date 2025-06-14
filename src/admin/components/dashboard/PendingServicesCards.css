@@ -1,0 +1,166 @@
+/* Estilos para la sección de servicios pendientes */
+.servicios-container {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  max-height: calc(100vh - 500px);
+  overflow-y: auto;
+}
+
+.servicios-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.servicios-container::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+
+.servicios-container::-webkit-scrollbar-thumb {
+  background-color: #87c947;
+  border-radius: 3px;
+}
+
+.servicios-container::-webkit-scrollbar-thumb:hover {
+  background-color: #78b33d;
+}
+
+/* Tarjeta de servicio */
+.servicio-card {
+  background-color: #ffffff;
+  border: 2px solid #c5f198;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.servicio-card:hover {
+  border-color: #87c947;
+  box-shadow: 0 4px 8px rgba(135, 201, 71, 0.15);
+  transform: translateY(-2px);
+}
+
+.servicio-card .contenido-servicio {
+  flex: 1;
+}
+
+.servicio-card h5 {
+  color: #004122;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.servicio-card p {
+  color: #2c3e50;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.servicio-card .icon-primary {
+  color: #87c947;
+  font-size: 0.875rem;
+  width: 16px;
+}
+
+.servicio-card .descripcion-truncada {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+/* Botones de la tarjeta */
+.servicio-card .botones-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.servicio-card .btn {
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.servicio-card .btn-link.text-success i {
+  color: #87c947;
+  font-size: 1.25rem;
+}
+
+.servicio-card .btn-link.text-danger i {
+  color: #e74c3c;
+  font-size: 1.25rem;
+}
+
+.servicio-card .btn-link:hover.text-success i {
+  color: #78b33d;
+}
+
+.servicio-card .btn-link:hover.text-danger i {
+  color: #c0392b;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.no-services-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 0;
+}
+
+.no-services-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 0;
+}
+
+.service-details-popup {
+  text-align: left;
+  padding: 1rem;
+  background-color: #f8ffec;
+  border-radius: 8px;
+}
+
+.service-details-popup p {
+  margin-bottom: 0.75rem;
+}
+
+/* Extras para compatibilidad con Dashboard */
+.recent-requests h2 {
+  color: #004122;
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .servicios-container {
+    max-height: auto;
+    padding: 0.5rem 0;
+  }
+  
+  .servicio-card .botones-container {
+    flex-direction: row;
+  }
+}

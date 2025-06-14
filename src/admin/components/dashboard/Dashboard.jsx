@@ -1,13 +1,49 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useServices } from "../../../hooks/useServices";
+import PendingServicesCards from "./PendingServicesCards";
 import "./Dashboard.css";
 
 const Dashboard = () => {
+  // We use the same hook instance for both Dashboard and PendingServicesCards
+  // to avoid duplicate API calls
+  const { services, loading } = useServices();
   const [stats, setStats] = useState({
-    serviciosPendientes: 5,
-    serviciosHoy: 3,
-    serviciosCompletados: 12,
+    serviciosPendientes: 0,
+    serviciosHoy: 0,
+    serviciosCompletados: 0,
     tecnicosActivos: 4,
   });
+    useEffect(() => {
+    // Check if user is logged in
+    const userString = localStorage.getItem("user");
+    if (!userString) {
+      console.warn("No user logged in. Cannot fetch services.");
+      return;
+    }
+    
+    if (services && services.length > 0) {
+      // Calculate stats based on actual service data
+      const pendingCount = services.filter(s => s.status === 'pending').length;
+      const completedCount = services.filter(s => s.status === 'completed').length;
+      
+      // Count services scheduled for today
+      const today = new Date();
+      const todayStart = new Date(today.setHours(0, 0, 0, 0));
+      const todayEnd = new Date(today.setHours(23, 59, 59, 999));
+      
+      const todayServices = services.filter(s => {
+        const serviceDate = new Date(s.preferredDate);
+        return serviceDate >= todayStart && serviceDate <= todayEnd;
+      }).length;
+      
+      setStats({
+        serviciosPendientes: pendingCount,
+        serviciosHoy: todayServices,
+        serviciosCompletados: completedCount,
+        tecnicosActivos: 4, // Esto podría ser dinámico si tienes datos de técnicos
+      });
+    }
+  }, [services]);
 
   const [solicitudesRecientes, setSolicitudesRecientes] = useState([
     {
@@ -106,8 +142,10 @@ const Dashboard = () => {
               ))}
             </tbody>
           </table>
-        </div>
-      </section>
+        </div>      </section>
+      
+      {/* Pending Services Cards Section */}
+      <PendingServicesCards />
     </div>
   );
 };

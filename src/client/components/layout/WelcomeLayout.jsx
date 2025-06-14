@@ -66,10 +66,9 @@ const WelcomeLayout = () => {
 
         <div className="navbar-logo">
           <Link to="/">ENSEK</Link>
-        </div>
-        <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
+        </div>        <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
           <Link to="/">Inicio</Link>
-          <Link to="/servicios">Servicios</Link>
+          <Link to="/app/servicios">Servicios</Link>
           <Link to="/login">Iniciar sesión</Link>
           <Link to="/registro">Registrarse</Link>
         </nav>

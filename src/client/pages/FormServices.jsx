@@ -1,24 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import { serviceService } from "../services/serviceService";
+import { useAuth } from "../../hooks/useAuth";
 import "./FormServices.css";
 
 const FormServices = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Si viene un tipo de servicio desde la navegación, úsalo como valor inicial
-  const initialServiceType = location.state?.serviceType || "";
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const { user } = useAuth();
+  
+  // Get service type from state or URL search params
+  const searchParams = new URLSearchParams(location.search);
+  const serviceTypeFromURL = searchParams.get('serviceType');
+  const initialServiceType = location.state?.serviceType || serviceTypeFromURL || "";
+  
+  const [isLoading, setIsLoading] = useState(false);  const [formData, setFormData] = useState({
     name: "",
     phone: "",
     email: "",
+    document: "",
     preferredDate: "",
     serviceType: initialServiceType,
     description: "",
     address: "",
   });
+  
+  // Pre-fill form with user data when available
+  useEffect(() => {
+    if (user) {
+      setFormData(prevData => ({
+        ...prevData,
+        name: user.name || prevData.name,
+        email: user.email || prevData.email
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -27,7 +44,6 @@ const FormServices = () => {
       [id]: value,
     });
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -37,12 +53,13 @@ const FormServices = () => {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
+        document: formData.document,
         address: formData.address || "No especificada",
         serviceType: formData.serviceType,
         description: formData.description || "Sin descripción",
         preferredDate: formData.preferredDate,
       });
-
+      
       // Mostrar alerta de éxito
       await Swal.fire({
         title: "¡Cita Agendada!",
@@ -63,8 +80,8 @@ const FormServices = () => {
         },
       });
 
-      // Redireccionar a la página de servicios
-      navigate("/servicios");
+      // Redireccionar a la página de servicios del cliente
+      navigate("/app/servicios");
     } catch (error) {
       // Mostrar alerta de error
       Swal.fire({
@@ -115,6 +132,16 @@ const FormServices = () => {
             />
           </div>
           <div className="form-group">
+            <label htmlFor="email">Correo Electrónico</label>
+            <input
+              type="email"
+              id="email"
+              placeholder="Tu correo"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>          <div className="form-group">
             <label htmlFor="phone">Teléfono</label>
             <input
               type="tel"
@@ -126,12 +153,12 @@ const FormServices = () => {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="email">Correo Electrónico</label>
+            <label htmlFor="document">Documento de Identidad</label>
             <input
-              type="email"
-              id="email"
-              placeholder="Tu correo"
-              value={formData.email}
+              type="text"
+              id="document"
+              placeholder="Tu documento de identidad"
+              value={formData.document}
               onChange={handleChange}
               required
             />
@@ -199,8 +226,7 @@ const FormServices = () => {
                   "Agendar Cita"
                 )}
               </span>
-            </button>
-            <Link to="/servicios" className="back-link">
+            </button>            <Link to="/app/servicios" className="back-link">
               Volver a Servicios
             </Link>
           </div>

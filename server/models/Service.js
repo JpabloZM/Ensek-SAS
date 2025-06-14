@@ -11,21 +11,24 @@ const serviceSchema = new mongoose.Schema({
     required: [true, 'El email es requerido'],
     trim: true,
     lowercase: true
-  },
-  phone: {
+  },  phone: {
     type: String,
     required: [true, 'El teléfono es requerido'],
+    trim: true
+  },
+  document: {
+    type: String,
+    required: [true, 'El documento de identidad es requerido'],
     trim: true
   },
   address: {
     type: String,
     required: [true, 'La dirección es requerida'],
     trim: true
-  },
-  serviceType: {
+  },serviceType: {
     type: String,
     required: [true, 'El tipo de servicio es requerido'],
-    enum: ['pest-control', 'gardening', 'residential-fumigation', 'commercial-fumigation']
+    enum: ['pest-control', 'gardening', 'residential-fumigation', 'commercial-fumigation', 'other']
   },
   description: {
     type: String,

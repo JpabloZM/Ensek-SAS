@@ -8,14 +8,13 @@ import WelcomeLayout from "./client/components/layout/WelcomeLayout";
 import Home from "./client/pages/Home";
 import Services from "./client/pages/Services";
 import FormServices from "./client/pages/FormServices";
-import AdminLogin from "./admin/auth/Login";
 import AdminRegister from "./admin/auth/Register";
-import ClientLogin from "./client/auth/ClientLogin";
 import Register from "./client/auth/Register";
 import Dashboard from "./admin/pages/Dashboard";
 import Schedule from "./admin/pages/Schedule";
 import Inventory from "./admin/pages/Inventory";
 import AuthRoute from "./components/AuthRoute";
+import UnifiedLogin from "./components/UnifiedLogin";
 import AdminLayout from "./admin/components/layout/AdminLayout";
 import ClientLayout from "./client/components/layout/ClientLayout";
 
@@ -46,17 +45,22 @@ function App() {
             <Route path="welcome" element={<WelcomeLayout />}>
               <Route index element={<Home />} />
             </Route>
-          </Route>
-
-          {/* Client dashboard and pages */}
-          <Route path="/app" element={
-            <AuthRoute requiredAuth={true} allowedRoles={['user']} redirectTo="/login">
-              <ClientLayout />
-            </AuthRoute>
-          }>
-            <Route index element={<Home />} />
+          </Route>          {/* Client dashboard and pages */}
+          <Route path="/app" element={<ClientLayout />}>
+            {/* Home and dashboard require authentication */}
+            <Route index element={
+              <AuthRoute requiredAuth={true} allowedRoles={['user']} redirectTo="/login">
+                <Home />
+              </AuthRoute>
+            } />
+            {/* Services page is accessible to all users */}
             <Route path="servicios" element={<Services />} />
-            <Route path="servicios/formulario" element={<FormServices />} />
+            {/* Service form requires authentication */}
+            <Route path="servicios/formulario" element={
+              <AuthRoute requiredAuth={true} allowedRoles={['user']} redirectTo="/login">
+                <FormServices />
+              </AuthRoute>
+            } />
           </Route>
 
           {/* Admin dashboard and pages */}
@@ -68,12 +72,10 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="calendario" element={<Schedule />} />
             <Route path="inventario" element={<Inventory />} />
-          </Route>
-
-          {/* Auth pages */}
+          </Route>          {/* Auth pages */}
           <Route path="/login" element={
             <AuthRoute requiredAuth={false} redirectTo="/">
-              <ClientLogin />
+              <UnifiedLogin />
             </AuthRoute>
           } />
           <Route path="/registro" element={

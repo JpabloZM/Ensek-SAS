@@ -66,7 +66,7 @@ const inventoryItems = [
     name: 'Pesticide A',
     category: 'chemical',
     quantity: 50,
-    unitOfMeasure: 'liters',
+    unitOfMeasure: 'ml',
     description: 'General purpose pesticide for household pests',
     minimumStock: 10,
     price: 25.99,
@@ -75,7 +75,7 @@ const inventoryItems = [
     name: 'Garden Shears',
     category: 'tool',
     quantity: 15,
-    unitOfMeasure: 'units',
+    unitOfMeasure: 'unidad',
     description: 'Professional garden shears for pruning',
     minimumStock: 5,
     price: 45.50,
@@ -84,7 +84,7 @@ const inventoryItems = [
     name: 'Worker Uniform',
     category: 'uniform',
     quantity: 20,
-    unitOfMeasure: 'units',
+    unitOfMeasure: 'unidad',
     description: 'Standard worker uniform with company logo',
     minimumStock: 8,
     price: 35.00,
@@ -99,14 +99,11 @@ const seedData = async () => {
     await ServiceRequest.deleteMany();
     await InventoryItem.deleteMany();
 
-    console.log('Data cleared...');
-
-    // Create users with hashed passwords
+    console.log('Data cleared...');    // Create users with plaintext passwords - the User model will hash them
     const createdUsers = await Promise.all(
       users.map(async (user) => {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(user.password, salt);
-        return await User.create({ ...user, password: hashedPassword });
+        // Let the pre-save hook in the User model handle password hashing
+        return await User.create(user);
       })
     );
 

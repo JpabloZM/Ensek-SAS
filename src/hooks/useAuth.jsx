@@ -32,22 +32,37 @@ export const useAuth = () => {
     }
     setLoading(false);
   }, []);
-
   const login = async (email, password) => {
     try {
       setLoading(true);
       setError(null); // Clear any previous errors
+      
+      console.log(`Sending login request to ${apiService.auth.login.toString()}`);
+      console.log(`Email: ${email}, Password: ${password.substring(0, 1)}${'*'.repeat(password.length - 1)}`);
+      
       const data = await apiService.auth.login(email, password);
+      console.log("Server response:", data);
       
       if (data && data.user && data.user.token) {
         localStorage.setItem("user", JSON.stringify(data.user));
         setUser(data.user);
         return data.user;
       } else {
+        console.error("Invalid response structure:", data);
         throw new Error("Login successful but received invalid user data");
       }
     } catch (error) {
-      setError(error.message);
+      console.error("Login error details:", error);
+      
+      // Create a more descriptive error message
+      let errorMessage = "Error de autenticación";
+      
+      if (error.response && error.response.data) {
+        errorMessage = error.response.data.message || errorMessage;
+        console.error("Server error response:", error.response.data);
+      }
+      
+      setError(errorMessage);
       throw error;
     } finally {
       setLoading(false);
