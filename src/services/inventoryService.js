@@ -13,7 +13,7 @@ const getAuthConfig = () => {
 
 const calculateStatus = (quantity, minStock) => {
   if (quantity <= 0) return "out_of_stock";
-  if (quantity <= minStock) return "low_stock";
+  if (quantity < minStock) return "low_stock";
   return "available";
 };
 

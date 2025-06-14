@@ -347,9 +347,26 @@ tr:last-child td {
   border: 2px solid #c5f198;
   border-radius: 8px;
   font-size: 0.95rem;
-  color: #2c3e50;
-  background-color: #ffffff;
+  color: #000000;
+  background-color: #ffffff !important;
   transition: all 0.3s ease;
+  caret-color: #000000;
+}
+
+/* Estilos específicos para inputs numéricos */
+.form-group input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+  appearance: textfield;
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  caret-color: #000000 !important;
+}
+
+/* Quitar flechas de incremento/decremento en Chrome y Safari */
+.form-group input[type="number"]::-webkit-inner-spin-button,
+.form-group input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .form-group input:focus,
@@ -357,6 +374,7 @@ tr:last-child td {
   border-color: #87c947;
   box-shadow: 0 0 0 3px rgba(135, 201, 71, 0.2);
   outline: none;
+  background-color: #ffffff;
 }
 
 .form-group textarea {
@@ -420,7 +438,7 @@ tr:last-child td {
   border: 2px solid #c5f198;
   border-radius: 8px;
   font-size: 0.95rem;
-  color: #2c3e50;
+  color: #000000 !important;
   background-color: #ffffff !important;
   cursor: pointer;
   appearance: none;
@@ -435,13 +453,14 @@ tr:last-child td {
 
 .form-group select option {
   background-color: #ffffff;
-  color: #2c3e50;
+  color: #000000;
 }
 
 .form-group select:focus {
   border-color: #87c947;
   box-shadow: 0 0 0 3px rgba(135, 201, 71, 0.2);
   outline: none;
+  background-color: #ffffff !important;
 }
 
 .form-group .unit-select {

@@ -6,7 +6,7 @@ import "./Inventory.css";
 
 const calculateStatus = (quantity, minimumStock) => {
   if (quantity <= 0) return "out_of_stock";
-  if (quantity <= minimumStock) return "low_stock";
+  if (quantity < minimumStock) return "low_stock";
   return "available";
 };
 
@@ -18,7 +18,7 @@ const Inventory = () => {
   const [formData, setFormData] = useState({
     name: "",
     quantity: "",
-    unit: "un",
+    unit: "",
     unit_price: "",
     minimum_stock: "",
     status: "available",
@@ -186,10 +186,10 @@ const Inventory = () => {
       setEditingItem(null);
       setFormData({
         name: "",
-        quantity: 0,
+        quantity: "",
         unit: "un",
-        unit_price: 0,
-        minimum_stock: 0,
+        unit_price: "",
+        minimum_stock: "",
         status: "available",
       });
     } catch (error) {
@@ -348,10 +348,10 @@ const Inventory = () => {
                     setEditingItem(null);
                     setFormData({
                       name: "",
-                      quantity: 0,
+                      quantity: "",
                       unit: "un",
-                      unit_price: 0,
-                      minimum_stock: 0,
+                      unit_price: "",
+                      minimum_stock: "",
                       status: "available",
                     });
                   }}
