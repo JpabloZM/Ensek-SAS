@@ -1,26 +1,15 @@
-// Datos de ejemplo para el inventario
-const mockInventoryItems = [
-  {
-    id: 1,
-    name: "Insecticida MultiAction",
-    description: "Insecticida de amplio espectro",
-    quantity: 50,
-    unit: "litros",
-    minStock: 10,
-    category: "insecticidas",
-    status: "available",
-  },
-  {
-    id: 2,
-    name: "Raticida Block",
-    description: "Cebo rodenticida en bloques",
-    quantity: 100,
-    unit: "unidades",
-    minStock: 20,
-    category: "rodenticidas",
-    status: "available",
-  },
-];
+import axios from "axios";
+
+const API_URL = "http://localhost:5000/api/inventory";
+
+const getAuthConfig = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  return {
+    headers: {
+      Authorization: `Bearer ${user?.token}`,
+    },
+  };
+};
 
 const calculateStatus = (quantity, minStock) => {
   if (quantity <= 0) return "out_of_stock";
@@ -31,8 +20,8 @@ const calculateStatus = (quantity, minStock) => {
 const inventoryService = {
   getAll: async () => {
     try {
-      const stored = localStorage.getItem("inventory");
-      return stored ? JSON.parse(stored) : mockInventoryItems;
+      const response = await axios.get(API_URL, getAuthConfig());
+      return response.data;
     } catch (error) {
       throw new Error("Error al obtener el inventario");
     }
@@ -40,15 +29,8 @@ const inventoryService = {
 
   create: async (itemData) => {
     try {
-      const items = await inventoryService.getAll();
-      const newItem = {
-        id: items.length + 1,
-        ...itemData,
-        status: calculateStatus(itemData.quantity, itemData.minStock),
-      };
-      const updatedItems = [...items, newItem];
-      localStorage.setItem("inventory", JSON.stringify(updatedItems));
-      return newItem;
+      const response = await axios.post(API_URL, itemData, getAuthConfig());
+      return response.data;
     } catch (error) {
       throw new Error("Error al crear el item");
     }
@@ -56,18 +38,12 @@ const inventoryService = {
 
   update: async (id, itemData) => {
     try {
-      const items = await inventoryService.getAll();
-      const index = items.findIndex((item) => item.id === id);
-      if (index === -1) throw new Error("Item no encontrado");
-
-      const updatedItem = {
-        ...items[index],
-        ...itemData,
-        status: calculateStatus(itemData.quantity, itemData.minStock),
-      };
-      items[index] = updatedItem;
-      localStorage.setItem("inventory", JSON.stringify(items));
-      return updatedItem;
+      const response = await axios.put(
+        `${API_URL}/${id}`,
+        itemData,
+        getAuthConfig()
+      );
+      return response.data;
     } catch (error) {
       throw new Error("Error al actualizar el item");
     }
@@ -75,9 +51,7 @@ const inventoryService = {
 
   delete: async (id) => {
     try {
-      const items = await inventoryService.getAll();
-      const updatedItems = items.filter((item) => item.id !== id);
-      localStorage.setItem("inventory", JSON.stringify(updatedItems));
+      await axios.delete(`${API_URL}/${id}`, getAuthConfig());
     } catch (error) {
       throw new Error("Error al eliminar el item");
     }

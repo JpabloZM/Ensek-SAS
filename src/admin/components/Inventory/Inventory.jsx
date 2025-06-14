@@ -4,94 +4,14 @@ import { useAlertas } from "../../hooks/useAlertas";
 import Swal from "sweetalert2";
 import "./Inventory.css";
 
-// Datos de ejemplo para el inventario
-const datosEjemplo = [
-  {
-    id: 1,
-    name: "Insecticida Multiusos Premium",
-    quantity: 50,
-    unit: "ml",
-    unit_price: 45000,
-    minimum_stock: 15,
-    description:
-      "Insecticida de amplio espectro para control de plagas domésticas y jardín",
-    status: "available",
-  },
-  {
-    id: 2,
-    name: "Gel Cucarachicida Profesional",
-    quantity: 5,
-    unit: "gr",
-    unit_price: 120000,
-    minimum_stock: 8,
-    description: "Gel especial para el control de cucarachas en áreas críticas",
-    status: "low_stock",
-  },
-  {
-    id: 3,
-    name: "Trampa UV para Insectos",
-    quantity: 0,
-    unit: "un",
-    unit_price: 280000,
-    minimum_stock: 5,
-    description:
-      "Trampa de luz UV para control de insectos voladores, uso comercial",
-    status: "out_of_stock",
-  },
-  {
-    id: 4,
-    name: "Rodenticida en Bloque",
-    quantity: 75,
-    unit: "gr",
-    unit_price: 35000,
-    minimum_stock: 20,
-    description: "Cebo en bloque para control de roedores, uso profesional",
-    status: "available",
-  },
-  {
-    id: 5,
-    name: "Nebulizador ULV Portátil",
-    quantity: 8,
-    unit: "un",
-    unit_price: 1200000,
-    minimum_stock: 3,
-    description: "Equipo nebulizador ULV para aplicación de insecticidas",
-    status: "available",
-  },
-  {
-    id: 6,
-    name: "Insecticida Concentrado",
-    quantity: 25,
-    unit: "ml",
-    unit_price: 85000,
-    minimum_stock: 10,
-    description: "Insecticida concentrado para dilución, uso profesional",
-    status: "available",
-  },
-  {
-    id: 7,
-    name: "Estación Cebo Roedores",
-    quantity: 120,
-    unit: "un",
-    unit_price: 15000,
-    minimum_stock: 30,
-    description: "Estación de cebo segura para control de roedores",
-    status: "available",
-  },
-  {
-    id: 8,
-    name: "Larvicida Biológico",
-    quantity: 4,
-    unit: "gr",
-    unit_price: 95000,
-    minimum_stock: 6,
-    description: "Control biológico de larvas de mosquitos y otros insectos",
-    status: "low_stock",
-  },
-];
+const calculateStatus = (quantity, minimumStock) => {
+  if (quantity <= 0) return "out_of_stock";
+  if (quantity <= minimumStock) return "low_stock";
+  return "available";
+};
 
 const Inventory = () => {
-  const [items, setItems] = useState(datosEjemplo);
+  const [items, setItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterState, setFilterState] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -218,7 +138,7 @@ const Inventory = () => {
     if (result.isConfirmed) {
       try {
         // Eliminar el item de la base de datos
-        await deleteItem(id);
+        await deleteItem(id); // MongoDB usa el _id tal cual viene de la base de datos
 
         // Recargar la lista
         await loadInventory();
@@ -252,7 +172,7 @@ const Inventory = () => {
 
     try {
       // Actualizar el item en la base de datos
-      await updateItem(editingItem.id, formData);
+      await updateItem(editingItem._id, formData);
 
       // Recargar la lista
       await loadInventory();
@@ -484,7 +404,7 @@ const Inventory = () => {
             <tbody>
               {filteredItems.length > 0 ? (
                 filteredItems.map((item) => (
-                  <tr key={item.id}>
+                  <tr key={item._id}>
                     <td title={item.name}>{item.name}</td>
                     <td>{item.quantity}</td>
                     <td>{item.unit}</td>
@@ -507,7 +427,7 @@ const Inventory = () => {
                       </button>
                       <button
                         className="btn-eliminar"
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => handleDelete(item._id)}
                         title="Eliminar"
                       >
                         <i className="fas fa-trash"></i>
