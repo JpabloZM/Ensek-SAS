@@ -36,9 +36,8 @@ const Calendar = () => {
     { id: "1", title: "Oscar Morales", order: 1 },
     { id: "2", title: "Francisco Londoño", order: 2 },
     { id: "3", title: "Yeyferson Villada", order: 3 },
-    { id: "4", title: "Santiago Henao", order: 4 },
-    { id: "5", title: "German Oyola", order: 5 },
-    { id: "6", title: "Jhoan Moreno", order: 6 },
+    { id: "5", title: "German Oyola", order: 4 },
+    { id: "6", title: "Jhoan Moreno", order: 5 },
   ];
 
   // Services state and API integration
@@ -163,19 +162,20 @@ const Calendar = () => {
         color: "#004122",
       });
     }
-  };  const handleAgregarServicio = async (nuevoServicio) => {
+  };
+  const handleAgregarServicio = async (nuevoServicio) => {
     try {
       // Create service in database
       const createdService = await serviceService.saveService({
         name: nuevoServicio.clientName,
         email: nuevoServicio.clientEmail,
         phone: nuevoServicio.clientPhone,
-        address: nuevoServicio.address || 'No especificada',
-        serviceType: nuevoServicio.serviceType || 'other',
+        address: nuevoServicio.address || "No especificada",
+        serviceType: nuevoServicio.serviceType || "other",
         description: nuevoServicio.descripcion,
         preferredDate: nuevoServicio.preferredDate || new Date().toISOString(),
-        document: nuevoServicio.document || 'N/A',
-        status: 'pending'
+        document: nuevoServicio.document || "N/A",
+        status: "pending",
       });
 
       // Map MongoDB document to local service format
@@ -190,13 +190,13 @@ const Calendar = () => {
         clientEmail: createdService.email,
         clientPhone: createdService.phone,
         address: createdService.address,
-        preferredDate: createdService.preferredDate
+        preferredDate: createdService.preferredDate,
       };
-      
+
       // Add to local state
       const serviciosActualizados = [...serviciosPendientes, localService];
       setServiciosPendientes(serviciosActualizados);
-      
+
       return createdService;
     } catch (error) {
       console.error("Error al crear servicio:", error);
@@ -489,20 +489,14 @@ const Calendar = () => {
       });
     });
   }, [tecnicos]);
-
   // Contenido personalizado para las etiquetas de recursos
   const resourceLabelContent = useCallback((arg) => {
-    // Dividir el nombre completo en nombre y apellido
+    // Obtener el nombre completo y dividirlo en palabras
     const fullName = arg.resource.title;
-    let firstName = fullName;
-    let lastName = "";
+    const names = fullName.split(" ");
 
-    // Buscar el primer espacio para separar nombre y apellido
-    const spaceIndex = fullName.indexOf(" ");
-    if (spaceIndex > 0) {
-      firstName = fullName.substring(0, spaceIndex);
-      lastName = fullName.substring(spaceIndex + 1);
-    }
+    // Obtener las iniciales de cada palabra
+    const initials = names.map((name) => name.charAt(0).toUpperCase()).join("");
 
     return {
       html: `<div class="resource-label" 
@@ -510,8 +504,7 @@ const Calendar = () => {
               data-resource-id="${arg.resource.id}" 
               title="${fullName}">
               <div class="tecnico-nombre">
-                <span class="tecnico-nombre-first">${firstName}</span>
-                <span class="tecnico-nombre-last">${lastName}</span>
+                <span class="tecnico-initials">${initials}</span>
               </div>
           </div>`,
     };
@@ -1043,7 +1036,7 @@ const Calendar = () => {
         status: "confirmed",
         assignedTechnician: eventoCalendario.resourceId,
         scheduledStart: eventoCalendario.start,
-        scheduledEnd: eventoCalendario.end
+        scheduledEnd: eventoCalendario.end,
       });
 
       // Update UI state

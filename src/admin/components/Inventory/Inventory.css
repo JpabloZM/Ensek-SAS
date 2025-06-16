@@ -322,17 +322,17 @@ tr:last-child td {
   text-align: center;
 }
 
-.form-group {
+.inventory .form-group {
   margin-bottom: 1rem;
 }
 
-.form-row {
+.inventory .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
-.form-group label {
+.inventory .form-group label {
   display: block;
   margin-bottom: 0.5rem;
   color: #004122;
@@ -340,44 +340,57 @@ tr:last-child td {
   font-size: 0.95rem;
 }
 
-.form-group input,
-.form-group textarea {
+.inventory .form-group input,
+.inventory .form-group textarea,
+.inventory .form-group select {
   width: 100%;
   padding: 0.75rem;
   border: 2px solid #c5f198;
   border-radius: 8px;
   font-size: 0.95rem;
   color: #000000;
-  background-color: #ffffff !important;
+  background-color: #ffffff;
   transition: all 0.3s ease;
   caret-color: #000000;
 }
 
 /* Estilos específicos para inputs numéricos */
-.form-group input[type="number"] {
+.inventory .form-group input[type="number"] {
   -moz-appearance: textfield; /* Firefox */
   appearance: textfield;
-  color: #000000 !important;
-  background-color: #ffffff !important;
-  caret-color: #000000 !important;
+  color: #000000;
+  background-color: #ffffff;
+  caret-color: #000000;
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #c5f198;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.inventory .form-group input[type="number"]:hover,
+.inventory .form-group input[type="number"]:focus {
+  border-color: #87c947;
 }
 
 /* Quitar flechas de incremento/decremento en Chrome y Safari */
-.form-group input[type="number"]::-webkit-inner-spin-button,
-.form-group input[type="number"]::-webkit-outer-spin-button {
+.inventory .form-group input[type="number"]::-webkit-inner-spin-button,
+.inventory .form-group input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
+.inventory .form-group input:focus,
+.inventory .form-group textarea:focus,
+.inventory .form-group select:focus {
   border-color: #87c947;
   box-shadow: 0 0 0 3px rgba(135, 201, 71, 0.2);
   outline: none;
   background-color: #ffffff;
 }
 
-.form-group textarea {
+.inventory .form-group textarea {
   min-height: 100px;
   resize: vertical;
 }
@@ -390,24 +403,31 @@ tr:last-child td {
 }
 
 .form-buttons button {
-  padding: 0.5rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
+  border: none;
+  transition: all 0.3s ease;
 }
 
 .form-buttons button[type="button"] {
-  background: none;
-  border: 1px solid #ddd;
+  background-color: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
 }
 
-.form-buttons .submit-button {
+.form-buttons button[type="submit"] {
   background-color: #87c947;
   color: white;
-  border: none;
 }
 
-.form-buttons .submit-button:hover {
+.form-buttons button[type="button"]:hover {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+}
+
+.form-buttons button[type="submit"]:hover {
   background-color: #78b33d;
 }
 

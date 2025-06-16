@@ -26,26 +26,38 @@ export const useAlertas = () => {
     });
   };
 
-  const mostrarAlerta = async (config) => {
-    const configConClases = {
-      ...config,
-      customClass: {
-        ...defaultClasses,
-        ...(config.customClass || {}),
-      },
-    };
-    return await Swal.fire(configConClases);
+  const mostrarAlerta = async (title, text, icon) => {
+    // Si el primer parámetro es un objeto, usamos la configuración directamente
+    if (typeof title === "object") {
+      const config = title;
+      return await Swal.fire({
+        ...config,
+        customClass: {
+          ...defaultClasses,
+          ...(config.customClass || {}),
+        },
+      });
+    }
+
+    // Si se llama con parámetros individuales (título, texto, icono)
+    return await Swal.fire({
+      title,
+      text,
+      icon,
+      customClass: defaultClasses,
+      timer: 3000,
+      timerProgressBar: true,
+    });
   };
 
   const mostrarConfirmacion = async (config) => {
-    const configConClases = {
+    return await Swal.fire({
       ...config,
       customClass: {
         ...defaultClasses,
         ...(config.customClass || {}),
       },
-    };
-    return await Swal.fire(configConClases);
+    });
   };
 
   const mostrarFormulario = (titulo, html, tipo = "info") => {

@@ -26,7 +26,7 @@ const AdminLayout = () => {
             <Link to="/admin/dashboard">ENSEK</Link>
           </div>
           <div className="nav-links">
-            <Link to="/admin/dashboard">Panel de Control</Link>
+            {/* <Link to="/admin/dashboard">Panel de Control</Link> */}
             <Link to="/admin/calendario">Calendario</Link>
             <Link to="/admin/inventario">Inventario</Link>
           </div>          <div className="user-menu">

@@ -279,7 +279,10 @@ const Inventory = () => {
                     min="0"
                     value={formData.quantity}
                     onChange={(e) =>
-                      setFormData({ ...formData, quantity: e.target.value })
+                      setFormData({
+                        ...formData,
+                        quantity: e.target.value.replace(/^0+/, ""),
+                      })
                     }
                     required
                   />
@@ -314,7 +317,10 @@ const Inventory = () => {
                     min="0"
                     value={formData.unit_price}
                     onChange={(e) =>
-                      setFormData({ ...formData, unit_price: e.target.value })
+                      setFormData({
+                        ...formData,
+                        unit_price: e.target.value.replace(/^0+/, ""),
+                      })
                     }
                     required
                   />
@@ -331,7 +337,7 @@ const Inventory = () => {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        minimum_stock: e.target.value,
+                        minimum_stock: e.target.value.replace(/^0+/, ""),
                       })
                     }
                     required

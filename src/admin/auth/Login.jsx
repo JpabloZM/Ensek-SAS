@@ -14,9 +14,6 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-
-
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -29,12 +26,13 @@ const Login = () => {
     if (!formData.email || !formData.password) {
       mostrarAlerta("Error", "Por favor complete todos los campos", "error");
       return;
-    }    try {
+    }
+    try {
       // Usar la función login del hook de autenticación
       const user = await login(formData.email, formData.password);
 
       // Verificar si el usuario es administrador
-      if (user.role !== 'admin') {
+      if (user.role !== "admin") {
         mostrarAlerta("Error", "No tienes permisos de administrador", "error");
         return;
       }
@@ -45,9 +43,9 @@ const Login = () => {
         "success"
       );
 
-      // Root redirect will now handle the routing based on role
+      // Redirect admin directly to /admin/calendario
       setTimeout(() => {
-        navigate("/", { replace: true });
+        navigate("/admin/calendario", { replace: true });
       }, 1500);
     } catch (error) {
       console.error("Error durante el inicio de sesión:", error);
@@ -73,6 +71,8 @@ const Login = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="Ingrese su correo electrónico"
+              style={{ color: "#333", backgroundColor: "white" }}
+              autoComplete="email"
             />
           </div>
 
@@ -85,6 +85,8 @@ const Login = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="Ingrese su contraseña"
+              style={{ color: "#333", backgroundColor: "white" }}
+              autoComplete="current-password"
             />
           </div>
 

@@ -36,28 +36,46 @@
   gap: 1.5rem;
 }
 
-.form-group {
+.auth-form .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.form-group label {
+.auth-form .form-group label {
   color: #333;
   font-weight: 600;
 }
 
-.form-group input {
+.auth-form .form-group input {
   padding: 0.75rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
+  color: #333 !important;
+  background-color: white !important;
+  -webkit-text-fill-color: #333 !important;
+  opacity: 1 !important;
+  caret-color: #333 !important;
 }
 
-.form-group input:focus {
+.auth-form .form-group input:-webkit-autofill,
+.auth-form .form-group input:-webkit-autofill:hover,
+.auth-form .form-group input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #333 !important;
+  -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.auth-form .form-group input:focus {
   outline: none;
   border-color: #87c947;
   box-shadow: 0 0 0 2px rgba(135, 201, 71, 0.2);
+}
+
+.auth-form .form-group input::placeholder {
+  color: #999;
+  opacity: 1;
 }
 
 .auth-button {
@@ -95,4 +113,4 @@
 
 .auth-link a:hover {
   text-decoration: underline;
-} 
+}
