@@ -65,19 +65,11 @@ const Register = () => {
       // Llamar a la API para registrar al usuario
       await register(userData);
 
-      await mostrarAlerta(
-        "¡Éxito!",
-        "Registro de administrador completado correctamente",
-        "success"
-      );
+      mostrarAlerta("¡Éxito!", "Registro de administrador completado correctamente", "success");
       navigate("/admin/login");
     } catch (error) {
       console.error("Error durante el registro:", error);
-      mostrarAlerta(
-        "Error",
-        error.message || "Ocurrió un error durante el registro",
-        "error"
-      );
+      mostrarAlerta("Error", error.message || "Ocurrió un error durante el registro", "error");
     }
   };
 
