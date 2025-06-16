@@ -13,15 +13,48 @@ const calculateStatus = (quantity, minimum_stock) => {
 // @access  Private/Admin
 export const createInventoryItem = async (req, res) => {
   try {
+    console.log("Datos recibidos:", req.body);
+
+    // Validar campos requeridos
+    const requiredFields = [
+      "name",
+      "quantity",
+      "unit",
+      "unit_price",
+      "minimum_stock",
+    ];
+    const missingFields = requiredFields.filter((field) => !req.body[field]);
+
+    if (missingFields.length > 0) {
+      console.log("Campos faltantes:", missingFields);
+      return res.status(400).json({
+        message: "Faltan campos requeridos",
+        missingFields,
+      });
+    }
+
+    // Validar que la unidad sea válida
+    const validUnits = ["un", "ml", "gr", "kg", "lt"];
+    if (!validUnits.includes(req.body.unit)) {
+      console.log("Unidad inválida:", req.body.unit);
+      return res.status(400).json({
+        message: "Unidad inválida",
+        validUnits,
+      });
+    }
+
     const itemData = {
       ...req.body,
       status: calculateStatus(req.body.quantity, req.body.minimum_stock),
     };
 
+    console.log("Intentando crear item con datos:", itemData);
     const item = new InventoryItem(itemData);
     await item.save();
+    console.log("Item creado exitosamente:", item);
     res.status(201).json(item);
   } catch (error) {
+    console.error("Error al crear item:", error);
     res
       .status(400)
       .json({ message: "Error al crear el item", error: error.message });
