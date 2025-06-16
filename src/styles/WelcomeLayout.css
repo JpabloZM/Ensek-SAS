@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  font-family: 'Montserrat', sans-serif;
+  font-family: "Montserrat", sans-serif;
 }
 
 .welcome-container {
@@ -34,23 +34,30 @@
 .welcome-logo {
   display: flex;
   align-items: center;
-  cursor: pointer;
 }
 
-.welcome-logo img {
-  height: 40px;
-  margin-right: 10px;
-}
-
-.welcome-logo h1 {
+.welcome-logo a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-decoration: none;
   color: #333;
-  font-size: 1.5rem;
-  font-weight: 700;
+}
+
+.welcome-logo img.nav-logo {
+  width: 45px !important;
+  height: 45px !important;
+  object-fit: contain;
+  display: block !important;
   margin: 0;
 }
 
 .welcome-logo span {
-  color: #00a884;
+  color: #333;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.5px;
 }
 
 .welcome-menu-button {
@@ -136,7 +143,7 @@
   opacity: 0.8;
 }
 
-.welcome-footer-links h3, 
+.welcome-footer-links h3,
 .welcome-footer-contact h3 {
   font-size: 1.1rem;
   margin-bottom: 15px;
@@ -206,7 +213,7 @@
   .welcome-menu-button {
     display: block;
   }
-  
+
   .welcome-navbar-links {
     position: fixed;
     top: 70px;
@@ -218,38 +225,38 @@
     overflow: hidden;
     transition: height 0.3s;
   }
-  
+
   .welcome-navbar-links.active {
     height: auto;
   }
-  
+
   .welcome-navbar-links ul {
     flex-direction: column;
     padding: 20px;
   }
-  
+
   .welcome-navbar-links li {
     margin: 0 0 15px 0;
   }
-  
+
   .welcome-navbar-links li:last-child {
     margin-bottom: 0;
   }
-  
+
   .welcome-signup-btn {
     display: inline-block;
     margin-top: 5px;
   }
-  
+
   .welcome-footer-content {
     grid-template-columns: 1fr;
     text-align: center;
   }
-  
+
   .welcome-footer-logo {
     margin-bottom: 20px;
   }
-  
+
   .welcome-social-icons {
     justify-content: center;
   }

@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FaFacebook, FaInstagram, FaBars } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../hooks/useAuth";
+import logo from "../../../assets/images/Logo-removebg.png";
 import "./ClientLayout.css";
 
 const ClientLayout = () => {
@@ -9,7 +10,7 @@ const ClientLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  
+
   // Removed the redundant authentication check here since AuthRoute handles it
 
   // Cerrar el menú cuando cambie la ruta
@@ -77,23 +78,26 @@ const ClientLayout = () => {
   };
 
   return (
-    <div className="layout">
+    <div className="client-layout">
       <header className="navbar">
-        <button
-          className="menu-button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsMenuOpen(!isMenuOpen);
-          }}
-        >
-          <FaBars />
-        </button>
-
-        <div className="navbar-logo">
-          <Link to="/" onClick={handleLinkClick}>
-            ENSEK
-          </Link>
+        <div className="navbar-container">
+          <div className="logo">
+            <Link to="/">
+              <img src={logo} alt="ENSEK Logo" className="nav-logo" />
+              <span>ENSEK</span>
+            </Link>
+          </div>
+          <button
+            className="menu-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMenuOpen(!isMenuOpen);
+            }}
+          >
+            <FaBars />
+          </button>
         </div>
+
         <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
           <Link to="/app" onClick={handleLinkClick}>
             Inicio
@@ -107,10 +111,17 @@ const ClientLayout = () => {
           </button>
         </nav>
 
-        <div className="navbar-icons" style={{ display: 'flex', alignItems: 'center' }}>
+        <div
+          className="navbar-icons"
+          style={{ display: "flex", alignItems: "center" }}
+        >
           {user ? (
             <>
-              <button onClick={handleLogout} className="login-button" style={{ marginRight: '0.75rem' }}>
+              <button
+                onClick={handleLogout}
+                className="login-button"
+                style={{ marginRight: "0.75rem" }}
+              >
                 Cerrar sesión
               </button>
               <span className="client-name" style={{ fontWeight: 500 }}>
@@ -148,16 +159,26 @@ const ClientLayout = () => {
           <div className="welcome-footer-content">
             <div className="welcome-footer-logo">
               <img src="/logo_ensek.png" alt="ENSEK Logo" />
-              <h2>ENSEK <span>SAS</span></h2>
+              <h2>
+                ENSEK <span>SAS</span>
+              </h2>
               <p>Control de plagas y jardinería profesional</p>
             </div>
             <div className="welcome-footer-links">
               <h3>Enlaces</h3>
               <ul>
-                <li><Link to="/">Inicio</Link></li>
-                <li><Link to="/servicios">Servicios</Link></li>
-                <li><Link to="/login">Iniciar Sesión</Link></li>
-                <li><Link to="/registro">Registrarse</Link></li>
+                <li>
+                  <Link to="/">Inicio</Link>
+                </li>
+                <li>
+                  <Link to="/servicios">Servicios</Link>
+                </li>
+                <li>
+                  <Link to="/login">Iniciar Sesión</Link>
+                </li>
+                <li>
+                  <Link to="/registro">Registrarse</Link>
+                </li>
               </ul>
             </div>
             <div className="welcome-footer-contact">
@@ -166,17 +187,28 @@ const ClientLayout = () => {
               <p>Teléfono: (123) 456-7890</p>
               <p>Dirección: Calle Principal #123, Ciudad</p>
               <div className="welcome-social-icons">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <FaFacebook />
                 </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <FaInstagram />
                 </a>
               </div>
             </div>
           </div>
           <div className="welcome-footer-bottom">
-            <p>&copy; {new Date().getFullYear()} ENSEK SAS. Todos los derechos reservados.</p>
+            <p>
+              &copy; {new Date().getFullYear()} ENSEK SAS. Todos los derechos
+              reservados.
+            </p>
           </div>
         </div>
       </footer>

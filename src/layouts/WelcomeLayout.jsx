@@ -1,7 +1,7 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FaFacebook, FaInstagram, FaBars } from "react-icons/fa";
 import { useState, useEffect } from "react";
-import "./WelcomeLayout.css";
+import "../styles/WelcomeLayout.css";
 
 const WelcomeLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -55,9 +55,17 @@ const WelcomeLayout = () => {
     <div className="welcome-layout">
       <header className="welcome-header">
         <div className="welcome-container">
-          <div className="welcome-navbar">
-            <div className="welcome-logo" onClick={() => navigate("/")}>
-              <h1>ENSEK <span>SAS</span></h1>
+          <nav className="welcome-navbar">
+            <div className="welcome-logo">
+              <Link to="/">
+                <img
+                  src="/images/logo.png"
+                  alt="ENSEK Logo"
+                  className="nav-logo"
+                  style={{ width: "45px", height: "45px", display: "block" }}
+                />
+                <span>ENSEK</span>
+              </Link>
             </div>
             <button
               className="welcome-menu-button"
@@ -66,7 +74,9 @@ const WelcomeLayout = () => {
             >
               <FaBars />
             </button>
-            <nav className={`welcome-navbar-links ${isMenuOpen ? "active" : ""}`}>
+            <div
+              className={`welcome-navbar-links ${isMenuOpen ? "active" : ""}`}
+            >
               <ul>
                 <li>
                   <Link to="/" onClick={handleLinkClick}>
@@ -84,13 +94,17 @@ const WelcomeLayout = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/registro" onClick={handleLinkClick} className="welcome-signup-btn">
+                  <Link
+                    to="/registro"
+                    onClick={handleLinkClick}
+                    className="welcome-signup-btn"
+                  >
                     Registrarse
                   </Link>
                 </li>
               </ul>
-            </nav>
-          </div>
+            </div>
+          </nav>
         </div>
       </header>
 
@@ -102,17 +116,27 @@ const WelcomeLayout = () => {
         <div className="welcome-container">
           <div className="welcome-footer-content">
             <div className="welcome-footer-logo">
-              <img src="/logo_ensek.png" alt="ENSEK Logo" />
-              <h2>ENSEK <span>SAS</span></h2>
+              <img src={logo} alt="ENSEK Logo" className="nav-logo" />
+              <h2>
+                ENSEK <span>SAS</span>
+              </h2>
               <p>Control de plagas y jardinería profesional</p>
             </div>
             <div className="welcome-footer-links">
               <h3>Enlaces</h3>
               <ul>
-                <li><Link to="/">Inicio</Link></li>
-                <li><Link to="/servicios">Servicios</Link></li>
-                <li><Link to="/login">Iniciar Sesión</Link></li>
-                <li><Link to="/registro">Registrarse</Link></li>
+                <li>
+                  <Link to="/">Inicio</Link>
+                </li>
+                <li>
+                  <Link to="/servicios">Servicios</Link>
+                </li>
+                <li>
+                  <Link to="/login">Iniciar Sesión</Link>
+                </li>
+                <li>
+                  <Link to="/registro">Registrarse</Link>
+                </li>
               </ul>
             </div>
             <div className="welcome-footer-contact">
@@ -121,17 +145,28 @@ const WelcomeLayout = () => {
               <p>Teléfono: (123) 456-7890</p>
               <p>Dirección: Calle Principal #123, Ciudad</p>
               <div className="welcome-social-icons">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <FaFacebook />
                 </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <FaInstagram />
                 </a>
               </div>
             </div>
           </div>
           <div className="welcome-footer-bottom">
-            <p>&copy; {new Date().getFullYear()} ENSEK SAS. Todos los derechos reservados.</p>
+            <p>
+              &copy; {new Date().getFullYear()} ENSEK SAS. Todos los derechos
+              reservados.
+            </p>
           </div>
         </div>
       </footer>
