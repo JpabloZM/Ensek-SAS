@@ -46,6 +46,11 @@ const serviceSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  technician: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
   }
 });
 

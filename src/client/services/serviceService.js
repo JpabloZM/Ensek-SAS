@@ -92,6 +92,7 @@ const saveService = async (service) => {
 // Update a service
 const updateService = async (id, updates) => {
   try {
+    console.log("Payload for updateService:", updates);
     const response = await axios.put(
       `${API_URL}/${id}`,
       updates,
@@ -134,9 +135,37 @@ const deleteService = async (id) => {
   }
 };
 
+// Assign a technician to a service
+const assignTechnician = async (serviceId, technicianId) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}/${serviceId}/assign-technician`,
+      { technicianId },
+      getAuthConfig()
+    );
+
+    // Update cache
+    const cachedServices = localStorage.getItem("cachedServices");
+    if (cachedServices) {
+      const services = JSON.parse(cachedServices);
+      const index = services.findIndex((s) => s._id === serviceId);
+      if (index !== -1) {
+        services[index] = response.data;
+        localStorage.setItem("cachedServices", JSON.stringify(services));
+      }
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error al asignar técnico al servicio:", error);
+    throw error.response?.data?.message || error.message || "Error desconocido";
+  }
+};
+
 export const serviceService = {
   getServices,
   saveService,
   updateService,
   deleteService,
+  assignTechnician,
 };

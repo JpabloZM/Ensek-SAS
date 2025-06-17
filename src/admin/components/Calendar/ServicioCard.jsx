@@ -1,17 +1,36 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useAlertas } from "../../hooks/useAlertas";
 import Swal from "sweetalert2";
+import { userService } from "../../../client/services/userService";
 import "./styles/services.css";
+
+const { getTechnicians: fetchTechnicians } = userService;
 
 const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
   const { mostrarAlerta } = useAlertas();
+  const [technicians, setTechnicians] = useState([]);
+
+  useEffect(() => {
+    const loadTechnicians = async () => {
+      try {
+        const response = await fetchTechnicians();
+        setTechnicians(response);
+      } catch (error) {
+        console.error("Error fetching technicians:", error);
+      }
+    };
+
+    loadTechnicians();
+  }, []);
+
   const handleClick = () => {
     handleAsignar();
   };
 
   const handleAsignar = async () => {
     const { value: formValues } = await mostrarAlerta({
-      title: "Asignar Servicio al Calendario",      html: `
+      title: "Asignar Servicio al Calendario",
+      html: `
         <div class="detalles-servicio mb-4">
           <p><strong>Cliente:</strong> ${servicio.clientName}</p>
           <p><strong>Contacto:</strong> ${servicio.clientEmail} | ${servicio.clientPhone}</p>
@@ -23,12 +42,12 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
             <label class="form-label">Técnico</label>
             <select id="tecnicoSelect" class="form-control" required>
               <option value="">Seleccionar técnico...</option>
-              <option value="1">Oscar Morales</option>
-              <option value="2">Francisco Londoño</option>
-              <option value="3">Yeyferson Villada</option>
-              <option value="4">Santiago Henao</option>
-              <option value="5">German Oyola</option>
-              <option value="6">Jhoan Moreno</option>
+              ${technicians
+                .map(
+                  (technician) =>
+                    `<option value="${technician._id}">${technician.name}</option>`
+                )
+                .join("")}
             </select>
           </div>
           <div class="mb-3">
@@ -38,8 +57,8 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
               id="fecha" 
               class="form-control" 
               required 
-              min="${new Date().toISOString().split('T')[0]}"
-              value="${new Date(servicio.preferredDate).toISOString().split('T')[0]}"
+              min="${new Date().toISOString().split("T")[0]}"
+              value="${new Date(servicio.preferredDate).toISOString().split("T")[0]}"
             >
           </div>
           <div class="mb-3">
@@ -82,7 +101,7 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
 
     if (formValues) {
       const { tecnicoId, fecha, horaInicio, duracion } = formValues;
-      
+
       // Create calendar event
       const fechaInicio = new Date(`${fecha}T${horaInicio}`);
       const fechaFin = new Date(fechaInicio.getTime() + parseInt(duracion) * 60000);
@@ -134,7 +153,8 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
             <i className="fas fa-info-circle icon-primary"></i> {servicio.descripcion}
           </p>
         </div>
-        <div className="botones-container">          <button
+        <div className="botones-container">
+          <button
             className="btn btn-link text-primary p-0 ver-detalles"
             onClick={(e) => {
               e.stopPropagation();

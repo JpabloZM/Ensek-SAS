@@ -1,6 +1,8 @@
 // Service request controller
 import ServiceRequest from '../models/serviceRequestModel.js';
 import Service from '../models/Service.js';
+import User from '../models/User.js'; // Import User model
+import mongoose from 'mongoose';
 
 // @desc    Create a new service request
 // @route   POST /api/services/request
@@ -173,11 +175,20 @@ export const createService = async (req, res) => {
 
 export const updateService = async (req, res) => {
   try {
+    console.log("Updating service:", req.params.id, req.body);
+    if (req.body.technician) {
+      const technicianUser = await User.findOne({ _id: req.body.technician, role: 'technician' });
+      if (!technicianUser) {
+        return res.status(400).json({ message: 'Technician not found or invalid role' });
+      }
+      req.body.technician = new mongoose.Types.ObjectId(technicianUser._id); // Ensure ObjectId is instantiated correctly
+    }
     const service = await Service.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
     );
+    console.log("Updated service response:", service);
     if (!service) {
       return res.status(404).json({ message: 'Servicio no encontrado' });
     }
@@ -208,5 +219,28 @@ export const getServiceById = async (req, res) => {
     res.json(service);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener el servicio', error: error.message });
+  }
+};
+
+export const assignTechnicianToService = async (req, res) => {
+  try {
+    const { technicianId } = req.body;
+
+    // Validate and convert technicianId to ObjectId
+    const technicianObjectId = new mongoose.Types.ObjectId(technicianId);
+
+    const service = await Service.findByIdAndUpdate(
+      req.params.id,
+      { technician: technicianObjectId },
+      { new: true, runValidators: true }
+    );
+
+    if (!service) {
+      return res.status(404).json({ message: 'Servicio no encontrado' });
+    }
+
+    res.json(service);
+  } catch (error) {
+    res.status(400).json({ message: 'Error al asignar técnico al servicio', error: error.message });
   }
 };

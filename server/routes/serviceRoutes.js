@@ -12,5 +12,6 @@ router.get('/', protect, serviceController.getServices);
 router.get('/:id', protect, serviceController.getServiceById);
 router.put('/:id', protect, serviceController.updateService);
 router.delete('/:id', protect, serviceController.deleteService);
+router.put('/:id/assign-technician', protect, serviceController.assignTechnicianToService);
 
 export default router;

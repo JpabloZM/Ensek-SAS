@@ -44,7 +44,8 @@ const Calendar = () => {
   const [posicionMenu, setPosicionMenu] = useState({ x: 0, y: 0 });
   const [mostrarMenuContextual, setMostrarMenuContextual] = useState(false);
   const [mostrarMenuContextualTecnico, setMostrarMenuContextualTecnico] =
-    useState(false);  useEffect(() => {
+    useState(false);
+  useEffect(() => {
     // Cargar servicios pendientes del localStorage
     const serviciosGuardados =
       JSON.parse(localStorage.getItem("serviciosPendientes")) || [];
@@ -57,20 +58,20 @@ const Calendar = () => {
     // Fetch technicians from database
     const fetchTechnicians = async () => {
       try {
-        console.log('Fetching technicians from database...');
+        console.log("Fetching technicians from database...");
         const techniciansData = await userService.getTechnicians();
-        console.log('Technicians fetched:', techniciansData);
-        
+        console.log("Technicians fetched:", techniciansData);
+
         const formattedTechnicians = techniciansData.map((tech, index) => ({
           id: tech._id,
           title: tech.name,
           order: index + 1,
         }));
-        
+
         setTecnicos(formattedTechnicians);
         localStorage.setItem("tecnicos", JSON.stringify(formattedTechnicians));
       } catch (error) {
-        console.error('Error fetching technicians:', error);
+        console.error("Error fetching technicians:", error);
         // Fallback to empty array if fetch fails
         setTecnicos([]);
       }
@@ -80,30 +81,32 @@ const Calendar = () => {
 
     // Fetch services from API - force refresh
     if (getAllServices) {
-      console.log('Calling getAllServices with force=true');
+      console.log("Calling getAllServices with force=true");
       getAllServices(true);
     }
 
     // Fallback: Direct API call if useServices doesn't work
     const fetchServicesDirectly = async () => {
       try {
-        console.log('Making direct API call to fetch services');
+        console.log("Making direct API call to fetch services");
         const response = await serviceService.getServices();
-        console.log('Direct API response:', response);
-          if (response && Array.isArray(response) && response.length > 0) {
+        console.log("Direct API response:", response);
+        if (response && Array.isArray(response) && response.length > 0) {
           // Set the local services state so the existing useEffect can process them
           setLocalServices(response);
-          console.log('Set localServices to:', response);
+          console.log("Set localServices to:", response);
         }
       } catch (error) {
-        console.error('Direct API call failed:', error);
+        console.error("Direct API call failed:", error);
       }
-    };    // Call direct API after a short delay to allow useServices to work first
+    };
+    // Call direct API after a short delay to allow useServices to work first
     const timeoutId = setTimeout(fetchServicesDirectly, 2000);
 
     // Cleanup timeout on unmount
     return () => clearTimeout(timeoutId);
-  }, []);  // Load pending services when services change
+  }, []);
+  // Load pending services when services change
   useEffect(() => {
     const currentServices = services && services.length > 0 ? services : localServices;
     console.log('Services updated:', currentServices);
@@ -132,29 +135,32 @@ const Calendar = () => {
 
       // Convert pending services to calendar events format
       const calendarEvents = currentServices
-        .filter((service) => service.status === "pending")
+        .filter((service) => service.status === "pending" || service.status === "completed")
         .map((service) => ({
           id: service._id,
           title: service.serviceType,
-          start: new Date(service.preferredDate),
-          end: new Date(new Date(service.preferredDate).getTime() + 3600000), // 1 hour duration
-          color: "#ffd54f",
+          start: new Date(service.preferredDate).toISOString(),
+          end: new Date(new Date(service.preferredDate).getTime() + 3600000).toISOString(), // 1 hour duration
+          color: service.status === "completed" ? "#87c947" : "#ffd54f",
           description: service.description,
           extendedProps: {
             clientName: service.name,
             clientEmail: service.email,
             clientPhone: service.phone,
             address: service.address,
-            status: service.status
-          }
+            status: service.status,
+            technician: service.technician ? tecnicos.find((t) => t.id === service.technician)?.title : "Sin técnico asignado",
+          },
         }));
 
       console.log('Calendar events:', calendarEvents);
 
       // Add pending services to eventos state
-      setEventos(prevEventos => {
+      setEventos((prevEventos) => {
         // Filter out any existing pending services to avoid duplicates
-        const filteredEvents = prevEventos.filter(evento => !evento.extendedProps?.status || evento.extendedProps.status !== 'pending');
+        const filteredEvents = prevEventos.filter(
+          (evento) => !evento.extendedProps?.status || evento.extendedProps.status !== "pending"
+        );
         const newEvents = [...filteredEvents, ...calendarEvents];
         console.log('Updated eventos:', newEvents);
         return newEvents;
@@ -300,12 +306,12 @@ const Calendar = () => {
   };
 
   const handleEventDrop = async (info) => {
+    console.log("handleEventDrop triggered:", info);
     const { event } = info;
     const tecnicoDestino = tecnicos.find(
       (t) => t.id === event.getResources()[0]?.id
     );
 
-    // Si se canceló el drop, revertir el movimiento
     if (!tecnicoDestino) {
       info.revert();
       return;
@@ -338,29 +344,53 @@ const Calendar = () => {
     });
 
     if (result.isConfirmed) {
-      // Actualizar el evento en tu estado
-      const eventosActualizados = eventos.map((ev) =>
-        ev.id === event.id
-          ? {
-              ...ev,
-              start: event.startStr,
-              end: event.endStr,
-              resourceId: event.getResources()[0]?.id,
-            }
-          : ev
-      );
-      setEventos(eventosActualizados);
-      localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
+      try {
+        console.log("Updating service:", { id: event.id, technician: tecnicoDestino.id, status: "completed" });
+        console.log("Event ID:", event.id);
+        console.log("Technician ID:", tecnicoDestino.id);
+        console.log("Payload for updateService:", {
+          technician: tecnicoDestino.id,
+          status: "completed",
+        });
+        const updatedService = await serviceService.updateService(event.id, {
+          technician: tecnicoDestino.id,
+          scheduledStart: event.startStr,
+          scheduledEnd: event.endStr,
+          status: "confirmed",
+        }); // Update technician and other fields for the relevant service
+        console.log("Updated service response:", updatedService);
 
-      mostrarAlerta({
-        icon: "success",
-        title: "Servicio Movido",
-        text: "El servicio ha sido reasignado correctamente",
-        timer: 1500,
-        showConfirmButton: false,
-        background: "#f8ffec",
-        color: "#004122",
-      });
+        const eventosActualizados = eventos.map((ev) =>
+          ev.id === event.id
+            ? {
+                ...ev,
+                start: event.startStr,
+                end: event.endStr,
+                resourceId: event.getResources()[0]?.id,
+              }
+            : ev
+        );
+        setEventos(eventosActualizados);
+        localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
+
+        mostrarAlerta({
+          icon: "success",
+          title: "Servicio Movido",
+          text: "El servicio ha sido reasignado correctamente",
+          timer: 1500,
+          showConfirmButton: false,
+          background: "#f8ffec",
+          color: "#004122",
+        });
+      } catch (error) {
+        console.error("Error al asignar técnico al servicio:", error);
+        mostrarAlerta({
+          icon: "error",
+          title: "Error",
+          text: "No se pudo asignar el técnico al servicio. Por favor, intente nuevamente.",
+        });
+        info.revert();
+      }
     } else {
       info.revert();
     }
@@ -772,6 +802,9 @@ const Calendar = () => {
         display: "block",
       };
 
+      console.log('Event created:', nuevoEvento);
+      console.log('Technicians state:', tecnicos);
+
       // Agregar evento al estado
       setEventos((prevEventos) => {
         const eventosActualizados = [...prevEventos, nuevoEvento];
@@ -1107,7 +1140,7 @@ const Calendar = () => {
       // Update service in MongoDB
       const updatedService = await serviceService.updateService(servicioId, {
         status: "confirmed",
-        assignedTechnician: eventoCalendario.resourceId,
+        technician: eventoCalendario.resourceId,
         scheduledStart: eventoCalendario.start,
         scheduledEnd: eventoCalendario.end,
       });

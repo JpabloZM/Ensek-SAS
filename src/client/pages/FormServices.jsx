@@ -58,6 +58,7 @@ const FormServices = () => {
         serviceType: formData.serviceType,
         description: formData.description || "Sin descripción",
         preferredDate: formData.preferredDate,
+        technician: null, // Ensure technician is set to null on creation
       });
       
       // Mostrar alerta de éxito
