@@ -45,6 +45,7 @@
   flex-direction: column;
   overflow: hidden;
   margin-top: 15px;
+  flex-shrink: 0;
 }
 
 /* Estados de tarjetas */

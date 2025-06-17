@@ -38,10 +38,9 @@ const Calendar = () => {
     { id: "3", title: "Yeyferson Villada", order: 3 },
     { id: "5", title: "German Oyola", order: 4 },
     { id: "6", title: "Jhoan Moreno", order: 5 },
-  ];
-
-  // Services state and API integration
-  const { services, updateService } = useServices();
+  ];  // Services state and API integration
+  const { services, updateService, getAllServices } = useServices();
+  const [localServices, setLocalServices] = useState([]);
   const [serviciosPendientes, setServiciosPendientes] = useState([]);
   const [eventos, setEventos] = useState([]);
   const [tecnicos, setTecnicos] = useState(tecnicosIniciales);
@@ -50,9 +49,7 @@ const Calendar = () => {
   const [posicionMenu, setPosicionMenu] = useState({ x: 0, y: 0 });
   const [mostrarMenuContextual, setMostrarMenuContextual] = useState(false);
   const [mostrarMenuContextualTecnico, setMostrarMenuContextualTecnico] =
-    useState(false);
-
-  useEffect(() => {
+    useState(false);  useEffect(() => {
     // Cargar servicios pendientes del localStorage
     const serviciosGuardados =
       JSON.parse(localStorage.getItem("serviciosPendientes")) || [];
@@ -65,12 +62,42 @@ const Calendar = () => {
     // Forzar la carga de técnicos iniciales
     setTecnicos(tecnicosIniciales);
     localStorage.setItem("tecnicos", JSON.stringify(tecnicosIniciales));
-  }, []);
 
-  // Load pending services when services change
+    // Fetch services from API - force refresh
+    if (getAllServices) {
+      console.log('Calling getAllServices with force=true');
+      getAllServices(true);
+    }
+
+    // Fallback: Direct API call if useServices doesn't work
+    const fetchServicesDirectly = async () => {
+      try {
+        console.log('Making direct API call to fetch services');
+        const response = await serviceService.getServices();
+        console.log('Direct API response:', response);
+          if (response && Array.isArray(response) && response.length > 0) {
+          // Set the local services state so the existing useEffect can process them
+          setLocalServices(response);
+          console.log('Set localServices to:', response);
+        }
+      } catch (error) {
+        console.error('Direct API call failed:', error);
+      }
+    };    // Call direct API after a short delay to allow useServices to work first
+    const timeoutId = setTimeout(fetchServicesDirectly, 2000);
+
+    // Cleanup timeout on unmount
+    return () => clearTimeout(timeoutId);
+  }, []);  // Load pending services when services change
   useEffect(() => {
-    if (services && services.length > 0) {
-      const pendingServices = services
+    const currentServices = services && services.length > 0 ? services : localServices;
+    console.log('Services updated:', currentServices);
+    console.log('Services length:', currentServices?.length);
+    console.log('Services type:', typeof currentServices);
+    
+    if (currentServices && Array.isArray(currentServices) && currentServices.length > 0) {
+      console.log('Processing services...');
+      const pendingServices = currentServices
         .filter((service) => service.status === "pending")
         .map((service) => ({
           id: service._id, // Use MongoDB _id
@@ -86,8 +113,41 @@ const Calendar = () => {
           preferredDate: service.preferredDate,
         }));
       setServiciosPendientes(pendingServices);
+      console.log('Pending services:', pendingServices);
+
+      // Convert pending services to calendar events format
+      const calendarEvents = currentServices
+        .filter((service) => service.status === "pending")
+        .map((service) => ({
+          id: service._id,
+          title: service.serviceType,
+          start: new Date(service.preferredDate),
+          end: new Date(new Date(service.preferredDate).getTime() + 3600000), // 1 hour duration
+          color: "#ffd54f",
+          description: service.description,
+          extendedProps: {
+            clientName: service.name,
+            clientEmail: service.email,
+            clientPhone: service.phone,
+            address: service.address,
+            status: service.status
+          }
+        }));
+
+      console.log('Calendar events:', calendarEvents);
+
+      // Add pending services to eventos state
+      setEventos(prevEventos => {
+        // Filter out any existing pending services to avoid duplicates
+        const filteredEvents = prevEventos.filter(evento => !evento.extendedProps?.status || evento.extendedProps.status !== 'pending');
+        const newEvents = [...filteredEvents, ...calendarEvents];
+        console.log('Updated eventos:', newEvents);
+        return newEvents;
+      });
+    } else {
+      console.log('No services or services is not an array:', currentServices);
     }
-  }, [services]);
+  }, [services, localServices]);
 
   const handleAgregarTecnico = async () => {
     const { value: nombreTecnico } = await mostrarAlerta({
