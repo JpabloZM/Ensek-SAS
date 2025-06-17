@@ -5,10 +5,14 @@ import {
   getUserById,
   updateUser,
   deleteUser,
+  getTechnicians,
 } from '../controllers/userController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+// Get all technicians (admin only)
+router.get('/technicians', protect, admin, getTechnicians);
 
 // Get all users (admin only)
 router.get('/', protect, admin, getUsers);

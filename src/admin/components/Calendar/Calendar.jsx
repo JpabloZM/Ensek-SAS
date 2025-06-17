@@ -14,6 +14,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useCalendar } from "../../../hooks/useCalendar";
 import { useServices } from "../../../hooks/useServices";
 import { serviceService } from "../../../client/services/serviceService";
+import { userService } from "../../../client/services/userService";
 import "./Calendar.css";
 import "./styles/forms.css";
 
@@ -32,18 +33,12 @@ const API_MOCK = {
 };
 
 const Calendar = () => {
-  const tecnicosIniciales = [
-    { id: "1", title: "Oscar Morales", order: 1 },
-    { id: "2", title: "Francisco Londoño", order: 2 },
-    { id: "3", title: "Yeyferson Villada", order: 3 },
-    { id: "5", title: "German Oyola", order: 4 },
-    { id: "6", title: "Jhoan Moreno", order: 5 },
-  ];  // Services state and API integration
+  // Services state and API integration
   const { services, updateService, getAllServices } = useServices();
   const [localServices, setLocalServices] = useState([]);
   const [serviciosPendientes, setServiciosPendientes] = useState([]);
   const [eventos, setEventos] = useState([]);
-  const [tecnicos, setTecnicos] = useState(tecnicosIniciales);
+  const [tecnicos, setTecnicos] = useState([]);
   const { mostrarAlerta } = useAlertas();
   const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
   const [posicionMenu, setPosicionMenu] = useState({ x: 0, y: 0 });
@@ -59,9 +54,29 @@ const Calendar = () => {
     const eventosGuardados = JSON.parse(localStorage.getItem("eventos")) || [];
     setEventos(eventosGuardados);
 
-    // Forzar la carga de técnicos iniciales
-    setTecnicos(tecnicosIniciales);
-    localStorage.setItem("tecnicos", JSON.stringify(tecnicosIniciales));
+    // Fetch technicians from database
+    const fetchTechnicians = async () => {
+      try {
+        console.log('Fetching technicians from database...');
+        const techniciansData = await userService.getTechnicians();
+        console.log('Technicians fetched:', techniciansData);
+        
+        const formattedTechnicians = techniciansData.map((tech, index) => ({
+          id: tech._id,
+          title: tech.name,
+          order: index + 1,
+        }));
+        
+        setTecnicos(formattedTechnicians);
+        localStorage.setItem("tecnicos", JSON.stringify(formattedTechnicians));
+      } catch (error) {
+        console.error('Error fetching technicians:', error);
+        // Fallback to empty array if fetch fails
+        setTecnicos([]);
+      }
+    };
+
+    fetchTechnicians();
 
     // Fetch services from API - force refresh
     if (getAllServices) {
@@ -190,8 +205,7 @@ const Calendar = () => {
     });
 
     if (nombreTecnico) {
-      const tecnicosActuales =
-        JSON.parse(localStorage.getItem("tecnicos")) || tecnicosIniciales;
+      const tecnicosActuales = tecnicos;
 
       // Encontrar el orden más bajo actual y restar 1
       const minOrder = Math.min(...tecnicosActuales.map((t) => t.order || 0));
@@ -208,9 +222,8 @@ const Calendar = () => {
       // Agregar el nuevo técnico al array
       const tecnicosActualizados = [...tecnicosActuales, nuevoTecnico];
 
-      // Actualizar el estado y localStorage
+      // Actualizar el estado
       setTecnicos(tecnicosActualizados);
-      localStorage.setItem("tecnicos", JSON.stringify(tecnicosActualizados));
 
       mostrarAlerta({
         icon: "success",

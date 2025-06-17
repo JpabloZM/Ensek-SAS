@@ -127,3 +127,25 @@ export const deleteUser = async (req, res) => {
     });
   }
 };
+
+// @desc    Get all technicians
+// @route   GET /api/users/technicians
+// @access  Private/Admin
+export const getTechnicians = async (req, res) => {
+  try {
+    const technicians = await User.find({ role: 'technician' }).select('-password');
+
+    res.json({
+      success: true,
+      count: technicians.length,
+      technicians,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+      error: error.message,
+    });
+  }
+};
