@@ -31,38 +31,12 @@ const getAuthConfig = () => {
 // Get all services
 const getServices = async () => {
   try {
-    if (pendingRequest) {
-      return pendingRequest;
-    }
+    const config = getAuthConfig();
+    console.log("Fetching services with config:", config);
 
-    const now = Date.now();
-    const timeSinceLastRequest = now - lastRequestTime;
-
-    if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
-      const cachedData = localStorage.getItem("cachedServices");
-      if (cachedData) {
-        return JSON.parse(cachedData);
-      }
-      await new Promise((resolve) =>
-        setTimeout(resolve, MIN_REQUEST_INTERVAL - timeSinceLastRequest)
-      );
-    }
-
-    lastRequestTime = Date.now();
-
-    pendingRequest = axios
-      .get(API_URL, getAuthConfig())
-      .then((response) => {
-        localStorage.setItem("cachedServices", JSON.stringify(response.data));
-        return response.data;
-      })
-      .finally(() => {
-        setTimeout(() => {
-          pendingRequest = null;
-        }, MIN_REQUEST_INTERVAL);
-      });
-
-    return pendingRequest;
+    const response = await axios.get(API_URL, config);
+    console.log("Services fetched:", response.data);
+    return response.data;
   } catch (error) {
     console.error("Error al obtener servicios:", error);
     throw error.response?.data?.message || error.message || "Error desconocido";
