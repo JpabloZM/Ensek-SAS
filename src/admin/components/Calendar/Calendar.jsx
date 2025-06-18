@@ -479,12 +479,19 @@ const Calendar = () => {
     );
 
     // Check if the event represents a service
-    const serviceId = event.id.startsWith("evento-")
+    const serviceId = event.id
+      ? event.id.startsWith("evento-")
+        ? event.extendedProps.serviceId || event.id.split("-")[1]
+        : event.id
+      : event.extendedProps
       ? event.extendedProps.serviceId
-      : event.id;
+      : null;
 
     if (!serviceId || !tecnicoDestino) {
-      console.error("No valid service ID or technician found");
+      console.error("No valid service ID or technician found", {
+        event,
+        tecnicoDestino,
+      });
       info.revert();
       return;
     }
@@ -517,25 +524,54 @@ const Calendar = () => {
 
     if (result.isConfirmed) {
       try {
-        console.log("Updating service:", {
-          id: event.id,
+        const eventId = event.id;
+        console.log("Moving service:", {
+          id: eventId,
           technician: tecnicoDestino.id,
-          status: "completed",
+          start: event.startStr,
+          end: event.endStr,
         });
-        console.log("Event ID:", event.id);
-        console.log("Technician ID:", tecnicoDestino.id);
-        console.log("Payload for updateService:", {
-          technician: tecnicoDestino.id,
-          status: "completed",
-        });
-        const updatedService = await serviceService.updateService(serviceId, {
+
+        // Get the existing service data from the event's extendedProps
+        const serviceData = event.extendedProps;
+        console.log("Service data from event:", serviceData);
+
+        // Remove 'evento-' prefix if present and validate if it's a MongoDB ID
+        const cleanId = eventId.startsWith("evento-")
+          ? eventId.split("-")[1]
+          : eventId;
+
+        const updateData = {
           technician: tecnicoDestino.id,
           scheduledStart: event.startStr,
           scheduledEnd: event.endStr,
           status: "confirmed",
-        }); // Update technician and other fields for the relevant service
-        console.log("Updated service response:", updatedService);
+          // Include additional service data if this is a new service
+          ...(serviceData && {
+            name: serviceData.clientName,
+            email: serviceData.clientEmail,
+            phone: serviceData.clientPhone,
+            document: serviceData.document,
+            address: serviceData.address,
+            serviceType: serviceData.serviceType || serviceData.nombre,
+            description: serviceData.descripcion,
+          }),
+        };
 
+        console.log("Updating service with data:", updateData);
+        const updatedService = await serviceService.updateService(
+          cleanId,
+          updateData
+        );
+        console.log("Service updated successfully:", updatedService);
+
+        // If this was a new service that just got saved, update the event ID
+        if (updatedService._id && updatedService._id !== cleanId) {
+          const newEventId = `evento-${updatedService._id}`;
+          event.setProp("id", newEventId);
+        }
+
+        // Update local state
         const eventosActualizados = eventos.map((ev) =>
           ev.id === event.id
             ? {
@@ -1542,10 +1578,19 @@ const Calendar = () => {
   };
   const handleAsignarServicio = async (eventoCalendario, servicioId) => {
     try {
-      // Ensure we're using the MongoDB ID, not the UI event ID
-      const realServiceId = servicioId.startsWith("evento-")
-        ? servicioId.split("-")[1]
-        : servicioId;
+      // Ensure we're using the MongoDB ID
+      const realServiceId =
+        typeof servicioId === "string" && servicioId.startsWith("evento-")
+          ? servicioId.split("-")[1]
+          : servicioId;
+
+      if (!realServiceId) {
+        console.error("No valid service ID found", {
+          eventoCalendario,
+          servicioId,
+        });
+        throw new Error("Invalid service ID");
+      }
 
       // Update service in MongoDB
       const updatedService = await serviceService.updateService(realServiceId, {

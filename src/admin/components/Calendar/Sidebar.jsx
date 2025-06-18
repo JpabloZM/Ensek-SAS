@@ -13,9 +13,10 @@ const Sidebar = ({
     const { value: formValues } = await mostrarAlerta({
       title: "Nuevo Servicio",
       html: `
-        <form id="servicioForm" class="text-left">          <div class="mb-3">
-            <label class="form-label">Tipo de servicio</label>
-            <select id="nombre" class="form-control" required style="border-color: #c5f198;">
+        <form id="servicioForm">
+          <div class="input-group">
+            <label>Tipo de servicio</label>
+            <select id="nombre" class="form-field" required>
               <option value="">Seleccionar tipo de servicio...</option>
               <option value="pest-control">Control de Plagas</option>
               <option value="gardening">Jardinería</option>
@@ -23,26 +24,60 @@ const Sidebar = ({
               <option value="commercial-fumigation">Fumigación Comercial</option>
             </select>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Cliente</label>
-            <input type="text" id="clientName" placeholder="Nombre del cliente" class="form-control" required style="border-color: #c5f198;">
+          <div class="input-group">
+            <label>Cliente</label>
+            <input type="text" id="clientName" class="form-field" placeholder="Nombre del cliente" required>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" id="clientEmail" placeholder="correo@ejemplo.com" class="form-control" required style="border-color: #c5f198;">
+          <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="clientEmail" class="form-field" placeholder="correo@ejemplo.com" required>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Teléfono</label>
-            <input type="tel" id="clientPhone" placeholder="Teléfono de contacto" class="form-control" required style="border-color: #c5f198;">
+          <div class="input-group">
+            <label>Teléfono</label>
+            <input type="tel" id="clientPhone" class="form-field" placeholder="Teléfono de contacto" required>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Dirección</label>
-            <input type="text" id="address" placeholder="Dirección del servicio" class="form-control" required style="border-color: #c5f198;">
-          </div>          <div class="mb-3">
-            <label class="form-label">Descripción</label>
-            <textarea id="descripcion" placeholder="Descripción detallada del servicio" class="form-control" rows="3" required style="border-color: #c5f198;"></textarea>
+          <div class="input-group">
+            <label>Dirección</label>
+            <input type="text" id="address" class="form-field" placeholder="Dirección del servicio" required>
+          </div>
+          <div class="input-group">
+            <label>Descripción</label>
+            <textarea id="descripcion" class="form-field" placeholder="Descripción detallada del servicio" rows="2" required></textarea>
           </div>
         </form>
+        <style>
+          #servicioForm {
+            display: grid;
+            gap: 10px;
+            padding: 15px;
+          }
+          .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+          }
+          .input-group label {
+            color: #87c947;
+            font-weight: 500;
+          }
+          .form-field {
+            padding: 8px;
+            border: 1px solid #87c947;
+            border-radius: 4px;
+            background: white;
+            width: 100%;
+            box-sizing: border-box;            
+            min-width: 370px;
+            max-width: 370px;
+          }
+          .swal2-popup {
+            width: 500px !important;
+          }
+          .swal2-title {
+            font-size: 1.5rem !important;
+            margin-bottom: 1rem !important;
+          }
+        </style>
       `,
       showCancelButton: true,
       confirmButtonText: "Guardar",

@@ -256,7 +256,10 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
         },
       };
 
-      onAsignarServicio(eventoCalendario, servicio.id);
+      // Asegurarnos de usar el ID correcto del servicio
+      const serviceId = servicio._id || servicio.id;
+
+      onAsignarServicio(eventoCalendario, serviceId);
 
       mostrarAlerta({
         icon: "success",

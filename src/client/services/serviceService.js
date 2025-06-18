@@ -93,17 +93,58 @@ const saveService = async (service) => {
 // Update a service
 const updateService = async (id, updates) => {
   try {
-    // Extract MongoDB ID if the input is an event ID
-    const serviceId = id.startsWith("evento-") ? id.split("-")[1] : id;
+    // Validate if this is a temporary ID
+    if (id && !id.match(/^[0-9a-fA-F]{24}$/)) {
+      // If it's a temporary ID (not a MongoDB ObjectId), we need to save it first
+      if (id.startsWith("evento-")) {
+        id = id.split("-")[1];
+      }
 
-    console.log("Updating service:", {
-      originalId: id,
-      serviceId: serviceId,
+      // Check if this is a new service that needs to be saved first
+      if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+        console.log("Temporary ID detected, creating new service first:", id);
+
+        // Get the existing service from localStorage if available
+        const localServices = JSON.parse(
+          localStorage.getItem("serviciosPendientes") || "[]"
+        );
+        const existingService = localServices.find(
+          (s) => s.id === id || s.id === `evento-${id}`
+        );
+
+        if (!existingService) {
+          throw new Error("No se encontró el servicio local");
+        }
+
+        // Create a new service with all required fields
+        const newService = {
+          name: existingService.clientName,
+          email: existingService.clientEmail,
+          phone: existingService.clientPhone,
+          document: existingService.document || "pending",
+          address: existingService.address,
+          serviceType: existingService.serviceType || existingService.nombre,
+          description: existingService.descripcion,
+          preferredDate: updates.scheduledStart || new Date().toISOString(),
+          status: updates.status || "confirmed",
+          technician: updates.technician,
+          scheduledStart: updates.scheduledStart,
+          scheduledEnd: updates.scheduledEnd,
+        };
+
+        console.log("Creating new service with data:", newService);
+        const savedService = await saveService(newService);
+        return savedService;
+      }
+    }
+
+    console.log("Updating existing service:", {
+      id: id,
       updates: updates,
     });
 
     const response = await axios.put(
-      `${API_URL}/${serviceId}`,
+      `${API_URL}/${id}`,
       updates,
       getAuthConfig()
     );
