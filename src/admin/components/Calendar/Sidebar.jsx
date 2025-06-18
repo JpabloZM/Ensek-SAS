@@ -38,14 +38,9 @@ const Sidebar = ({
           <div class="mb-3">
             <label class="form-label">Dirección</label>
             <input type="text" id="address" placeholder="Dirección del servicio" class="form-control" required style="border-color: #c5f198;">
-          </div>
-          <div class="mb-3">
+          </div>          <div class="mb-3">
             <label class="form-label">Descripción</label>
             <textarea id="descripcion" placeholder="Descripción detallada del servicio" class="form-control" rows="3" required style="border-color: #c5f198;"></textarea>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Duración (minutos)</label>
-            <input type="number" id="duracion" placeholder="Duración en minutos" class="form-control" min="15" step="15" required style="border-color: #c5f198;">
           </div>
         </form>
       `,
@@ -62,15 +57,22 @@ const Sidebar = ({
         confirmButton: "swal2-confirm-custom",
         cancelButton: "swal2-cancel-custom",
       },
-      preConfirm: () => {        const nombre = document.getElementById("nombre").value;
+      preConfirm: () => {
+        const nombre = document.getElementById("nombre").value;
         const clientName = document.getElementById("clientName").value;
         const clientEmail = document.getElementById("clientEmail").value;
         const clientPhone = document.getElementById("clientPhone").value;
         const address = document.getElementById("address").value;
         const descripcion = document.getElementById("descripcion").value;
-        const duracion = document.getElementById("duracion").value;
 
-        if (!nombre || !clientName || !clientEmail || !clientPhone || !address || !descripcion || !duracion) {
+        if (
+          !nombre ||
+          !clientName ||
+          !clientEmail ||
+          !clientPhone ||
+          !address ||
+          !descripcion
+        ) {
           mostrarAlerta({
             icon: "error",
             title: "Error",
@@ -80,11 +82,12 @@ const Sidebar = ({
             color: "#004122",
           });
           return false;
-        }        const serviceTypes = {
-          'pest-control': 'Control de Plagas',
-          'gardening': 'Jardinería',
-          'residential-fumigation': 'Fumigación Residencial',
-          'commercial-fumigation': 'Fumigación Comercial'
+        }
+        const serviceTypes = {
+          "pest-control": "Control de Plagas",
+          gardening: "Jardinería",
+          "residential-fumigation": "Fumigación Residencial",
+          "commercial-fumigation": "Fumigación Comercial",
         };
 
         return {
@@ -95,16 +98,16 @@ const Sidebar = ({
           clientPhone,
           address,
           descripcion,
-          duracion: parseInt(duracion),
         };
       },
-    });    if (formValues) {
+    });
+    if (formValues) {
       const servicioNuevo = {
         ...formValues,
         status: "pending",
-        preferredDate: new Date().toISOString()
+        preferredDate: new Date().toISOString(),
       };
-      
+
       try {
         const savedService = await onAgregarServicio(servicioNuevo);
         mostrarAlerta({

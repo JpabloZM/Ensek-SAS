@@ -26,7 +26,6 @@ const inventoryService = {
       throw new Error("Error al obtener el inventario");
     }
   },
-
   create: async (itemData) => {
     try {
       const data = {
@@ -37,7 +36,20 @@ const inventoryService = {
       const response = await axios.post(API_URL, data, getAuthConfig());
       return response.data;
     } catch (error) {
-      throw new Error("Error al crear el item");
+      if (error.response) {
+        // Server responded with an error
+        if (error.response.data?.message) {
+          throw new Error(error.response.data.message);
+        }
+        if (error.response.data?.missingFields) {
+          throw new Error(
+            `Campos requeridos: ${error.response.data.missingFields.join(", ")}`
+          );
+        }
+      }
+      throw new Error(
+        "Error al crear el item: " + (error.message || "Error desconocido")
+      );
     }
   },
 

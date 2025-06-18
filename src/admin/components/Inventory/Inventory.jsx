@@ -15,14 +15,25 @@ const Inventory = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterState, setFilterState] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     name: "",
     quantity: "",
-    unit: "",
+    unit: "un", // Set default unit to "un" (unidades)
     unit_price: "",
     minimum_stock: "",
     status: "available",
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
+
+  // Define valid units for the dropdown
+  const validUnits = [
+    { value: "un", label: "Unidades" },
+    { value: "ml", label: "Mililitros" },
+    { value: "gr", label: "Gramos" },
+    { value: "kg", label: "Kilogramos" },
+    { value: "lt", label: "Litros" },
+  ];
   const [editMode, setEditMode] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -86,12 +97,40 @@ const Inventory = () => {
       });
 
       if (result.isConfirmed) {
-        // Preparar datos para enviar
+        // Preparar datos para enviar        // Validate required fields
+        if (!formData.name?.trim()) {
+          throw new Error("El nombre es requerido");
+        }
+        if (!formData.unit) {
+          throw new Error("La unidad es requerida");
+        }
+
+        // Convert and validate numeric fields
+        const quantity = parseInt(formData.quantity);
+        const unit_price = parseFloat(formData.unit_price);
+        const minimum_stock = parseInt(formData.minimum_stock);
+
+        if (isNaN(quantity) || quantity < 0) {
+          throw new Error(
+            "La cantidad debe ser un número válido y no negativo"
+          );
+        }
+        if (isNaN(unit_price) || unit_price < 0) {
+          throw new Error(
+            "El precio unitario debe ser un número válido y no negativo"
+          );
+        }
+        if (isNaN(minimum_stock) || minimum_stock < 0) {
+          throw new Error(
+            "El stock mínimo debe ser un número válido y no negativo"
+          );
+        }
+
         const itemToCreate = {
           ...formData,
-          quantity: parseInt(formData.quantity) || 0,
-          unit_price: parseInt(formData.unit_price) || 0,
-          minimum_stock: parseInt(formData.minimum_stock) || 0,
+          quantity,
+          unit_price,
+          minimum_stock,
         };
 
         // Crear nuevo item en la base de datos
@@ -178,20 +217,8 @@ const Inventory = () => {
       await loadInventory();
 
       // Mostrar mensaje de éxito
-      await mostrarMensaje("exito", "Item actualizado correctamente");
-
-      // Cerrar el formulario y limpiar los campos
-      setShowForm(false);
-      setEditMode(false);
-      setEditingItem(null);
-      setFormData({
-        name: "",
-        quantity: "",
-        unit: "un",
-        unit_price: "",
-        minimum_stock: "",
-        status: "available",
-      });
+      await mostrarMensaje("exito", "Item actualizado correctamente"); // Cerrar el formulario y limpiar los campos
+      resetForm();
     } catch (error) {
       await mostrarMensaje("error", "Error al actualizar el item");
       mostrarMensaje("error", "Error al actualizar el item");
@@ -237,6 +264,13 @@ const Inventory = () => {
       item.status.toLowerCase() === filterState.toLowerCase();
     return matchesSearch && matchesFilter;
   });
+
+  const resetForm = () => {
+    setFormData(initialFormData);
+    setEditMode(false);
+    setEditingItem(null);
+    setShowForm(false);
+  };
 
   if (loading) return <div className="loading">Cargando...</div>;
 
@@ -300,9 +334,11 @@ const Inventory = () => {
                     }
                     required
                   >
-                    <option value="un">Unidad</option>
-                    <option value="ml">Mililitros</option>
-                    <option value="gr">Gramos</option>
+                    {validUnits.map((unit) => (
+                      <option key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

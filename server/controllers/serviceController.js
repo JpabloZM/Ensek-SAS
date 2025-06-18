@@ -1,6 +1,6 @@
 // Service request controller
 import ServiceRequest from "../models/serviceRequestModel.js";
-import Service from "../models/Service.js";
+import ServiceModel from "../models/ServiceModel.js";
 import User from "../models/User.js"; // Import User model
 import mongoose from "mongoose";
 
@@ -156,15 +156,13 @@ export const updateServiceRequestStatus = async (req, res) => {
 
 export const getServices = async (req, res) => {
   try {
-    const services = await Service.find().sort({ createdAt: -1 });
+    const services = await ServiceModel.find().sort({ createdAt: -1 });
     res.json(services);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error al obtener los servicios",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error al obtener los servicios",
+      error: error.message,
+    });
   }
 };
 
@@ -183,34 +181,58 @@ export const createService = async (req, res) => {
 export const updateService = async (req, res) => {
   try {
     console.log("Updating service:", req.params.id, req.body);
+
+    // Validate service ID format
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        message: "ID de servicio inválido",
+        details: "El ID proporcionado no es un ObjectId válido de MongoDB",
+      });
+    }
+
+    // Handle technician assignment
     if (req.body.technician) {
+      // Validate technician ID format
+      if (!mongoose.Types.ObjectId.isValid(req.body.technician)) {
+        return res.status(400).json({
+          message: "ID de técnico inválido",
+          details: "El ID del técnico no es un ObjectId válido de MongoDB",
+        });
+      }
+
       const technicianUser = await User.findOne({
         _id: req.body.technician,
         role: "technician",
       });
+
       if (!technicianUser) {
-        return res
-          .status(400)
-          .json({ message: "Technician not found or invalid role" });
+        return res.status(400).json({
+          message: "Técnico no encontrado o rol inválido",
+          details:
+            "El técnico especificado no existe o no tiene el rol correcto",
+        });
       }
-      req.body.technician = new mongoose.Types.ObjectId(technicianUser._id); // Ensure ObjectId is instantiated correctly
+
+      req.body.technician = new mongoose.Types.ObjectId(technicianUser._id);
     }
-    const service = await Service.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const service = await ServiceModel.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
     console.log("Updated service response:", service);
     if (!service) {
       return res.status(404).json({ message: "Servicio no encontrado" });
     }
     res.json(service);
   } catch (error) {
-    res
-      .status(400)
-      .json({
-        message: "Error al actualizar el servicio",
-        error: error.message,
-      });
+    res.status(400).json({
+      message: "Error al actualizar el servicio",
+      error: error.message,
+    });
   }
 };
 
@@ -220,14 +242,18 @@ export const updateService = async (req, res) => {
 export const deleteService = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log("Attempting to delete service with ID:", id);
 
-    // Intentar encontrar el servicio primero
-    const service = await Service.findOne({
-      $or: [
-        { _id: mongoose.Types.ObjectId.isValid(id) ? id : null },
-        { _id: id },
-      ],
-    });
+    // Validate ID format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "ID de servicio inválido",
+      });
+    }
+
+    // Find the service first
+    const service = await ServiceModel.findById(id);
 
     if (!service) {
       return res.status(404).json({
@@ -236,12 +262,22 @@ export const deleteService = async (req, res) => {
       });
     }
 
-    // Si encontramos el servicio, lo eliminamos
-    await service.remove();
+    // Use findByIdAndDelete for atomic operation
+    const deletedService = await ServiceModel.findByIdAndDelete(id);
+    console.log("Delete operation result:", deletedService);
 
-    res.json({
+    if (!deletedService) {
+      return res.status(404).json({
+        success: false,
+        message: "Error al eliminar el servicio",
+      });
+    }
+
+    console.log("Service successfully deleted with ID:", id);
+    return res.status(200).json({
       success: true,
       message: "Servicio eliminado correctamente",
+      deletedId: id,
     });
   } catch (error) {
     console.error("Error al eliminar servicio:", error);
@@ -255,7 +291,7 @@ export const deleteService = async (req, res) => {
 
 export const getServiceById = async (req, res) => {
   try {
-    const service = await Service.findById(req.params.id);
+    const service = await ServiceModel.findById(req.params.id);
     if (!service) {
       return res.status(404).json({ message: "Servicio no encontrado" });
     }
@@ -274,7 +310,7 @@ export const assignTechnicianToService = async (req, res) => {
     // Validate and convert technicianId to ObjectId
     const technicianObjectId = new mongoose.Types.ObjectId(technicianId);
 
-    const service = await Service.findByIdAndUpdate(
+    const service = await ServiceModel.findByIdAndUpdate(
       req.params.id,
       { technician: technicianObjectId },
       { new: true, runValidators: true }
@@ -286,11 +322,9 @@ export const assignTechnicianToService = async (req, res) => {
 
     res.json(service);
   } catch (error) {
-    res
-      .status(400)
-      .json({
-        message: "Error al asignar técnico al servicio",
-        error: error.message,
-      });
+    res.status(400).json({
+      message: "Error al asignar técnico al servicio",
+      error: error.message,
+    });
   }
 };

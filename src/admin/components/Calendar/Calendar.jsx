@@ -47,10 +47,13 @@ const Calendar = () => {
         console.log("Fetching technicians from database...");
         const techniciansData = await userService.getTechnicians();
         console.log("Technicians fetched:", techniciansData);
-
         const formattedTechnicians = techniciansData.map((tech, index) => ({
           id: tech._id,
+          _id: tech._id, // Mantener ambos para compatibilidad
           title: tech.name,
+          name: tech.name,
+          email: tech.email,
+          phone: tech.phone,
           order: index + 1,
         }));
 
@@ -169,20 +172,115 @@ const Calendar = () => {
       console.log("No services or services is not an array:", currentServices);
     }
   }, [services, localServices]);
-
   const handleAgregarTecnico = async () => {
-    const { value: nombreTecnico } = await mostrarAlerta({
+    const { value: formValues } = await mostrarAlerta({
       title: "Agregar Técnico",
-      html: `
+      html: `        <style>
+          .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+          }
+          #tecnicoForm .form-control {
+            padding: 0.75rem 1rem;
+            border: 2px solid #87c947 !important;
+            border-radius: 8px !important;
+            background-color: #ffffff !important;
+            color: #004122 !important;
+            font-size: 1rem;
+            width: 100%;
+            margin-top: 0.25rem;
+            box-shadow: none !important;
+          }
+          #tecnicoForm .form-control:focus {
+            border-color: #87c947 !important;
+            box-shadow: 0 0 0 0.2rem rgba(135, 201, 71, 0.25) !important;
+            outline: none;
+          }
+          #tecnicoForm .form-control::placeholder {
+            color: #a0a0a0;
+            opacity: 0.8;
+          }
+          #tecnicoForm .form-label {
+            font-weight: 600 !important;
+            color: #87c947 !important;
+            display: block !important;
+            font-size: 1rem !important;
+            margin-bottom: 0.5rem !important;
+            opacity: 1 !important;
+            position: relative !important;
+            transform: none !important;
+            pointer-events: auto !important;
+          }
+          .input-with-icon {
+            position: relative;
+            margin-top: 0.5rem;
+          }
+          .input-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #87c947 !important;
+            font-size: 1.1rem;
+          }
+          .swal2-html-container {
+            margin: 1rem 0 !important;
+          }
+          .swal2-popup {
+            padding: 1.5rem !important;
+          }
+          #tecnicoForm {
+            text-align: left !important;
+          }
+          #tecnicoForm .form-label {
+            transition: none !important;
+          }
+          #tecnicoForm .form-control:focus + .form-label,
+          #tecnicoForm .form-control:not(:placeholder-shown) + .form-label {
+            transform: none !important;
+            font-size: 1rem !important;
+            color: #87c947 !important;
+          }
+        </style>
         <form id="tecnicoForm" class="text-left">
-          <div class="mb-3">
-            <input 
-              type="text" 
-              id="nombreTecnico" 
-              placeholder="Nombre del técnico" 
-              class="form-control" 
-              required 
-            >
+          <div class="form-group">
+            <label class="form-label">Nombre del técnico</label>
+            <div class="input-with-icon">
+              <input 
+                type="text" 
+                id="nombreTecnico" 
+                placeholder="Ingrese el nombre completo" 
+                class="form-control" 
+                required
+              >
+              <i class="fas fa-user input-icon"></i>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Correo electrónico</label>
+            <div class="input-with-icon">
+              <input 
+                type="email" 
+                id="emailTecnico" 
+                placeholder="correo@ejemplo.com" 
+                class="form-control" 
+                required
+              >
+              <i class="fas fa-envelope input-icon"></i>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <div class="input-with-icon">
+              <input 
+                type="tel" 
+                id="telefonoTecnico" 
+                placeholder="Número de contacto" 
+                class="form-control" 
+                required
+              >
+              <i class="fas fa-phone input-icon"></i>
+            </div>
           </div>
         </form>
       `,
@@ -193,53 +291,94 @@ const Calendar = () => {
       cancelButtonColor: "#e74c3c",
       background: "#ffffff",
       color: "#004122",
+      customClass: {
+        confirmButton: "btn-confirm",
+        cancelButton: "btn-cancel",
+      },
       preConfirm: () => {
         const nombre = document.getElementById("nombreTecnico").value;
-        if (!nombre) {
+        const email = document.getElementById("emailTecnico").value;
+        const telefono = document.getElementById("telefonoTecnico").value;
+
+        if (!nombre || !email || !telefono) {
           mostrarAlerta({
             icon: "error",
             title: "Error",
-            text: "Por favor ingrese el nombre del técnico",
+            text: "Por favor complete todos los campos",
             confirmButtonColor: "#87c947",
             background: "#f8ffec",
             color: "#004122",
           });
           return false;
         }
-        return nombre;
+
+        if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+          mostrarAlerta({
+            icon: "error",
+            title: "Error",
+            text: "Por favor ingrese un correo electrónico válido",
+            confirmButtonColor: "#87c947",
+            background: "#f8ffec",
+            color: "#004122",
+          });
+          return false;
+        }
+
+        return {
+          nombre: nombre.trim(),
+          email: email.trim(),
+          telefono: telefono.trim(),
+        };
       },
     });
+    if (formValues) {
+      try {
+        // Crear el técnico en la base de datos
+        const nuevoTecnicoDB = await userService.createTechnician({
+          name: formValues.nombre,
+          email: formValues.email,
+          phone: formValues.telefono,
+          role: "technician",
+        });
 
-    if (nombreTecnico) {
-      const tecnicosActuales = tecnicos;
+        // Actualizar el estado local con el nuevo técnico
+        const tecnicosActuales = tecnicos;
+        const minOrder = Math.min(...tecnicosActuales.map((t) => t.order || 0));
 
-      // Encontrar el orden más bajo actual y restar 1
-      const minOrder = Math.min(...tecnicosActuales.map((t) => t.order || 0));
+        const nuevoTecnico = {
+          id: nuevoTecnicoDB._id,
+          title: nuevoTecnicoDB.name,
+          email: nuevoTecnicoDB.email,
+          phone: nuevoTecnicoDB.phone,
 
-      // Crear el nuevo técnico con orden menor
-      const nuevoTecnico = {
-        id: (
-          Math.max(...tecnicosActuales.map((t) => parseInt(t.id)), 0) + 1
-        ).toString(),
-        title: nombreTecnico,
-        order: minOrder - 1, // Esto hará que aparezca a la derecha
-      };
+          order: minOrder - 1,
+        };
 
-      // Agregar el nuevo técnico al array
-      const tecnicosActualizados = [...tecnicosActuales, nuevoTecnico];
+        // Agregar el nuevo técnico al array y actualizar estado
+        setTecnicos([...tecnicosActuales, nuevoTecnico]);
 
-      // Actualizar el estado
-      setTecnicos(tecnicosActualizados);
-
-      mostrarAlerta({
-        icon: "success",
-        title: "Técnico Agregado",
-        text: "El técnico ha sido agregado correctamente",
-        timer: 1500,
-        showConfirmButton: false,
-        background: "#f8ffec",
-        color: "#004122",
-      });
+        mostrarAlerta({
+          icon: "success",
+          title: "Técnico Agregado",
+          text: "El técnico ha sido agregado correctamente",
+          timer: 1500,
+          showConfirmButton: false,
+          background: "#f8ffec",
+          color: "#004122",
+        });
+      } catch (error) {
+        console.error("Error al crear técnico:", error);
+        mostrarAlerta({
+          icon: "error",
+          title: "Error",
+          text:
+            error.message ||
+            "Hubo un problema al crear el técnico. Por favor intente de nuevo.",
+          confirmButtonColor: "#87c947",
+          background: "#f8ffec",
+          color: "#004122",
+        });
+      }
     }
   };
   const handleAgregarServicio = async (nuevoServicio) => {
@@ -332,7 +471,6 @@ const Calendar = () => {
       mostrarAlerta("Error al eliminar el servicio", "error");
     }
   };
-
   const handleEventDrop = async (info) => {
     console.log("handleEventDrop triggered:", info);
     const { event } = info;
@@ -340,7 +478,13 @@ const Calendar = () => {
       (t) => t.id === event.getResources()[0]?.id
     );
 
-    if (!tecnicoDestino) {
+    // Check if the event represents a service
+    const serviceId = event.id.startsWith("evento-")
+      ? event.extendedProps.serviceId
+      : event.id;
+
+    if (!serviceId || !tecnicoDestino) {
+      console.error("No valid service ID or technician found");
       info.revert();
       return;
     }
@@ -384,7 +528,7 @@ const Calendar = () => {
           technician: tecnicoDestino.id,
           status: "completed",
         });
-        const updatedService = await serviceService.updateService(event.id, {
+        const updatedService = await serviceService.updateService(serviceId, {
           technician: tecnicoDestino.id,
           scheduledStart: event.startStr,
           scheduledEnd: event.endStr,
@@ -456,19 +600,151 @@ const Calendar = () => {
       handleEliminarServicio(parseInt(event.id));
     }
   };
-
   const handleEditarTecnico = async (tecnico) => {
     try {
+      // Verificar qué ID tenemos disponible
+      console.log("Datos del técnico recibidos:", tecnico);
+      const tecnicoId = tecnico._id || tecnico.id;
+      console.log("ID que se usará:", tecnicoId);
+
+      // Buscar primero en el estado local
+      let tecnicoActual = tecnicos.find(
+        (t) => t.id === tecnicoId || t._id === tecnicoId
+      );
+      console.log("Datos encontrados en estado local:", tecnicoActual);
+
+      if (!tecnicoActual) {
+        // Si no está en el estado, buscar en localStorage
+        const tecnicosGuardados =
+          JSON.parse(localStorage.getItem("tecnicos")) || [];
+        tecnicoActual = tecnicosGuardados.find(
+          (t) => t.id === tecnicoId || t._id === tecnicoId
+        );
+        console.log("Datos encontrados en localStorage:", tecnicoActual);
+      }
+
+      // Intentar obtener datos actualizados del servidor como respaldo
+      try {
+        const tecnicoServidor = await userService.getTechnicianById(tecnicoId);
+        console.log("Datos del servidor:", tecnicoServidor);
+        if (tecnicoServidor) {
+          tecnicoActual = {
+            ...tecnicoActual,
+            ...tecnicoServidor,
+            id: tecnicoId,
+            _id: tecnicoId,
+          };
+        }
+      } catch (error) {
+        console.log(
+          "No se pudieron obtener datos actualizados del servidor:",
+          error
+        );
+      }
+
+      // Si no tenemos datos completos, usar los datos básicos que tenemos
+      if (!tecnicoActual) {
+        tecnicoActual = {
+          id: tecnicoId,
+          _id: tecnicoId,
+          name: tecnico.name || tecnico.title,
+          email: tecnico.email || "",
+          phone: tecnico.phone || "",
+          title: tecnico.title || tecnico.name,
+        };
+      }
+
+      console.log(
+        "Datos finales del técnico para el formulario:",
+        tecnicoActual
+      );
+
       const { value: formValues } = await mostrarAlerta({
         title: "Editar Técnico",
         html: `
-                <form id="editTecnicoForm">
-                    <div class="form-group">
-                        <label for="nombreTecnico" class="form-label">Nombre del Técnico</label>
-                        <input type="text" id="nombreTecnico" class="form-control" value="${tecnico.title}" required>
-                    </div>
-                </form>
-            `,
+          <style>
+            .form-group {
+              margin-bottom: 1.5rem;
+              position: relative;
+            }
+            .form-control {
+              padding: 0.75rem 1rem;
+              border: 2px solid #87c947 !important;
+              border-radius: 8px !important;
+              background-color: #ffffff !important;
+              color: #004122 !important;
+              font-size: 1rem;
+              width: 100%;
+              margin-top: 0.25rem;
+              box-shadow: none !important;
+            }
+            .form-control:focus {
+              border-color: #87c947 !important;
+              box-shadow: 0 0 0 0.2rem rgba(135, 201, 71, 0.25) !important;
+              outline: none;
+            }
+            .form-label {
+              font-weight: 600 !important;
+              color: #87c947 !important;
+              display: block !important;
+              font-size: 1rem !important;
+              margin-bottom: 0.5rem !important;
+            }
+            .input-with-icon {
+              position: relative;
+            }
+            .input-icon {
+              position: absolute;
+              right: 12px;
+              top: 50%;
+              transform: translateY(-50%);
+              color: #87c947;
+            }
+          </style>
+          <form id="editTecnicoForm">
+            <div class="form-group">
+              <label class="form-label">Nombre del Técnico</label>
+              <div class="input-with-icon">                <input 
+                  type="text" 
+                  id="nombreTecnico" 
+                  class="form-control" 
+                  value="${tecnicoActual.name || tecnicoActual.title || ""}"
+                  placeholder="Nombre completo"
+                  required
+                >
+                <i class="fas fa-user input-icon"></i>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Correo Electrónico</label>
+              <div class="input-with-icon">
+                <input 
+                  type="email" 
+                  id="emailTecnico" 
+                  class="form-control" 
+                  value="${tecnicoActual.email || ""}"
+                  placeholder="correo@ejemplo.com"
+                  required
+                >
+                <i class="fas fa-envelope input-icon"></i>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Teléfono</label>
+              <div class="input-with-icon">
+                <input 
+                  type="tel" 
+                  id="telefonoTecnico" 
+                  class="form-control" 
+                  value="${tecnicoActual.phone || ""}"
+                  placeholder="Número de contacto"
+                  required
+                >
+                <i class="fas fa-phone input-icon"></i>
+              </div>
+            </div>
+          </form>
+        `,
         showCancelButton: true,
         confirmButtonText: "Guardar",
         cancelButtonText: "Cancelar",
@@ -476,32 +752,90 @@ const Calendar = () => {
         cancelButtonColor: "#e74c3c",
         preConfirm: () => {
           const nombre = document.getElementById("nombreTecnico").value;
-          if (!nombre) {
+          const email = document.getElementById("emailTecnico").value;
+          const telefono = document.getElementById("telefonoTecnico").value;
+
+          if (!nombre || !email || !telefono) {
+            Swal.showValidationMessage("Por favor complete todos los campos");
+            return false;
+          }
+
+          if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
             Swal.showValidationMessage(
-              "Por favor ingrese el nombre del técnico"
+              "Por favor ingrese un correo electrónico válido"
             );
             return false;
           }
-          return { nombre };
+
+          return { nombre, email, telefono };
         },
       });
-
       if (formValues) {
-        // Actualizar el técnico en el estado local
-        const tecnicosActualizados = tecnicos.map((t) =>
-          t.id === tecnico.id ? { ...t, title: formValues.nombre } : t
-        );
+        try {
+          console.log("Enviando actualización para técnico:", {
+            id: tecnicoActual.id || tecnicoActual._id,
+            currentData: tecnicoActual,
+            newData: formValues,
+          });
 
-        setTecnicos(tecnicosActualizados);
-        localStorage.setItem("tecnicos", JSON.stringify(tecnicosActualizados));
+          // Actualizar el técnico en la base de datos
+          const tecnicoActualizado = await userService.updateTechnician(
+            tecnicoActual.id || tecnicoActual._id,
+            {
+              name: formValues.nombre,
+              email: formValues.email,
+              phone: formValues.telefono,
+            }
+          );
 
-        mostrarAlerta({
-          icon: "success",
-          title: "Técnico actualizado exitosamente",
-          confirmButtonColor: "#87c947",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+          console.log("Respuesta de actualización:", tecnicoActualizado);
+
+          if (!tecnicoActualizado) {
+            throw new Error("No se recibieron datos actualizados del servidor");
+          }
+
+          // Actualizar el estado local con los datos actualizados
+          const tecnicosActualizados = tecnicos.map((t) =>
+            t.id === tecnicoActualizado.id || t.id === tecnicoActualizado._id
+              ? {
+                  ...t,
+                  id: tecnicoActualizado.id || tecnicoActualizado._id,
+                  _id: tecnicoActualizado._id || tecnicoActualizado.id,
+                  title: tecnicoActualizado.name,
+                  name: tecnicoActualizado.name,
+                  email: tecnicoActualizado.email,
+                  phone: tecnicoActualizado.phone,
+                }
+              : t
+          );
+
+          setTecnicos(tecnicosActualizados);
+          localStorage.setItem(
+            "tecnicos",
+            JSON.stringify(tecnicosActualizados)
+          );
+
+          mostrarAlerta({
+            icon: "success",
+            title: "Técnico actualizado exitosamente",
+            text: "Los datos del técnico han sido actualizados",
+            confirmButtonColor: "#87c947",
+            timer: 1500,
+            showConfirmButton: false,
+            background: "#f8ffec",
+            color: "#004122",
+          });
+        } catch (error) {
+          console.error("Error al actualizar técnico:", error);
+          mostrarAlerta({
+            icon: "error",
+            title: "Error",
+            text: "Hubo un problema al actualizar el técnico. Por favor intente de nuevo.",
+            confirmButtonColor: "#87c947",
+            background: "#f8ffec",
+            color: "#004122",
+          });
+        }
       }
     } catch (error) {
       console.error("Error:", error);
@@ -513,42 +847,81 @@ const Calendar = () => {
       });
     }
   };
-
   const handleEliminarTecnico = async (tecnico) => {
     try {
       const result = await mostrarAlerta({
         title: "¿Estás seguro?",
-        text: `¿Deseas eliminar al técnico ${tecnico.title}?`,
+        html: `
+          <div class="text-left">
+            <p style="color: #004122; margin-bottom: 1rem;">
+              ¿Deseas eliminar al técnico <strong>${tecnico.title}</strong>?
+            </p>
+            <div style="background-color: #fff3cd; padding: 1rem; border-radius: 8px; border-left: 4px solid #ffc107;">
+              <i class="fas fa-exclamation-triangle" style="color: #ffc107; margin-right: 0.5rem;"></i>
+              Esta acción no se puede deshacer y eliminará todos los servicios asignados a este técnico.
+            </div>
+          </div>
+        `,
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#87c947",
-        cancelButtonColor: "#e74c3c",
-        confirmButtonText: "Sí, eliminar",
-        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#e74c3c",
+        cancelButtonColor: "#87c947",
+        confirmButtonText: '<i class="fas fa-trash"></i> Sí, eliminar',
+        cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+        background: "#ffffff",
+        color: "#004122",
       });
 
       if (result.isConfirmed) {
-        // Eliminar el técnico del estado local
-        const tecnicosActualizados = tecnicos.filter(
-          (t) => t.id !== tecnico.id
-        );
-        setTecnicos(tecnicosActualizados);
-        localStorage.setItem("tecnicos", JSON.stringify(tecnicosActualizados));
+        try {
+          // Eliminar el técnico de la base de datos
+          await userService.deleteTechnician(tecnico.id);
 
-        mostrarAlerta({
-          icon: "success",
-          title: "Técnico eliminado exitosamente",
-          confirmButtonColor: "#87c947",
-          timer: 1500,
-          showConfirmButton: false,
-        });
+          // Eliminar el técnico del estado local
+          const tecnicosActualizados = tecnicos.filter(
+            (t) => t.id !== tecnico.id
+          );
+          setTecnicos(tecnicosActualizados);
+          localStorage.setItem(
+            "tecnicos",
+            JSON.stringify(tecnicosActualizados)
+          );
+
+          // También necesitamos eliminar los eventos asociados a este técnico
+          const eventosActualizados = eventos.filter(
+            (evento) => evento.resourceId !== tecnico.id
+          );
+          setEventos(eventosActualizados);
+          localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
+
+          mostrarAlerta({
+            icon: "success",
+            title: "Técnico eliminado exitosamente",
+            text: "El técnico y sus servicios asignados han sido eliminados",
+            confirmButtonColor: "#87c947",
+            timer: 1500,
+            showConfirmButton: false,
+            background: "#f8ffec",
+            color: "#004122",
+          });
+        } catch (error) {
+          console.error("Error al eliminar técnico:", error);
+          mostrarAlerta({
+            icon: "error",
+            title: "Error",
+            text: "No se pudo eliminar el técnico. Por favor intente de nuevo.",
+            confirmButtonColor: "#87c947",
+            background: "#f8ffec",
+            color: "#004122",
+          });
+        }
       }
     } catch (error) {
       console.error("Error:", error);
       mostrarAlerta({
         icon: "error",
         title: "Error",
-        text: "Hubo un error al eliminar el técnico",
+        text: "Hubo un error al procesar la solicitud",
         confirmButtonColor: "#87c947",
       });
     }
@@ -1169,8 +1542,13 @@ const Calendar = () => {
   };
   const handleAsignarServicio = async (eventoCalendario, servicioId) => {
     try {
+      // Ensure we're using the MongoDB ID, not the UI event ID
+      const realServiceId = servicioId.startsWith("evento-")
+        ? servicioId.split("-")[1]
+        : servicioId;
+
       // Update service in MongoDB
-      const updatedService = await serviceService.updateService(servicioId, {
+      const updatedService = await serviceService.updateService(realServiceId, {
         status: "confirmed",
         technician: eventoCalendario.resourceId,
         scheduledStart: eventoCalendario.start,
@@ -1317,7 +1695,6 @@ const Calendar = () => {
     const servicioData = JSON.parse(
       info.draggedEl.getAttribute("data-servicio")
     );
-
     const newEvento = {
       id: `evento-${Date.now()}`,
       title: servicioData.titulo,
@@ -1328,6 +1705,8 @@ const Calendar = () => {
       textColor: "white",
       className: `estado-${servicioData.estado}`, // Usar className en lugar de classNames
       extendedProps: {
+        ...servicioData.extendedProps,
+        serviceId: servicioData._id, // Store the real MongoDB ID
         estado: servicioData.estado,
         description: servicioData.descripcion,
         clienteId: servicioData.clienteId,
@@ -1467,6 +1846,55 @@ const Calendar = () => {
       JSON.parse(localStorage.getItem("tecnicos")) || tecnicosIniciales;
     setTecnicos(tecnicosGuardados);
   };
+
+  useEffect(() => {
+    // Agregar estilos del menú contextual
+    const style = document.createElement("style");
+    style.textContent = `
+      .context-menu {
+        position: fixed;
+        background: white;
+        border-radius: 8px;
+        padding: 8px 0;
+        min-width: 150px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        border: 1px solid #e0e0e0;
+      }
+      .context-menu-item {
+        padding: 8px 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #004122;
+        transition: all 0.2s ease;
+      }
+      .context-menu-item:hover {
+        background-color: #f8ffec;
+      }
+      .context-menu-item i {
+        color: #87c947;
+        width: 16px;
+      }
+      .context-menu-item.delete {
+        color: #e74c3c;
+      }
+      .context-menu-item.delete i {
+        color: #e74c3c;
+      }
+      .context-menu-separator {
+        height: 1px;
+        background-color: #e0e0e0;
+        margin: 4px 0;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   return (
     <div className="calendar-container">

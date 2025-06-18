@@ -1,4 +1,3 @@
-// User routes
 import express from "express";
 import {
   getUsers,
@@ -13,7 +12,7 @@ import {
 } from "../controllers/userController.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 // Debug middleware
 router.use((req, res, next) => {
@@ -22,26 +21,13 @@ router.use((req, res, next) => {
     timestamp: new Date().toISOString(),
     method: req.method,
     path: req.path,
-    url: req.url,
-    params: req.params,
-    body: req.body,
-  });
-  next();
-});
-
-// Debug middleware for technician routes
-router.use("/technicians", (req, res, next) => {
-  console.log("\n=== Technician Route ===");
-  console.log({
-    method: req.method,
-    path: req.path,
-    id: req.params.id,
     originalUrl: req.originalUrl,
+    params: req.params,
   });
   next();
 });
 
-// Technician routes - must be defined BEFORE generic routes to avoid conflicts
+// Technician routes - Must be defined BEFORE generic routes
 router.get("/technicians", protect, admin, getTechnicians);
 router.post("/technicians", protect, admin, createTechnician);
 router.get("/technicians/:id", protect, admin, getTechnicianById);

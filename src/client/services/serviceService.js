@@ -93,9 +93,17 @@ const saveService = async (service) => {
 // Update a service
 const updateService = async (id, updates) => {
   try {
-    console.log("Payload for updateService:", updates);
+    // Extract MongoDB ID if the input is an event ID
+    const serviceId = id.startsWith("evento-") ? id.split("-")[1] : id;
+
+    console.log("Updating service:", {
+      originalId: id,
+      serviceId: serviceId,
+      updates: updates,
+    });
+
     const response = await axios.put(
-      `${API_URL}/${id}`,
+      `${API_URL}/${serviceId}`,
       updates,
       getAuthConfig()
     );
@@ -121,8 +129,12 @@ const updateService = async (id, updates) => {
 // Delete a service
 const deleteService = async (serviceId) => {
   try {
-    const config = getAuthConfig();
-    const response = await axios.delete(`${API_URL}/${serviceId}`, config);
+    console.log("Deleting service with ID:", serviceId);
+    const config = getAuthConfig(); // Ensure we're using a valid ID format
+    const cleanId = serviceId.replace("evento-", "");
+    console.log("Clean ID for deletion:", cleanId);
+
+    const response = await axios.delete(`${API_URL}/${cleanId}`, config);
 
     // Clear cache to force a fresh load
     localStorage.removeItem("cachedServices");
@@ -131,15 +143,26 @@ const deleteService = async (serviceId) => {
     lastRequestTime = 0;
     pendingRequest = null;
 
+    console.log("Delete service response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error al eliminar servicio:", error);
-    if (error.response && error.response.status === 404) {
-      // Si el servicio no existe, limpiamos la caché de todos modos
+    console.error("Error al eliminar servicio:", {
+      error,
+      response: error.response,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+
+    if (error.response?.status === 404) {
       localStorage.removeItem("cachedServices");
       return { success: true, message: "Servicio eliminado (no existía)" };
     }
-    throw error;
+
+    throw (
+      error.response?.data?.message ||
+      error.message ||
+      "Error al eliminar el servicio"
+    );
   }
 };
 

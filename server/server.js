@@ -8,12 +8,23 @@ import { isUsingMockDB } from "./config/db.js";
 // Importar rutas
 import authRoutes from "./routes/authRoutes.js";
 import inventoryRoutes from "./routes/inventoryRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 // Configuración de variables de entorno
 dotenv.config();
 
 // Inicializar express
 const app = express();
+
+// Global Debug Middleware
+app.use((req, res, next) => {
+  console.log("========= Incoming Request =========");
+  console.log(`${req.method} ${req.originalUrl}`);
+  console.log("Headers:", req.headers);
+  console.log("Body:", req.body);
+  console.log("===================================");
+  next();
+});
 
 // Middleware
 const corsOptions = {
@@ -24,6 +35,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Rutas
+app.use("/api/auth", authRoutes);
+app.use("/api/inventory", inventoryRoutes);
+app.use("/api/users", userRoutes);
+
 // Conectar a la base de datos
 connectDB().then(async (conn) => {
   if (conn && !isUsingMockDB()) {
@@ -31,10 +47,6 @@ connectDB().then(async (conn) => {
     await seedInventory();
   }
 });
-
-// Rutas
-app.use("/api/auth", authRoutes);
-app.use("/api/inventory", inventoryRoutes);
 
 // Middleware para manejar rutas no encontradas
 app.use((req, res) => {

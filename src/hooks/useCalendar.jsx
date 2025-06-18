@@ -34,22 +34,67 @@ export function useCalendar() {
     const stored = localStorage.getItem("calendar_events");
     return stored ? JSON.parse(stored) : initialEvents;
   });
-
-  const [technicians, setTechnicians] = useState(() => {
-    const stored = localStorage.getItem("calendar_technicians");
-    return stored ? JSON.parse(stored) : initialTechnicians;
-  });
-
+  const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [shouldReload, setShouldReload] = useState(false);
+
+  // Cargar técnicos desde la API
+  useEffect(() => {
+    const loadTechnicians = async () => {
+      try {
+        setLoading(true);
+        const techniciansData = await userService.getTechnicians();
+        setTechnicians(
+          techniciansData.map((tech) => ({
+            id: tech._id,
+            title: tech.name,
+            order: tech.order || 0,
+          }))
+        );
+      } catch (err) {
+        console.error("Error loading technicians:", err);
+        setError("Error al cargar técnicos: " + err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTechnicians();
+  }, []); // Solo cargar al montar el componente
+
+  // Efecto para recargar técnicos cuando sea necesario
+  useEffect(() => {
+    if (shouldReload) {
+      const reloadTechnicians = async () => {
+        try {
+          setLoading(true);
+          const techniciansData = await userService.getTechnicians();
+          const formattedTechnicians = techniciansData.map((tech) => ({
+            id: tech._id,
+            title: tech.name,
+            order: tech.order || 0,
+          }));
+          setTechnicians(formattedTechnicians);
+          localStorage.setItem(
+            "calendar_technicians",
+            JSON.stringify(formattedTechnicians)
+          );
+        } catch (err) {
+          console.error("Error reloading technicians:", err);
+        } finally {
+          setLoading(false);
+          setShouldReload(false);
+        }
+      };
+
+      reloadTechnicians();
+    }
+  }, [shouldReload]);
 
   useEffect(() => {
     localStorage.setItem("calendar_events", JSON.stringify(events));
   }, [events]);
-
-  useEffect(() => {
-    localStorage.setItem("calendar_technicians", JSON.stringify(technicians));
-  }, [technicians]);
 
   const createEvent = async (eventData) => {
     try {
@@ -130,16 +175,51 @@ export function useCalendar() {
     }
   };
 
+  // Función modificada para eliminar técnico
   const deleteTechnician = async (techId) => {
+    if (!techId) {
+      console.error("ID de técnico no proporcionado");
+      throw new Error("Se requiere el ID del técnico");
+    }
+
     try {
       setLoading(true);
-      setTechnicians((prev) => prev.filter((tech) => tech.id !== techId));
+      console.log("Iniciando eliminación de técnico:", techId);
+
+      // Llamar a la API para eliminar el técnico
+      await userService.deleteTechnician(techId);
+      console.log("API call exitoso para eliminar técnico");
+
+      // Cargar los datos actualizados desde el servidor
+      const techniciansData = await userService.getTechnicians();
+      const formattedTechnicians = techniciansData.map((tech) => ({
+        id: tech._id,
+        title: tech.name,
+        order: tech.order || 0,
+      }));
+
+      // Actualizar el estado con los datos frescos del servidor
+      setTechnicians(formattedTechnicians);
+
+      console.log("Técnico eliminado y datos actualizados:", {
+        deletedId: techId,
+        remainingCount: formattedTechnicians.length,
+      });
     } catch (error) {
-      setError("Error al eliminar el técnico");
-      throw error;
+      console.error("Error al eliminar técnico:", {
+        techId,
+        error: error.message,
+        stack: error.stack,
+      });
+      throw new Error(error.message || "Error al eliminar técnico");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Función para forzar una recarga
+  const reloadTechnicians = () => {
+    setShouldReload(true);
   };
 
   return {
