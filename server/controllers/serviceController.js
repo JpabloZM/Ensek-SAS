@@ -1,8 +1,8 @@
 // Service request controller
-import ServiceRequest from '../models/serviceRequestModel.js';
-import Service from '../models/Service.js';
-import User from '../models/User.js'; // Import User model
-import mongoose from 'mongoose';
+import ServiceRequest from "../models/serviceRequestModel.js";
+import Service from "../models/Service.js";
+import User from "../models/User.js"; // Import User model
+import mongoose from "mongoose";
 
 // @desc    Create a new service request
 // @route   POST /api/services/request
@@ -39,14 +39,14 @@ export const createServiceRequest = async (req, res) => {
     } else {
       res.status(400).json({
         success: false,
-        message: 'Invalid service request data',
+        message: "Invalid service request data",
       });
     }
   } catch (error) {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: "Server Error",
       error: error.message,
     });
   }
@@ -59,7 +59,7 @@ export const getServiceRequests = async (req, res) => {
   try {
     const serviceRequests = await ServiceRequest.find({})
       .sort({ createdAt: -1 }) // Sort by most recent
-      .populate('user', 'name email');
+      .populate("user", "name email");
 
     res.json({
       success: true,
@@ -70,7 +70,7 @@ export const getServiceRequests = async (req, res) => {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: "Server Error",
       error: error.message,
     });
   }
@@ -81,27 +81,27 @@ export const getServiceRequests = async (req, res) => {
 // @access  Private
 export const getServiceRequestById = async (req, res) => {
   try {
-    const serviceRequest = await ServiceRequest.findById(req.params.id).populate(
-      'user',
-      'name email'
-    );
+    const serviceRequest = await ServiceRequest.findById(
+      req.params.id
+    ).populate("user", "name email");
 
     // Check if service request exists
     if (!serviceRequest) {
       return res.status(404).json({
         success: false,
-        message: 'Service request not found',
+        message: "Service request not found",
       });
     }
 
     // Check if user is admin or the owner of the service request
     if (
-      req.user.role !== 'admin' &&
-      (serviceRequest.user && serviceRequest.user._id.toString() !== req.user._id.toString())
+      req.user.role !== "admin" &&
+      serviceRequest.user &&
+      serviceRequest.user._id.toString() !== req.user._id.toString()
     ) {
       return res.status(401).json({
         success: false,
-        message: 'Not authorized to access this service request',
+        message: "Not authorized to access this service request",
       });
     }
 
@@ -113,7 +113,7 @@ export const getServiceRequestById = async (req, res) => {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: "Server Error",
       error: error.message,
     });
   }
@@ -131,7 +131,7 @@ export const updateServiceRequestStatus = async (req, res) => {
     if (!serviceRequest) {
       return res.status(404).json({
         success: false,
-        message: 'Service request not found',
+        message: "Service request not found",
       });
     }
 
@@ -148,7 +148,7 @@ export const updateServiceRequestStatus = async (req, res) => {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: "Server Error",
       error: error.message,
     });
   }
@@ -159,7 +159,12 @@ export const getServices = async (req, res) => {
     const services = await Service.find().sort({ createdAt: -1 });
     res.json(services);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener los servicios', error: error.message });
+    res
+      .status(500)
+      .json({
+        message: "Error al obtener los servicios",
+        error: error.message,
+      });
   }
 };
 
@@ -169,7 +174,9 @@ export const createService = async (req, res) => {
     await service.save();
     res.status(201).json(service);
   } catch (error) {
-    res.status(400).json({ message: 'Error al crear el servicio', error: error.message });
+    res
+      .status(400)
+      .json({ message: "Error al crear el servicio", error: error.message });
   }
 };
 
@@ -177,36 +184,72 @@ export const updateService = async (req, res) => {
   try {
     console.log("Updating service:", req.params.id, req.body);
     if (req.body.technician) {
-      const technicianUser = await User.findOne({ _id: req.body.technician, role: 'technician' });
+      const technicianUser = await User.findOne({
+        _id: req.body.technician,
+        role: "technician",
+      });
       if (!technicianUser) {
-        return res.status(400).json({ message: 'Technician not found or invalid role' });
+        return res
+          .status(400)
+          .json({ message: "Technician not found or invalid role" });
       }
       req.body.technician = new mongoose.Types.ObjectId(technicianUser._id); // Ensure ObjectId is instantiated correctly
     }
-    const service = await Service.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const service = await Service.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
     console.log("Updated service response:", service);
     if (!service) {
-      return res.status(404).json({ message: 'Servicio no encontrado' });
+      return res.status(404).json({ message: "Servicio no encontrado" });
     }
     res.json(service);
   } catch (error) {
-    res.status(400).json({ message: 'Error al actualizar el servicio', error: error.message });
+    res
+      .status(400)
+      .json({
+        message: "Error al actualizar el servicio",
+        error: error.message,
+      });
   }
 };
 
+// @desc    Delete a service
+// @route   DELETE /api/services/:id
+// @access  Private/Admin
 export const deleteService = async (req, res) => {
   try {
-    const service = await Service.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
+
+    // Intentar encontrar el servicio primero
+    const service = await Service.findOne({
+      $or: [
+        { _id: mongoose.Types.ObjectId.isValid(id) ? id : null },
+        { _id: id },
+      ],
+    });
+
     if (!service) {
-      return res.status(404).json({ message: 'Servicio no encontrado' });
+      return res.status(404).json({
+        success: false,
+        message: "Servicio no encontrado",
+      });
     }
-    res.json({ message: 'Servicio eliminado correctamente' });
+
+    // Si encontramos el servicio, lo eliminamos
+    await service.remove();
+
+    res.json({
+      success: true,
+      message: "Servicio eliminado correctamente",
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error al eliminar el servicio', error: error.message });
+    console.error("Error al eliminar servicio:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al eliminar el servicio",
+      error: error.message,
+    });
   }
 };
 
@@ -214,11 +257,13 @@ export const getServiceById = async (req, res) => {
   try {
     const service = await Service.findById(req.params.id);
     if (!service) {
-      return res.status(404).json({ message: 'Servicio no encontrado' });
+      return res.status(404).json({ message: "Servicio no encontrado" });
     }
     res.json(service);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener el servicio', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al obtener el servicio", error: error.message });
   }
 };
 
@@ -236,11 +281,16 @@ export const assignTechnicianToService = async (req, res) => {
     );
 
     if (!service) {
-      return res.status(404).json({ message: 'Servicio no encontrado' });
+      return res.status(404).json({ message: "Servicio no encontrado" });
     }
 
     res.json(service);
   } catch (error) {
-    res.status(400).json({ message: 'Error al asignar técnico al servicio', error: error.message });
+    res
+      .status(400)
+      .json({
+        message: "Error al asignar técnico al servicio",
+        error: error.message,
+      });
   }
 };

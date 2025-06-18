@@ -18,20 +18,6 @@ import { userService } from "../../../client/services/userService";
 import "./Calendar.css";
 import "./styles/forms.css";
 
-const API_MOCK = {
-  eventos: [
-    {
-      titulo: "Prueba!!!",
-      fecha_inicio: new Date(),
-      fecha_fin: new Date(Date.now() + 3600000), // 1 hora después
-      color: "#87c947",
-      estado: "confirmado",
-      descripcion: "Servicio de prueba",
-    },
-    // Más eventos de ejemplo...
-  ],
-};
-
 const Calendar = () => {
   // Services state and API integration
   const { services, updateService, getAllServices } = useServices();
@@ -108,13 +94,18 @@ const Calendar = () => {
   }, []);
   // Load pending services when services change
   useEffect(() => {
-    const currentServices = services && services.length > 0 ? services : localServices;
-    console.log('Services updated:', currentServices);
-    console.log('Services length:', currentServices?.length);
-    console.log('Services type:', typeof currentServices);
-    
-    if (currentServices && Array.isArray(currentServices) && currentServices.length > 0) {
-      console.log('Processing services...');
+    const currentServices =
+      services && services.length > 0 ? services : localServices;
+    console.log("Services updated:", currentServices);
+    console.log("Services length:", currentServices?.length);
+    console.log("Services type:", typeof currentServices);
+
+    if (
+      currentServices &&
+      Array.isArray(currentServices) &&
+      currentServices.length > 0
+    ) {
+      console.log("Processing services...");
       const pendingServices = currentServices
         .filter((service) => service.status === "pending")
         .map((service) => ({
@@ -131,16 +122,21 @@ const Calendar = () => {
           preferredDate: service.preferredDate,
         }));
       setServiciosPendientes(pendingServices);
-      console.log('Pending services:', pendingServices);
+      console.log("Pending services:", pendingServices);
 
       // Convert pending services to calendar events format
       const calendarEvents = currentServices
-        .filter((service) => service.status === "pending" || service.status === "completed")
+        .filter(
+          (service) =>
+            service.status === "pending" || service.status === "completed"
+        )
         .map((service) => ({
           id: service._id,
           title: service.serviceType,
           start: new Date(service.preferredDate).toISOString(),
-          end: new Date(new Date(service.preferredDate).getTime() + 3600000).toISOString(), // 1 hour duration
+          end: new Date(
+            new Date(service.preferredDate).getTime() + 3600000
+          ).toISOString(), // 1 hour duration
           color: service.status === "completed" ? "#87c947" : "#ffd54f",
           description: service.description,
           extendedProps: {
@@ -149,24 +145,28 @@ const Calendar = () => {
             clientPhone: service.phone,
             address: service.address,
             status: service.status,
-            technician: service.technician ? tecnicos.find((t) => t.id === service.technician)?.title : "Sin técnico asignado",
+            technician: service.technician
+              ? tecnicos.find((t) => t.id === service.technician)?.title
+              : "Sin técnico asignado",
           },
         }));
 
-      console.log('Calendar events:', calendarEvents);
+      console.log("Calendar events:", calendarEvents);
 
       // Add pending services to eventos state
       setEventos((prevEventos) => {
         // Filter out any existing pending services to avoid duplicates
         const filteredEvents = prevEventos.filter(
-          (evento) => !evento.extendedProps?.status || evento.extendedProps.status !== "pending"
+          (evento) =>
+            !evento.extendedProps?.status ||
+            evento.extendedProps.status !== "pending"
         );
         const newEvents = [...filteredEvents, ...calendarEvents];
-        console.log('Updated eventos:', newEvents);
+        console.log("Updated eventos:", newEvents);
         return newEvents;
       });
     } else {
-      console.log('No services or services is not an array:', currentServices);
+      console.log("No services or services is not an array:", currentServices);
     }
   }, [services, localServices]);
 
@@ -291,17 +291,45 @@ const Calendar = () => {
   const handleEliminarServicio = async (servicioId) => {
     try {
       await serviceService.deleteService(servicioId);
-      const serviciosActualizados = serviciosPendientes.filter(
-        (servicio) => servicio.id !== servicioId
+
+      // Actualizar el estado local
+      setLocalServices((prev) =>
+        prev.filter((service) => service._id !== servicioId)
       );
-      setServiciosPendientes(serviciosActualizados);
+
+      // Actualizar los servicios pendientes
+      setServiciosPendientes((prev) =>
+        prev.filter((service) => service._id !== servicioId)
+      );
+
+      // Actualizar los eventos
+      setEventos((prev) =>
+        prev.filter((event) => event.serviceId !== servicioId)
+      );
+
+      // Guardar los cambios en localStorage
+      localStorage.setItem(
+        "serviciosPendientes",
+        JSON.stringify(
+          serviciosPendientes.filter((service) => service._id !== servicioId)
+        )
+      );
+      localStorage.setItem(
+        "eventos",
+        JSON.stringify(
+          eventos.filter((event) => event.serviceId !== servicioId)
+        )
+      );
+
+      // Forzar una recarga de servicios
+      if (getAllServices) {
+        await getAllServices(true);
+      }
+
+      mostrarAlerta("Servicio eliminado correctamente", "success");
     } catch (error) {
       console.error("Error al eliminar servicio:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "No se pudo eliminar el servicio. Por favor, intente nuevamente.",
-      });
+      mostrarAlerta("Error al eliminar el servicio", "error");
     }
   };
 
@@ -345,7 +373,11 @@ const Calendar = () => {
 
     if (result.isConfirmed) {
       try {
-        console.log("Updating service:", { id: event.id, technician: tecnicoDestino.id, status: "completed" });
+        console.log("Updating service:", {
+          id: event.id,
+          technician: tecnicoDestino.id,
+          status: "completed",
+        });
         console.log("Event ID:", event.id);
         console.log("Technician ID:", tecnicoDestino.id);
         console.log("Payload for updateService:", {
@@ -802,8 +834,8 @@ const Calendar = () => {
         display: "block",
       };
 
-      console.log('Event created:', nuevoEvento);
-      console.log('Technicians state:', tecnicos);
+      console.log("Event created:", nuevoEvento);
+      console.log("Technicians state:", tecnicos);
 
       // Agregar evento al estado
       setEventos((prevEventos) => {

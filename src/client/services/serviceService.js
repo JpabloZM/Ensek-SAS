@@ -11,7 +11,7 @@ let pendingRequest = null;
 const getAuthConfig = () => {
   const userString = localStorage.getItem("user");
   let token = null;
-  
+
   if (userString) {
     try {
       const user = JSON.parse(userString);
@@ -20,7 +20,7 @@ const getAuthConfig = () => {
       console.error("Error parsing user data:", error);
     }
   }
-  
+
   return {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -34,24 +34,25 @@ const getServices = async () => {
     if (pendingRequest) {
       return pendingRequest;
     }
-    
+
     const now = Date.now();
     const timeSinceLastRequest = now - lastRequestTime;
-    
+
     if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
       const cachedData = localStorage.getItem("cachedServices");
       if (cachedData) {
         return JSON.parse(cachedData);
       }
-      await new Promise(resolve => 
+      await new Promise((resolve) =>
         setTimeout(resolve, MIN_REQUEST_INTERVAL - timeSinceLastRequest)
       );
     }
-    
+
     lastRequestTime = Date.now();
-    
-    pendingRequest = axios.get(API_URL, getAuthConfig())
-      .then(response => {
+
+    pendingRequest = axios
+      .get(API_URL, getAuthConfig())
+      .then((response) => {
         localStorage.setItem("cachedServices", JSON.stringify(response.data));
         return response.data;
       })
@@ -60,7 +61,7 @@ const getServices = async () => {
           pendingRequest = null;
         }, MIN_REQUEST_INTERVAL);
       });
-    
+
     return pendingRequest;
   } catch (error) {
     console.error("Error al obtener servicios:", error);
@@ -73,7 +74,7 @@ const saveService = async (service) => {
   try {
     const response = await axios.post(API_URL, service);
     const savedService = response.data;
-    
+
     // Update cache with new service
     const cachedServices = localStorage.getItem("cachedServices");
     if (cachedServices) {
@@ -81,7 +82,7 @@ const saveService = async (service) => {
       services.push(savedService);
       localStorage.setItem("cachedServices", JSON.stringify(services));
     }
-    
+
     return savedService;
   } catch (error) {
     console.error("Error al crear servicio:", error);
@@ -98,18 +99,18 @@ const updateService = async (id, updates) => {
       updates,
       getAuthConfig()
     );
-    
+
     // Update cache
     const cachedServices = localStorage.getItem("cachedServices");
     if (cachedServices) {
       const services = JSON.parse(cachedServices);
-      const index = services.findIndex(s => s._id === id);
+      const index = services.findIndex((s) => s._id === id);
       if (index !== -1) {
         services[index] = response.data;
         localStorage.setItem("cachedServices", JSON.stringify(services));
       }
     }
-    
+
     return response.data;
   } catch (error) {
     console.error("Error al actualizar servicio:", error);
@@ -118,20 +119,27 @@ const updateService = async (id, updates) => {
 };
 
 // Delete a service
-const deleteService = async (id) => {
+const deleteService = async (serviceId) => {
   try {
-    await axios.delete(`${API_URL}/${id}`, getAuthConfig());
-    
-    // Update cache
-    const cachedServices = localStorage.getItem("cachedServices");
-    if (cachedServices) {
-      const services = JSON.parse(cachedServices);
-      const filteredServices = services.filter(s => s._id !== id);
-      localStorage.setItem("cachedServices", JSON.stringify(filteredServices));
-    }
+    const config = getAuthConfig();
+    const response = await axios.delete(`${API_URL}/${serviceId}`, config);
+
+    // Clear cache to force a fresh load
+    localStorage.removeItem("cachedServices");
+
+    // Reset the request tracking variables
+    lastRequestTime = 0;
+    pendingRequest = null;
+
+    return response.data;
   } catch (error) {
     console.error("Error al eliminar servicio:", error);
-    throw error.response?.data?.message || error.message || "Error desconocido";
+    if (error.response && error.response.status === 404) {
+      // Si el servicio no existe, limpiamos la caché de todos modos
+      localStorage.removeItem("cachedServices");
+      return { success: true, message: "Servicio eliminado (no existía)" };
+    }
+    throw error;
   }
 };
 
