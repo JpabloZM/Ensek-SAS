@@ -73,7 +73,7 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
 
           <div class="detalle-row">
             <div class="detalle-label">
-              <i class="fas fa-tools"></i> Tipo de Servicio
+              <i class="fas fa-tools"></i> Servicio
             </div>
             <div class="detalle-value">${getTipoServicioEspanol(
               servicio.nombre
@@ -82,11 +82,12 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
 
           <div class="detalle-row">
             <div class="detalle-label">
-              <i class="fas fa-calendar-alt"></i> Fecha preferida
+              <i class="fas fa-calendar-alt"></i> Fecha
             </div>
-            <div class="detalle-value">
-              ${formatearFecha(servicio.preferredDate, true)}
-            </div>
+            <div class="detalle-value">${formatearFecha(
+              servicio.preferredDate,
+              true
+            )}</div>
           </div>
 
           ${
@@ -137,6 +138,52 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
               : ""
           }
         </div>
+        <style>
+          .detalles-content {
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 0.9rem;
+          }
+          .detalle-row {
+            display: flex;
+            align-items: start;
+            margin-bottom: 0.4rem;
+            line-height: 1.2;
+          }
+          .detalle-row:last-child {
+            margin-bottom: 0;
+          }
+          .detalle-label {
+            min-width: 90px;
+            color: #87c947;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+          }
+          .detalle-value {
+            flex: 1;
+            padding-left: 0.5rem;
+          }
+          .swal2-popup {
+            padding: 1rem !important;
+          }
+          .swal2-title {
+            font-size: 1.1rem !important;
+            padding: 0.5rem 0 !important;
+            margin-bottom: 0.5rem !important;
+          }
+          .swal2-html-container {
+            margin: 0 !important;
+          }
+          .swal2-actions {
+            margin-top: 1rem !important;
+          }
+          .swal2-confirm {
+            margin: 0 !important;
+          }
+        </style>
       `,
       showCloseButton: true,
       confirmButtonText: "Cerrar",
@@ -157,17 +204,16 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
     const { value: formValues } = await mostrarAlerta({
       title: "Asignar Servicio al Calendario",
       html: `
-        <div class="detalles-servicio mb-4">
-          <p><strong>Cliente:</strong> ${servicio.clientName}</p>
-          <p><strong>Contacto:</strong> ${servicio.clientEmail} | ${
-        servicio.clientPhone
-      }</p>
-          <p><strong>Dirección:</strong> ${servicio.address}</p>
-          <p><strong>Descripción:</strong> ${servicio.descripcion}</p>
+        <div class="detalles-servicio mb-2">
+          <p class="mb-1"><strong>Cliente:</strong> ${servicio.clientName}</p>
+          <p class="mb-1"><strong>Dirección:</strong> ${servicio.address}</p>
+          <p class="mb-1"><strong>Descripción:</strong> ${
+            servicio.descripcion
+          }</p>
         </div>
-        <form id="asignarForm">
-          <div class="mb-3">
-            <label class="form-label">Técnico</label>
+        <form id="asignarForm" style="margin-top: 0.5rem;">
+          <div class="mb-2">
+            <label class="form-label mb-1">Técnico</label>
             <select id="tecnicoSelect" class="form-control" required>
               <option value="">Seleccionar técnico...</option>
               ${technicians
@@ -178,8 +224,8 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
                 .join("")}
             </select>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Fecha</label>
+          <div class="mb-2">
+            <label class="form-label mb-1">Fecha</label>
             <input 
               type="date" 
               id="fecha" 
@@ -191,12 +237,12 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
               }"
             >
           </div>
-          <div class="mb-3">
-            <label class="form-label">Hora de inicio</label>
+          <div class="mb-2">
+            <label class="form-label mb-1">Hora de inicio</label>
             <input type="time" id="horaInicio" class="form-control" required>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Duración (minutos)</label>
+          <div class="mb-2">
+            <label class="form-label mb-1">Duración (minutos)</label>
             <input 
               type="number" 
               id="duracion" 
@@ -208,6 +254,39 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
             >
           </div>
         </form>
+        <style>
+          .detalles-servicio {
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+          }
+          .detalles-servicio p:last-child {
+            margin-bottom: 0;
+          }
+          .form-label {
+            color: #87c947;
+            font-weight: 500;
+            font-size: 0.9rem;
+          }
+          .form-control {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.9rem;
+          }
+          .swal2-popup {
+            padding: 1rem;
+          }
+          .swal2-title {
+            font-size: 1.2rem !important;
+            padding: 0.5rem 0 !important;
+          }
+          .swal2-html-container {
+            margin: 0.5rem 0 !important;
+          }
+          .swal2-actions {
+            margin: 1rem 0 0 0 !important;
+          }
+        </style>
       `,
       showCancelButton: true,
       confirmButtonText: "Asignar",
