@@ -9,6 +9,7 @@ import { isUsingMockDB } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import inventoryRoutes from "./routes/inventoryRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import serviceRoutes from "./routes/serviceRoutes.js";
 
 // Configuración de variables de entorno
 dotenv.config();
@@ -39,6 +40,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/services", serviceRoutes);
 
 // Conectar a la base de datos
 connectDB().then(async (conn) => {

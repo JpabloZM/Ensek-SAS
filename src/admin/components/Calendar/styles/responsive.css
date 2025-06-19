@@ -208,19 +208,13 @@
   padding: 2px 4px;
 }
 
-/* ===== Orientación del dispositivo ===== */
-@media (orientation: landscape) and (max-height: 576px) {
-  .sidebar {
-    max-height: 200px;
-  }
+/* ===== Ajustes de la barra de herramientas ===== */
+.fc-toolbar {
+  padding: 0.25rem;
+}
 
-  .fc-toolbar {
-    padding: 0.25rem;
-  }
-
-  .fc-toolbar-title {
-    font-size: 1rem !important;
-  }
+.fc-toolbar-title {
+  font-size: 1rem !important;
 }
 
 /* ===== Dispositivos con pantalla retina ===== */

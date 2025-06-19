@@ -29,6 +29,7 @@ router.use((req, res, next) => {
 
 // Rutas públicas
 router.post("/", serviceController.createService);
+router.post("/request", serviceController.createServiceRequest);
 
 // Rutas protegidas
 router.get("/", protect, serviceController.getServices);

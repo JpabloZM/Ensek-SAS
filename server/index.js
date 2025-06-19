@@ -13,16 +13,6 @@ import healthRoutes from "./routes/healthRoutes.js";
 // Load environment variables
 config();
 
-// Connect to MongoDB
-connectDB()
-  .then(() => {
-    console.log("MongoDB connected successfully");
-  })
-  .catch((error) => {
-    console.error("MongoDB connection error:", error);
-    process.exit(1);
-  });
-
 // Initialize express app
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -56,9 +46,6 @@ app.use((req, res, next) => {
 app.get("/", (req, res) => {
   res.json({ message: "ENSEK-SAS API is running" });
 });
-
-// Mount routes in specific order
-app.use("/api/auth", authRoutes);
 
 // Debug middleware for all routes
 app.use((req, res, next) => {

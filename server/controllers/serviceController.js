@@ -166,15 +166,67 @@ export const getServices = async (req, res) => {
   }
 };
 
+// @desc    Create a new service
+// @route   POST /api/services
+// @access  Public
 export const createService = async (req, res) => {
   try {
-    const service = new Service(req.body);
-    await service.save();
-    res.status(201).json(service);
+    console.log('Creating service with data:', req.body);
+    
+    const {
+      name,
+      email,
+      phone,
+      document,
+      address,
+      serviceType,
+      description,
+      preferredDate,
+    } = req.body;
+
+    // Validate required fields
+    const requiredFields = ['name', 'email', 'phone', 'document', 'address', 'serviceType', 'preferredDate'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Faltan campos requeridos',
+        missingFields
+      });
+    }
+
+    // Create service
+    const service = await ServiceModel.create({
+      name,
+      email,
+      phone,
+      document,
+      address,
+      serviceType,
+      description,
+      preferredDate: new Date(preferredDate),
+      status: 'pending'
+    });
+
+    if (service) {
+      res.status(201).json({
+        success: true,
+        service
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: "Invalid service data"
+      });
+    }
   } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Error al crear el servicio", error: error.message });
+    console.error('Error creating service:', error);
+    res.status(500).json({
+      success: false,
+      message: "Error al crear el servicio",
+      error: error.message
+    });
   }
 };
 
