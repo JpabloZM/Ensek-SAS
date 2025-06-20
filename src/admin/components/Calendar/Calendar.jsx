@@ -24,6 +24,7 @@ const Calendar = () => {
   const [serviciosPendientes, setServiciosPendientes] = useState([]);
   const [eventos, setEventos] = useState([]);
   const [tecnicos, setTecnicos] = useState([]);
+  const [localServices, setLocalServices] = useState([]); // Agregar estado para servicios locales
   const { mostrarAlerta } = useAlertas();
   const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
   const [posicionMenu, setPosicionMenu] = useState({ x: 0, y: 0 });
@@ -71,29 +72,33 @@ const Calendar = () => {
       console.log("No valid services array");
       setServiciosPendientes([]);
       setEventos([]);
+      setLocalServices([]); // Limpiar servicios locales
       return;
     }
 
     console.log("Processing services:", services);
 
+    // Actualizar servicios locales
+    setLocalServices(services);
+
     // Procesar servicios pendientes
     const pendingServices = services
-      .filter((service) => {
-        console.log("Processing service:", service);
-        return service.status === "pending";
-      })
+      .filter((service) => service.status === "pending")
       .map((service) => ({
+        _id: service._id,
         id: service._id,
         nombre: service.serviceType,
-        descripcion: service.description,
-        duracion: 60,
+        descripcion: service.description || '',
+        duracion: service.duration || 60,
         color: "#ffd54f",
-        estado: "pendiente",
+        estado: service.status || "pendiente",
         clientName: service.name,
         clientEmail: service.email,
         clientPhone: service.phone,
         address: service.address,
         preferredDate: service.preferredDate,
+        updatedAt: service.updatedAt,
+        createdAt: service.createdAt
       }));
 
     console.log("Pending services:", pendingServices);
@@ -378,15 +383,30 @@ const Calendar = () => {
       });
       throw error;
     }
-  };
-  const handleEliminarServicio = async (servicioId) => {
+  };  const handleEliminarServicio = async (servicioId) => {
     try {
-      await serviceService.deleteService(servicioId);
+      if (!servicioId) {
+        throw new Error("ID de servicio no proporcionado");
+      }
 
-      // Actualizar el estado local
-      setLocalServices((prev) =>
-        prev.filter((service) => service._id !== servicioId)
-      );
+      console.log("Intentando eliminar servicio con ID:", servicioId);
+
+      const confirmResult = await mostrarAlerta({
+        title: "¿Estás seguro?",
+        text: "¿Deseas eliminar este servicio? Esta acción no se puede deshacer.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
+      });
+
+      if (!confirmResult.isConfirmed) {
+        return;
+      }
+
+      await serviceService.deleteService(servicioId);
 
       // Actualizar los servicios pendientes
       setServiciosPendientes((prev) =>
@@ -398,29 +418,26 @@ const Calendar = () => {
         prev.filter((event) => event.serviceId !== servicioId)
       );
 
-      // Guardar los cambios en localStorage
-      localStorage.setItem(
-        "serviciosPendientes",
-        JSON.stringify(
-          serviciosPendientes.filter((service) => service._id !== servicioId)
-        )
-      );
-      localStorage.setItem(
-        "eventos",
-        JSON.stringify(
-          eventos.filter((event) => event.serviceId !== servicioId)
-        )
+      // Actualizar servicios locales
+      setLocalServices((prev) =>
+        prev.filter((service) => service._id !== servicioId)
       );
 
-      // Forzar una recarga de servicios
-      if (getAllServices) {
-        await getAllServices(true);
-      }
+      // Recargar todos los servicios para asegurar sincronización
+      await getAllServices(true);
 
-      mostrarAlerta("Servicio eliminado correctamente", "success");
+      mostrarAlerta({
+        title: "¡Eliminado!",
+        text: "El servicio ha sido eliminado correctamente.",
+        icon: "success"
+      });
     } catch (error) {
       console.error("Error al eliminar servicio:", error);
-      mostrarAlerta("Error al eliminar el servicio", "error");
+      mostrarAlerta({
+        title: "Error",
+        text: error.message || "No se pudo eliminar el servicio",
+        icon: "error"
+      });
     }
   };
   const handleEventDrop = async (info) => {

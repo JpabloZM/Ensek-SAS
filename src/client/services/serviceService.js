@@ -144,9 +144,15 @@ const updateService = async (id, updates) => {
 // Delete a service
 const deleteService = async (serviceId) => {
   try {
+    if (!serviceId) {
+      throw new Error("ID de servicio no válido");
+    }
+
     console.log("Deleting service with ID:", serviceId);
-    const config = getAuthConfig(); // Ensure we're using a valid ID format
-    const cleanId = serviceId.replace("evento-", "");
+    const config = getAuthConfig();
+    
+    // Ensure we're using a valid ID format
+    const cleanId = typeof serviceId === 'string' ? serviceId.replace("evento-", "") : serviceId;
     console.log("Clean ID for deletion:", cleanId);
 
     const response = await axios.delete(`${API_URL}/${cleanId}`, config);

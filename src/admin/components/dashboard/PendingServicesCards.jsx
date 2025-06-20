@@ -4,7 +4,7 @@ import { useAlertas } from '../../../hooks/useAlertas';
 import './PendingServicesCards.css';
 
 const PendingServicesCards = () => {
-  const { services, loading, error, getAllServices, updateService } = useServices();
+  const { services, loading, error, getAllServices, updateService, deleteService } = useServices();
   const { mostrarAlerta } = useAlertas();
   const [pendingServices, setPendingServices] = useState([]);
   const refreshTimeoutRef = useRef(null);
@@ -77,6 +77,53 @@ const PendingServicesCards = () => {
       });
     }
   };
+
+  const handleEliminarServicio = async (serviceId) => {
+    try {
+      if (!serviceId) {
+        throw new Error("ID de servicio no proporcionado");
+      }
+
+      const confirmResult = await mostrarAlerta({
+        title: "¿Estás seguro?",
+        text: "¿Deseas eliminar este servicio? Esta acción no se puede deshacer.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
+      });
+
+      if (!confirmResult.isConfirmed) {
+        return;
+      }
+
+      await deleteService(serviceId);
+
+      // Actualizar la lista de servicios pendientes localmente
+      setPendingServices(prevServices => 
+        prevServices.filter(service => service._id !== serviceId)
+      );
+
+      // Recargar todos los servicios
+      await getAllServices(true);
+
+      mostrarAlerta({
+        title: "¡Éxito!",
+        text: "El servicio ha sido eliminado correctamente",
+        icon: "success"
+      });
+    } catch (error) {
+      console.error("Error al eliminar servicio:", error);
+      mostrarAlerta({
+        title: "Error",
+        text: error.message || "No se pudo eliminar el servicio",
+        icon: "error"
+      });
+    }
+  };
+
   if (loading) {
     return <div className="loading-message">Cargando servicios pendientes...</div>;
   }
@@ -158,7 +205,7 @@ const PendingServicesCards = () => {
                     className="btn btn-link text-danger p-0 eliminar-servicio"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleUpdateStatus(service, 'cancelled');
+                      handleEliminarServicio(service._id);
                     }}
                   >
                     <i className="fas fa-times-circle"></i>
