@@ -13,12 +13,13 @@ import WelcomeLayout from "./client/components/layout/WelcomeLayout";
 import Home from "./client/pages/Home";
 import Services from "./client/pages/Services";
 import FormServices from "./client/pages/FormServices";
-import Register from "./client/auth/Register";
+// import Register from "./client/auth/Register";
 // import Dashboard from "./admin/pages/Dashboard";
 import Schedule from "./admin/pages/Schedule";
 import Inventory from "./admin/pages/Inventory";
 import AuthRoute from "./components/AuthRoute";
 import UnifiedLogin from "./components/UnifiedLogin";
+import UnifiedRegister from "./components/UnifiedRegister";
 import AdminLayout from "./admin/components/layout/AdminLayout";
 import ClientLayout from "./client/components/layout/ClientLayout";
 
@@ -111,7 +112,7 @@ function App() {
             path="/registro"
             element={
               <AuthRoute requiredAuth={false} redirectTo="/">
-                <Register />
+                <UnifiedRegister />
               </AuthRoute>
             }
           />

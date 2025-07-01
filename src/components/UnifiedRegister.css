@@ -1,0 +1,99 @@
+/* Estilos específicos para el formulario de registro de dos columnas */
+.register-auth-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 800px; /* Aumentamos el ancho para acomodar dos columnas */
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.register-form-row {
+  display: flex;
+  gap: 1.5rem;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.register-form-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mejorar el espacio y la alineación de los campos del formulario */
+.register-form .form-group {
+  width: 100%;
+}
+
+.register-form .form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.register-form .form-group input {
+  width: 100%;
+}
+
+/* Ajuste para pantallas más pequeñas */
+@media (max-width: 768px) {
+  .register-auth-card {
+    max-width: 500px;
+  }
+
+  .register-form-row {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}
+
+/* Ajuste para el último elemento en filas de formulario en pantallas pequeñas */
+@media (max-width: 768px) {
+  .register-form-row:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* Ajustes para mantener una altura consistente */
+.register-form-column .form-group {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Reducir el espaciado en dispositivos móviles */
+@media (max-width: 480px) {
+  .register-auth-card {
+    padding: 1.5rem;
+  }
+
+  .register-form-row {
+    gap: 1rem;
+  }
+}
+
+/* Añadimos un poco más de espacio vertical para el botón */
+.register-form .auth-button {
+  margin-top: 1rem;
+  width: 50%; /* Reducido de 100% a 50% */
+  margin-left: auto;
+  margin-right: auto;
+  display: flex; /* Cambiado de block a flex */
+  justify-content: center; /* Centrar horizontalmente el contenido */
+  align-items: center; /* Centrar verticalmente el contenido */
+  padding: 0.75rem 1rem; /* Ajuste de padding para mejor apariencia */
+  text-align: center; /* Asegura que el texto esté centrado */
+}
+
+/* Estilos para el título del formulario */
+.register-auth-card h2 {
+  margin-bottom: 1.5rem;
+}

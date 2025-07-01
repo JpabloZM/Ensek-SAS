@@ -382,19 +382,22 @@ select:blur {
 /* Estilos para los botones de autenticación */
 .auth-button {
   border-radius: 4px;
-  padding: 4px 8px;
-  margin-left: px;
+  padding: 4px 12px;
+  margin-left: 10px;
   transition: all 0.3s ease;
   font-weight: 500;
   font-size: 0.85rem;
   display: inline-flex;
   align-items: center;
   height: 28px;
+  white-space: nowrap;
+  min-width: fit-content;
 }
 
 .auth-button.login {
   border: 1px solid white;
   background-color: transparent;
+  padding: 4px 15px;
 }
 
 .auth-button.login:hover {

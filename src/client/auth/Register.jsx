@@ -58,8 +58,8 @@ const Register = () => {
         email: formData.email,
         password: formData.password,
         role: "user", // Por defecto registramos usuarios normales
-        phone: "",    // Campos opcionales que podríamos agregar al formulario
-        address: ""   // en el futuro
+        phone: "", // Campos opcionales que podríamos agregar al formulario
+        address: "", // en el futuro
       };
 
       // Llamar a la API para registrar al usuario
@@ -85,7 +85,7 @@ const Register = () => {
     <div className="auth-container">
       <div className="auth-card">
         <h2>Registro de Cliente</h2>
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form onSubmit={handleSubmit} className="auth-form" autoComplete="off">
           <div className="form-group">
             <label htmlFor="nombre">Nombre completo</label>
             <input
@@ -95,6 +95,7 @@ const Register = () => {
               value={formData.nombre}
               onChange={handleChange}
               placeholder="Ingrese su nombre completo"
+              autoComplete="off"
             />
           </div>
 
@@ -107,6 +108,7 @@ const Register = () => {
               value={formData.email}
               onChange={handleChange}
               placeholder="Ingrese su correo electrónico"
+              autoComplete="off"
             />
           </div>
 
@@ -119,6 +121,7 @@ const Register = () => {
               value={formData.password}
               onChange={handleChange}
               placeholder="Ingrese su contraseña"
+              autoComplete="new-password"
             />
           </div>
 
@@ -131,6 +134,7 @@ const Register = () => {
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="Confirme su contraseña"
+              autoComplete="new-password"
             />
           </div>
 
