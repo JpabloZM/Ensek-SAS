@@ -49,7 +49,7 @@
 }
 
 .welcome-logo span {
-  color: #00a884;
+  color: #87c947;
 }
 
 .welcome-menu-button {
@@ -81,11 +81,11 @@
 }
 
 .welcome-navbar-links a:hover {
-  color: #00a884;
+  color: #87c947;
 }
 
 .welcome-signup-btn {
-  background-color: #00a884;
+  background-color: #87c947;
   color: white !important;
   padding: 8px 20px !important;
   border-radius: 5px;
@@ -93,7 +93,7 @@
 }
 
 .welcome-signup-btn:hover {
-  background-color: #008d6e;
+  background-color: #87c947;
 }
 
 /* Main content */
@@ -126,7 +126,7 @@
 }
 
 .welcome-footer-logo span {
-  color: #00a884;
+  color: #87c947;
 }
 
 .welcome-footer-logo p {
@@ -134,11 +134,11 @@
   opacity: 0.8;
 }
 
-.welcome-footer-links h3, 
+.welcome-footer-links h3,
 .welcome-footer-contact h3 {
   font-size: 1.1rem;
   margin-bottom: 15px;
-  color: #00a884;
+  color: #87c947;
 }
 
 .welcome-footer-links ul {
@@ -187,10 +187,6 @@
   transition: background-color 0.3s;
 }
 
-.welcome-social-icons a:hover {
-  background-color: #00a884;
-}
-
 .welcome-footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 20px;
@@ -199,29 +195,131 @@
   opacity: 0.6;
 }
 
+/* Estilos para los logos */
+.navbar-logo-image {
+  width: 40px;
+  height: auto;
+  object-fit: contain;
+}
+
+.footer-logo-image {
+  max-width: 60px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
 /* Elimina cualquier desenfoque (blur) en los formularios y campos de entrada */
-input, textarea, select {
+input,
+textarea,
+select {
   filter: none !important;
   backdrop-filter: none !important;
   box-shadow: none !important;
 }
 
-input:focus, textarea:focus, select:focus {
+input:focus,
+textarea:focus,
+select:focus {
   filter: none !important;
   backdrop-filter: none !important;
   box-shadow: none !important;
 }
 
-input:active, textarea:active, select:active {
+input:active,
+textarea:active,
+select:active {
   filter: none !important;
   backdrop-filter: none !important;
   box-shadow: none !important;
 }
 
-input:blur, textarea:blur, select:blur {
+input:blur,
+textarea:blur,
+select:blur {
   filter: none !important;
   backdrop-filter: none !important;
   box-shadow: none !important;
+}
+
+/* Estilos para la barra de navegación */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bg-dark, #2c2e35);
+  padding: 0.75rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 768px) {
+  .navbar {
+    padding: 0.75rem 8rem;
+  }
+}
+
+/* Ajustes para el logo en la barra de navegación */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Ajustes para los links en la barra de navegación */
+.navbar-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.navbar-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s;
+}
+
+.navbar-links a:hover {
+  color: var(--hover-green, #66b417);
+}
+
+/* Estilos para el menú móvil */
+.menu-button {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .menu-button {
+    display: block;
+  }
+
+  .navbar {
+    padding: 0.75rem 1rem;
+  }
+
+  .navbar-links {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background-color: var(--bg-dark, #2c2e35);
+    padding: 1rem;
+    gap: 1rem;
+    display: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 999;
+  }
+
+  .navbar-links.active {
+    display: flex;
+  }
 }
 
 /* Responsive design */
@@ -229,7 +327,7 @@ input:blur, textarea:blur, select:blur {
   .welcome-menu-button {
     display: block;
   }
-  
+
   .welcome-navbar-links {
     position: fixed;
     top: 70px;
@@ -241,38 +339,38 @@ input:blur, textarea:blur, select:blur {
     overflow: hidden;
     transition: height 0.3s;
   }
-  
+
   .welcome-navbar-links.active {
     height: auto;
   }
-  
+
   .welcome-navbar-links ul {
     flex-direction: column;
     padding: 20px;
   }
-  
+
   .welcome-navbar-links li {
     margin: 0 0 15px 0;
   }
-  
+
   .welcome-navbar-links li:last-child {
     margin-bottom: 0;
   }
-  
+
   .welcome-signup-btn {
     display: inline-block;
     margin-top: 5px;
   }
-  
+
   .welcome-footer-content {
     grid-template-columns: 1fr;
     text-align: center;
   }
-  
+
   .welcome-footer-logo {
     margin-bottom: 20px;
   }
-  
+
   .welcome-social-icons {
     justify-content: center;
   }

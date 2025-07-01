@@ -293,7 +293,7 @@
 }
 
 .contact-container {
-  max-width:500px;
+  max-width: 500px;
   margin: 0 auto;
   padding: 0 1rem;
 }
@@ -323,8 +323,7 @@
   outline: none;
   border-color: var(--primary-green);
   background: rgba(255, 255, 255, 0.1);
-  
-};
+}
 
 .form-input::placeholder {
   color: rgba(255, 255, 255, 0.6);
@@ -334,7 +333,7 @@ textarea.form-input {
   resize: vertical;
   min-height: 120px;
 }
-  
+
 /* Particle container styles */
 .particles-background {
   position: absolute;
@@ -374,10 +373,18 @@ textarea.form-input {
 }
 
 /* Distribute particles across the screen */
-.particle:nth-child(4n) { animation-delay: -5s; }
-.particle:nth-child(4n + 1) { animation-delay: -10s; }
-.particle:nth-child(4n + 2) { animation-delay: -15s; }
-.particle:nth-child(4n + 3) { animation-delay: -20s; }
+.particle:nth-child(4n) {
+  animation-delay: -5s;
+}
+.particle:nth-child(4n + 1) {
+  animation-delay: -10s;
+}
+.particle:nth-child(4n + 2) {
+  animation-delay: -15s;
+}
+.particle:nth-child(4n + 3) {
+  animation-delay: -20s;
+}
 
 /* Particle movement animations */
 @keyframes moveUp {
@@ -503,7 +510,7 @@ textarea.form-input {
   .particle {
     display: none;
   }
-  
+
   .particle:nth-child(4n) {
     display: block;
   }
@@ -585,3 +592,23 @@ textarea.form-input {
   }
 }
 
+/* Estilos para los mensajes de estado del formulario */
+.submit-status {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border-radius: var(--border-radius-md);
+  font-weight: 500;
+  text-align: center;
+}
+
+.submit-status.success {
+  background-color: rgba(134, 239, 172, 0.2);
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.submit-status.error {
+  background-color: rgba(252, 165, 165, 0.2);
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}

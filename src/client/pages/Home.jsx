@@ -1,8 +1,70 @@
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { FaFacebook, FaInstagram } from "react-icons/fa";
+import emailjs from "@emailjs/browser";
 import "./Home.css";
 
 const Home = () => {
+  const [formState, setFormState] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
+  const formRef = useRef();
+
+  // Manejar cambios en los inputs del formulario
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormState({
+      ...formState,
+      [name]: value,
+    });
+  };
+
+  // Manejar el envío del formulario
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    // Configuración de EmailJS
+    // Necesitas registrarte en https://www.emailjs.com/ y obtener tus propias credenciales
+    const serviceId = "service_ensek"; // Reemplazar con tu Service ID de EmailJS
+    const templateId = "template_ensek"; // Reemplazar con tu Template ID de EmailJS
+    const publicKey = "YOUR_PUBLIC_KEY"; // Reemplazar con tu Public Key de EmailJS
+
+    // Envío del correo usando EmailJS
+    emailjs
+      .sendForm(serviceId, templateId, formRef.current, publicKey)
+      .then((result) => {
+        console.log("Email sent successfully:", result.text);
+        setSubmitStatus({
+          success: true,
+          message:
+            "¡Mensaje enviado con éxito! Nos pondremos en contacto contigo pronto.",
+        });
+        // Limpiar el formulario
+        setFormState({
+          name: "",
+          email: "",
+          message: "",
+        });
+      })
+      .catch((error) => {
+        console.error("Email sending failed:", error.text);
+        setSubmitStatus({
+          success: false,
+          message:
+            "Hubo un problema al enviar tu mensaje. Por favor intenta de nuevo.",
+        });
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
+  };
+
   return (
     <div className="home">
       <div className="hero-section">
@@ -53,35 +115,57 @@ const Home = () => {
       <section id="contact-section" className="contact-section">
         <h2>Contáctanos</h2>
         <div className="contact-container">
-          <form className="contact-form">
+          <form className="contact-form" ref={formRef} onSubmit={handleSubmit}>
             <div className="form-group">
               <input
                 type="text"
+                name="name"
                 placeholder="Nombre completo"
                 className="form-input"
+                value={formState.name}
+                onChange={handleInputChange}
                 required
               />
             </div>
             <div className="form-group">
               <input
                 type="email"
+                name="email"
                 placeholder="Correo electrónico"
                 className="form-input"
+                value={formState.email}
+                onChange={handleInputChange}
                 required
               />
             </div>
             <div className="form-group">
               <textarea
+                name="message"
                 placeholder="Mensaje"
                 className="form-input"
                 rows="4"
+                value={formState.message}
+                onChange={handleInputChange}
                 required
               ></textarea>
             </div>
-            <button type="submit" className="cta-button primary">
-              Enviar
+            <button
+              type="submit"
+              className="cta-button primary"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Enviando..." : "Enviar"}
             </button>
           </form>
+          {submitStatus && (
+            <div
+              className={`submit-status ${
+                submitStatus.success ? "success" : "error"
+              }`}
+            >
+              {submitStatus.message}
+            </div>
+          )}
         </div>
       </section>
     </div>
