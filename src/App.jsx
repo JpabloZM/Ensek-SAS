@@ -1,5 +1,10 @@
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import "./App.css";
 import { useAuth } from "./hooks/useAuth";
 
@@ -38,51 +43,78 @@ function App() {
         <Routes>
           {/* Unified "/" route for all roles */}
           <Route path="/" element={<MainRoute />} />
-
           {/* Welcome section for unauthenticated users */}
           <Route element={<AuthRoute requiredAuth={false} redirectTo="/" />}>
             <Route path="welcome" element={<WelcomeLayout />}>
               <Route index element={<Home />} />
+              <Route path="servicios" element={<Services />} />
             </Route>
-          </Route>          {/* Client dashboard and pages */}
+          </Route>{" "}
+          {/* Client dashboard and pages */}
           <Route path="/app" element={<ClientLayout />}>
             {/* Home and dashboard require authentication */}
-            <Route index element={
-              <AuthRoute requiredAuth={true} allowedRoles={['user']} redirectTo="/login">
-                <Home />
-              </AuthRoute>
-            } />
+            <Route
+              index
+              element={
+                <AuthRoute
+                  requiredAuth={true}
+                  allowedRoles={["user"]}
+                  redirectTo="/login"
+                >
+                  <Home />
+                </AuthRoute>
+              }
+            />
             {/* Services page is accessible to all users */}
             <Route path="servicios" element={<Services />} />
             {/* Service form requires authentication */}
-            <Route path="servicios/formulario" element={
-              <AuthRoute requiredAuth={true} allowedRoles={['user']} redirectTo="/login">
-                <FormServices />
-              </AuthRoute>
-            } />
+            <Route
+              path="servicios/formulario"
+              element={
+                <AuthRoute
+                  requiredAuth={true}
+                  allowedRoles={["user"]}
+                  redirectTo="/login"
+                >
+                  <FormServices />
+                </AuthRoute>
+              }
+            />
           </Route>
-
           {/* Admin dashboard and pages */}
-          <Route path="/admin" element={
-            <AuthRoute requiredAuth={true} allowedRoles={['admin']} redirectTo="/login">
-              <AdminLayout />
-            </AuthRoute>
-          }>
+          <Route
+            path="/admin"
+            element={
+              <AuthRoute
+                requiredAuth={true}
+                allowedRoles={["admin"]}
+                redirectTo="/login"
+              >
+                <AdminLayout />
+              </AuthRoute>
+            }
+          >
             {/* <Route index element={<Dashboard />} /> */}
             <Route path="calendario" element={<Schedule />} />
             <Route path="inventario" element={<Inventory />} />
-          </Route>          {/* Auth pages */}
-          <Route path="/login" element={
-            <AuthRoute requiredAuth={false} redirectTo="/">
-              <UnifiedLogin />
-            </AuthRoute>
-          } />
-          <Route path="/registro" element={
-            <AuthRoute requiredAuth={false} redirectTo="/">
-              <Register />
-            </AuthRoute>
-          } />
-
+          </Route>{" "}
+          {/* Auth pages */}
+          <Route
+            path="/login"
+            element={
+              <AuthRoute requiredAuth={false} redirectTo="/">
+                <UnifiedLogin />
+              </AuthRoute>
+            }
+          />
+          <Route
+            path="/registro"
+            element={
+              <AuthRoute requiredAuth={false} redirectTo="/">
+                <Register />
+              </AuthRoute>
+            }
+          />
           {/* Fallback: redirect unknown routes to "/" */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

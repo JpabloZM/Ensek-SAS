@@ -1,8 +1,32 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaFacebook, FaInstagram } from "react-icons/fa";
 import emailjs from "@emailjs/browser";
 import "./Home.css";
+
+// Componente Toast para mostrar mensajes de éxito o error
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 5000); // El toast desaparecerá después de 5 segundos
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [onClose]);
+
+  return (
+    <div className={`toast ${type}`}>
+      <div className="toast-content">
+        <div className="toast-message">{message}</div>
+        <button className="toast-close" onClick={onClose}>
+          &times;
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const Home = () => {
   const [formState, setFormState] = useState({
@@ -11,7 +35,7 @@ const Home = () => {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null);
+  const [toast, setToast] = useState(null);
   const formRef = useRef();
 
   // Manejar cambios en los inputs del formulario
@@ -27,23 +51,23 @@ const Home = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setSubmitStatus(null);
+    setToast(null);
 
     // Configuración de EmailJS
     // Necesitas registrarte en https://www.emailjs.com/ y obtener tus propias credenciales
-    const serviceId = "service_ensek"; // Reemplazar con tu Service ID de EmailJS
-    const templateId = "template_ensek"; // Reemplazar con tu Template ID de EmailJS
-    const publicKey = "YOUR_PUBLIC_KEY"; // Reemplazar con tu Public Key de EmailJS
+    const serviceId = "service_ejs722a"; // Reemplazar con tu Service ID de EmailJS
+    const templateId = "template_74h91fj"; // Reemplazar con tu Template ID de EmailJS
+    const publicKey = "Uy_VV-Z0EYjmgtge1"; // Reemplazar con tu Public Key de EmailJS
 
     // Envío del correo usando EmailJS
     emailjs
       .sendForm(serviceId, templateId, formRef.current, publicKey)
       .then((result) => {
         console.log("Email sent successfully:", result.text);
-        setSubmitStatus({
-          success: true,
+        setToast({
           message:
             "¡Mensaje enviado con éxito! Nos pondremos en contacto contigo pronto.",
+          type: "success",
         });
         // Limpiar el formulario
         setFormState({
@@ -51,13 +75,15 @@ const Home = () => {
           email: "",
           message: "",
         });
+        // Resetear el formulario para asegurar que se limpie completamente
+        formRef.current.reset();
       })
       .catch((error) => {
         console.error("Email sending failed:", error.text);
-        setSubmitStatus({
-          success: false,
+        setToast({
           message:
             "Hubo un problema al enviar tu mensaje. Por favor intenta de nuevo.",
+          type: "error",
         });
       })
       .finally(() => {
@@ -65,8 +91,17 @@ const Home = () => {
       });
   };
 
+  // Cerrar el toast
+  const closeToast = () => {
+    setToast(null);
+  };
+
   return (
     <div className="home">
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={closeToast} />
+      )}
+
       <div className="hero-section">
         {/* Add particle container */}
         <div className="particles-background">
@@ -81,7 +116,7 @@ const Home = () => {
             Servicios especializados en manejo integrado de plagas y jardinería.
           </p>
           <div className="cta-buttons">
-            <Link to="/servicios" className="cta-button primary">
+            <Link to="/welcome/servicios" className="cta-button primary">
               Nuestros Servicios
             </Link>
             <a href="#contact-section" className="cta-button secondary">
@@ -115,7 +150,12 @@ const Home = () => {
       <section id="contact-section" className="contact-section">
         <h2>Contáctanos</h2>
         <div className="contact-container">
-          <form className="contact-form" ref={formRef} onSubmit={handleSubmit}>
+          <form
+            className="contact-form"
+            ref={formRef}
+            onSubmit={handleSubmit}
+            autoComplete="off"
+          >
             <div className="form-group">
               <input
                 type="text"
@@ -124,6 +164,7 @@ const Home = () => {
                 className="form-input"
                 value={formState.name}
                 onChange={handleInputChange}
+                autoComplete="off"
                 required
               />
             </div>
@@ -135,6 +176,7 @@ const Home = () => {
                 className="form-input"
                 value={formState.email}
                 onChange={handleInputChange}
+                autoComplete="off"
                 required
               />
             </div>
@@ -157,15 +199,6 @@ const Home = () => {
               {isSubmitting ? "Enviando..." : "Enviar"}
             </button>
           </form>
-          {submitStatus && (
-            <div
-              className={`submit-status ${
-                submitStatus.success ? "success" : "error"
-              }`}
-            >
-              {submitStatus.message}
-            </div>
-          )}
         </div>
       </section>
     </div>

@@ -65,13 +65,16 @@ const WelcomeLayout = () => {
         </button>
         <div className="navbar-logo">
           <img src={logo} alt="ENSEK Logo" className="navbar-logo-image" />
-          <Link to="/" style={{ color: "white", textDecoration: "none" }}>
+          <Link
+            to="/welcome"
+            style={{ color: "white", textDecoration: "none" }}
+          >
             ENSEK
           </Link>
-        </div>{" "}
+        </div>
         <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
-          <Link to="/">Inicio</Link>
-          <Link to="/app/servicios">Servicios</Link>
+          <Link to="/welcome">Inicio</Link>
+          <Link to="/welcome/servicios">Servicios</Link>
           <Link to="/login" className="auth-button login">
             Iniciar sesión
           </Link>
@@ -122,10 +125,10 @@ const WelcomeLayout = () => {
               <h3>Enlaces</h3>
               <ul>
                 <li>
-                  <Link to="/">Inicio</Link>
+                  <Link to="/welcome">Inicio</Link>
                 </li>
                 <li>
-                  <Link to="/servicios">Servicios</Link>
+                  <Link to="/welcome/servicios">Servicios</Link>
                 </li>{" "}
                 <li>
                   <Link to="/login" className="footer-auth-link">
@@ -141,7 +144,7 @@ const WelcomeLayout = () => {
             </div>
             <div className="welcome-footer-contact">
               <h3>Contacto</h3>
-              <p>Email: info@ensek.com</p> realiza cambio correo
+              <p>Email: info@ensek.com</p>
               <p>Teléfono: 322 85 33 - 318 376 19 64</p>
               <p>Dirección: Carrera 55b #15-58, Rionegro - Antioquia</p>
               <div className="welcome-social-icons">

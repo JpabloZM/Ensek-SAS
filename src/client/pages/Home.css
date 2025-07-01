@@ -314,7 +314,7 @@
   border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-sm);
   background: rgba(255, 255, 255, 0.05);
-  color: rgb(0, 0, 0);
+  color: white;
   font-size: 1rem;
   transition: all 0.3s ease;
 }
@@ -611,4 +611,126 @@ textarea.form-input {
   background-color: rgba(252, 165, 165, 0.2);
   color: #991b1b;
   border: 1px solid #fca5a5;
+}
+
+/* Estilos para el Toast */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  min-width: 300px;
+  max-width: 400px;
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.3s ease-out, fadeOut 0.5s ease-in 4.5s;
+}
+
+.toast.success {
+  background-color: rgba(134, 239, 172, 0.95);
+  border-left: 5px solid #16a34a;
+}
+
+.toast.error {
+  background-color: rgba(252, 165, 165, 0.95);
+  border-left: 5px solid #dc2626;
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+}
+
+.toast-message {
+  color: #333;
+  font-weight: 500;
+  line-height: 1.4;
+  flex-grow: 1;
+}
+
+.toast.success .toast-message {
+  color: #166534;
+}
+
+.toast.error .toast-message {
+  color: #991b1b;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0;
+  margin-left: 10px;
+  color: rgba(0, 0, 0, 0.5);
+  transition: color 0.2s;
+}
+
+.toast-close:hover {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Media queries para el toast en dispositivos móviles */
+@media (max-width: 768px) {
+  .toast {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    min-width: unset;
+    max-width: unset;
+    width: calc(100% - 20px);
+  }
+}
+
+/* Ajuste para preferencias de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* Estilos para corregir el autocompletado */
+/* Para Chrome, Safari, y Edge */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px rgba(44, 46, 53, 0.8) inset !important;
+  -webkit-text-fill-color: white !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Para Firefox */
+input:autofill,
+input:autofill:hover,
+input:autofill:focus,
+input:autofill:active {
+  box-shadow: 0 0 0 30px rgba(44, 46, 53, 0.8) inset !important;
+  -webkit-text-fill-color: white !important;
+  filter: none;
 }
