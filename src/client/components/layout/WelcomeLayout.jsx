@@ -144,7 +144,7 @@ const WelcomeLayout = () => {
             </div>
             <div className="welcome-footer-contact">
               <h3>Contacto</h3>
-              <p>Email: info@ensek.com</p>
+              <p>Email: directorcomercial.enske@gmail.com</p>
               <p>Teléfono: 322 85 33 - 318 376 19 64</p>
               <p>Dirección: Carrera 55b #15-58, Rionegro - Antioquia</p>
               <div className="welcome-social-icons">
