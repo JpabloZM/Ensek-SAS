@@ -68,12 +68,16 @@ const WelcomeLayout = () => {
           <Link to="/" style={{ color: "white", textDecoration: "none" }}>
             ENSEK
           </Link>
-        </div>
+        </div>{" "}
         <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
           <Link to="/">Inicio</Link>
           <Link to="/app/servicios">Servicios</Link>
-          <Link to="/login">Iniciar sesión</Link>
-          <Link to="/registro">Registrarse</Link>
+          <Link to="/login" className="auth-button login">
+            Iniciar sesión
+          </Link>
+          <Link to="/registro" className="auth-button register">
+            Registrarse
+          </Link>
         </nav>
         <div
           className="navbar-icons"
@@ -110,7 +114,9 @@ const WelcomeLayout = () => {
               <h2>
                 ENSEK <span>SAS</span>
               </h2>
-              <p>Manejo integrado de plagas, jardineria <br></br> y paisajismo.</p>
+              <p>
+                Manejo integrado de plagas, jardineria <br></br> y paisajismo.
+              </p>
             </div>
             <div className="welcome-footer-links">
               <h3>Enlaces</h3>
@@ -120,18 +126,22 @@ const WelcomeLayout = () => {
                 </li>
                 <li>
                   <Link to="/servicios">Servicios</Link>
+                </li>{" "}
+                <li>
+                  <Link to="/login" className="footer-auth-link">
+                    Iniciar Sesión
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/login">Iniciar Sesión</Link>
-                </li>
-                <li>
-                  <Link to="/registro">Registrarse</Link>
+                  <Link to="/registro" className="footer-auth-link">
+                    Registrarse
+                  </Link>
                 </li>
               </ul>
             </div>
             <div className="welcome-footer-contact">
               <h3>Contacto</h3>
-              <p>Email: info@ensek.com</p>
+              <p>Email: info@ensek.com</p> realiza cambio correo
               <p>Teléfono: 322 85 33 - 318 376 19 64</p>
               <p>Dirección: Carrera 55b #15-58, Rionegro - Antioquia</p>
               <div className="welcome-social-icons">
