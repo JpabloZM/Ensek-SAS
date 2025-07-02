@@ -34,21 +34,26 @@ const Services = () => {
   ];
   const handleCardClick = (serviceType) => {
     // Pass the service type both in state and URL parameter for better compatibility
-    navigate(`/app/servicios/formulario?serviceType=${serviceType}`, { state: { serviceType } });
+    navigate(`/app/servicios/formulario?serviceType=${serviceType}`, {
+      state: { serviceType },
+    });
   };
 
   return (
     <div className="services-page">
       <header className="services-header">
         <h1>Nuestros Servicios</h1>
-        <p>Descubre cómo podemos ayudarte a mantener tu hogar o negocio en perfectas condiciones.</p>
+        <p>
+          Descubre cómo podemos ayudarte a mantener tu hogar o negocio en
+          perfectas condiciones.
+        </p>
       </header>
       <section className="services-grid">
         {services.map((service, index) => (
           <div
             className="service-card"
             key={index}
-            onClick={() => handleCardClick(service.link)} // Pasa el título como tipo de servicio
+            onClick={() => handleCardClick(service.link)}
           >
             <i className={service.icon}></i>
             <h3>{service.title}</h3>

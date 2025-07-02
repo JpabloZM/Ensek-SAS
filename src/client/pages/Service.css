@@ -37,11 +37,31 @@
   text-align: center;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Mantenemos la barra animada que te gustó */
+.service-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-green), #5dda72);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.5s ease-out;
 }
 
 .service-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.service-card:hover::before {
+  transform: scaleX(1);
 }
 
 .service-card i {
@@ -60,6 +80,8 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
+/* Se eliminaron los estilos del botón de acción para volver al diseño original */
+
 /* Ajustes responsivos */
 @media (max-width: 1024px) {
   .services-header h1 {
@@ -68,6 +90,11 @@
 
   .services-header p {
     font-size: 1.1rem;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
   }
 
   .service-card {

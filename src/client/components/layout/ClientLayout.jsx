@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { FaFacebook, FaInstagram, FaBars } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaBars, FaArrowUp } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import logo from "../../../assets/images/Logo-removebg.png";
@@ -7,6 +7,7 @@ import "./ClientLayout.css";
 
 const ClientLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -17,6 +18,31 @@ const ClientLayout = () => {
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
+
+  // Controlar la visibilidad del botón de volver arriba
+  useEffect(() => {
+    const handleScroll = () => {
+      // Para depuración: Mostrar la posición actual del scroll en la consola
+      console.log("ScrollY:", window.scrollY);
+
+      if (window.scrollY > 150) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+
+    // Ejecutar la función una vez al principio para detectar la posición actual
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Para depuración: mostrar el estado actual del botón en la consola
+  useEffect(() => {
+    console.log("showScrollTop:", showScrollTop);
+  }, [showScrollTop]);
 
   // Cerrar el menú cuando la pantalla se hace más grande
   useEffect(() => {
@@ -77,8 +103,28 @@ const ClientLayout = () => {
     }
   };
 
+  // Función para volver arriba suavemente
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
   return (
     <div className="client-layout">
+      {/* Botón flotante para volver arriba - Colocado al principio del componente para evitar conflictos */}
+      <button
+        className="scroll-to-top-btn"
+        onClick={scrollToTop}
+        title="Volver arriba"
+        style={{
+          display: showScrollTop ? "flex" : "none",
+        }}
+      >
+        <FaArrowUp />
+      </button>
+
       <header className="navbar">
         <div className="navbar-container">
           <div className="logo">
@@ -117,16 +163,15 @@ const ClientLayout = () => {
         >
           {user ? (
             <>
-              <button
-                onClick={handleLogout}
-                className="login-button"
-                style={{ marginRight: "0.75rem" }}
+              <span
+                className="client-name"
+                style={{ fontWeight: 500, marginRight: "0.75rem" }}
               >
-                Cerrar sesión
-              </button>
-              <span className="client-name" style={{ fontWeight: 500 }}>
                 {user.name}
               </span>
+              <button onClick={handleLogout} className="login-button">
+                Cerrar sesión
+              </button>
             </>
           ) : (
             <Link to="/login" className="login-button">
@@ -213,6 +258,8 @@ const ClientLayout = () => {
           </div>
         </div>
       </footer>
+
+      {/* Eliminado el botón duplicado al final del componente */}
     </div>
   );
 };

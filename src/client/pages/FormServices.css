@@ -382,6 +382,10 @@
   border: 2px solid rgba(255, 255, 255, 0.1) !important; /* Color de borde normal */
   box-shadow: none !important; /* Sin resplandor verde por defecto */
   transition: all 0.3s ease !important;
+  /* Evitar doble flecha */
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
 }
 
 .form-group select:focus {
@@ -438,15 +442,15 @@
   }
 }
 
-@media screen and (-webkit-min-device-pixel-ratio: 0) {
-  .form-group select {
-    appearance: none !important;
-    -webkit-appearance: none !important;
-    padding-right: 30px !important;
-    background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>") !important;
-    background-repeat: no-repeat !important;
-    background-position: right 8px center !important;
-  }
+/* Estilos para la flecha personalizada que se aplica a todos los navegadores */
+.form-group select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  padding-right: 30px !important;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 8px center !important;
 }
 
 /* Contenedor de botones */
@@ -700,7 +704,7 @@ form:has(.cta-button.loading) .form-group {
 
 /* Estilos personalizados para SweetAlert */
 .swal2-popup {
-  border: 1px solid rgba(var(--primary-green-rgb), 0.2) !important;
+  border: 1px solid rgba(var(--primary-green), 0.2) !important;
   backdrop-filter: blur(10px) !important;
 }
 
@@ -757,7 +761,13 @@ form:has(.cta-button.loading) .form-group {
   background-color: rgba(45, 45, 45, 0.9) !important;
   -webkit-text-fill-color: white !important;
   -moz-text-fill-color: white !important;
-  appearance: auto !important; /* Asegura que se muestre el desplegable nativo */
+  /* Asegurar que use la flecha personalizada en todos los navegadores */
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-repeat: no-repeat !important;
+  background-position: right 8px center !important;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>") !important;
   border: 2px solid rgba(255, 255, 255, 0.1); /* Borde normal no verde */
   box-shadow: none; /* Sin resplandor verde por defecto */
 }

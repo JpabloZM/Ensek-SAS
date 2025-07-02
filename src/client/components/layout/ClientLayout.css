@@ -186,6 +186,55 @@ body {
   opacity: 1;
 }
 
+/* Botón flotante para volver arriba */
+.scroll-to-top-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #87c947; /* Usar directamente el valor hexadecimal */
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 9999; /* Mayor z-index para asegurar que está sobre otros elementos */
+  opacity: 0.9; /* Aumentar la opacidad para mejorar la visibilidad */
+}
+
+.scroll-to-top-btn:hover {
+  transform: translateY(-5px);
+  opacity: 1;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+}
+
+/* Media queries para ajustar el tamaño en dispositivos móviles */
+@media (max-width: 768px) {
+  .scroll-to-top-btn {
+    width: 45px;
+    height: 45px;
+    bottom: 20px;
+    right: 20px;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .scroll-to-top-btn {
+    width: 40px;
+    height: 40px;
+    bottom: 15px;
+    right: 15px;
+    font-size: 1rem;
+  }
+}
+
 /* Media queries para responsive */
 @media (max-width: 1024px) {
   .navbar {
