@@ -9,31 +9,32 @@ const ClientLogin = () => {
   const { mostrarAlerta } = useAlertas();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Get the original path and service type from location state
   const from = location.state?.from?.pathname || "/app";
   const serviceType = location.state?.serviceType || "";
-  
+
   // Construct the redirect URL with service type if coming from form
-  const redirectPath = from.includes('/formulario') && serviceType 
-    ? `${from}?serviceType=${serviceType}` 
-    : from;
+  const redirectPath =
+    from.includes("/formulario") && serviceType
+      ? `${from}?serviceType=${serviceType}`
+      : from;
 
   // If already logged in, redirect
   useEffect(() => {
     if (user) {
-      if (user.role === 'admin') {
-        navigate("/admin/dashboard", { replace: true });
+      if (user.role === "admin") {
+        navigate("/admin/calendario", { replace: true });
       } else {
         // Check if we need to redirect to a specific path with service type
         navigate(redirectPath, { replace: true });
       }
     }
   }, [user, navigate, redirectPath]);
-  
+
   const [formData, setFormData] = useState({
-    email: "user@test.com",  // Pre-fill with test user
-    password: "user123",     // Pre-fill with test password
+    email: "user@test.com", // Pre-fill with test user
+    password: "user123", // Pre-fill with test password
   });
 
   const handleChange = (e) => {
@@ -41,7 +42,8 @@ const ClientLogin = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-  };  const handleSubmit = async (e) => {
+  };
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
@@ -50,15 +52,15 @@ const ClientLogin = () => {
     }
 
     try {
-      console.log('Attempting login with:', { email: formData.email });
-      const user = await login(formData.email, formData.password);      
-      console.log('Login successful, user data:', { 
+      console.log("Attempting login with:", { email: formData.email });
+      const user = await login(formData.email, formData.password);
+      console.log("Login successful, user data:", {
         name: user.name,
         email: user.email,
         role: user.role,
-        hasToken: !!user.token
+        hasToken: !!user.token,
       });
-      
+
       mostrarAlerta(
         "¡Bienvenido!",
         `Has iniciado sesión como ${user.name || user.email}`,
@@ -67,9 +69,9 @@ const ClientLogin = () => {
 
       // After successful login, redirect to the original destination
       setTimeout(() => {
-        console.log('Redirecting to:', redirectPath);
-        if (user.role === 'admin') {
-          navigate("/admin/dashboard", { replace: true });
+        console.log("Redirecting to:", redirectPath);
+        if (user.role === "admin") {
+          navigate("/admin/calendario", { replace: true });
         } else {
           navigate(redirectPath, { replace: true });
         }

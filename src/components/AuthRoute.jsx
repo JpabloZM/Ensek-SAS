@@ -74,14 +74,27 @@ const AuthRoute = ({
 
   // Case 3: Route is for non-authenticated users only (like login page) but user is already logged in
   if (!requiredAuth && user) {
+    // Check current path to avoid redirection loops
+    const isAlreadyAtDestination =
+      (user.role === "admin" && location.pathname.includes("/admin")) ||
+      (user.role !== "admin" && location.pathname.includes("/app"));
+
+    if (isAlreadyAtDestination) {
+      console.log(
+        `Already at an appropriate destination (${location.pathname}), not redirecting`
+      );
+      return children || <Outlet />;
+    }
+
     console.log(
-      "AuthRoute: User already authenticated, redirecting to appropriate dashboard"
+      `AuthRoute: User already authenticated (${user.role}), redirecting from ${location.pathname} to appropriate dashboard`
     );
+
     // Redirect to appropriate dashboard based on role
     if (user.role === "admin") {
       return <Navigate to="/admin/calendario" replace />;
     } else {
-      return <Navigate to="/cliente" replace />;
+      return <Navigate to="/app" replace />;
     }
   }
 

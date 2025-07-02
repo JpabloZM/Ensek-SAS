@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const AuthDebug = () => {
   const { user, logout, loading } = useAuth();
@@ -10,7 +10,7 @@ const AuthDebug = () => {
   // Check localStorage on component mount and when user changes
   useEffect(() => {
     try {
-      const storedUser = localStorage.getItem('user');
+      const storedUser = localStorage.getItem("user");
       if (storedUser) {
         setLocalStorageData(JSON.parse(storedUser));
       } else {
@@ -21,89 +21,98 @@ const AuthDebug = () => {
     }
   }, [user]);
 
-  const userInfo = user ? {
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    // Don't show the token in UI for security reasons
-    hasToken: !!user.token
-  } : null;
+  const userInfo = user
+    ? {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        // Don't show the token in UI for security reasons
+        hasToken: !!user.token,
+      }
+    : null;
 
   const handleClientRedirect = () => {
-    navigate('/cliente');
+    navigate("/cliente");
   };
 
   const handleAdminRedirect = () => {
-    navigate('/admin/dashboard');
+    navigate("/admin/calendario");
   };
 
   const handleLogout = async () => {
     await logout();
-    navigate('/');
+    navigate("/");
   };
 
   const debugStyle = {
-    position: 'fixed',
-    bottom: '10px',
-    right: '10px',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    color: 'white',
-    padding: '15px',
-    borderRadius: '5px',
-    fontSize: '14px',
+    position: "fixed",
+    bottom: "10px",
+    right: "10px",
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    color: "white",
+    padding: "15px",
+    borderRadius: "5px",
+    fontSize: "14px",
     zIndex: 9999,
-    maxWidth: '400px'
+    maxWidth: "400px",
   };
 
   const buttonStyle = {
-    marginRight: '10px',
-    padding: '5px 10px',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    border: 'none',
-    borderRadius: '3px',
-    cursor: 'pointer'
+    marginRight: "10px",
+    padding: "5px 10px",
+    backgroundColor: "#4CAF50",
+    color: "white",
+    border: "none",
+    borderRadius: "3px",
+    cursor: "pointer",
   };
 
   return (
     <div style={debugStyle}>
       <h3>Auth Debug Panel</h3>
-      <p><strong>Authentication State:</strong> {loading ? 'Loading...' : (user ? 'Logged In ✅' : 'Not Logged In ❌')}</p>
-      
+      <p>
+        <strong>Authentication State:</strong>{" "}
+        {loading ? "Loading..." : user ? "Logged In ✅" : "Not Logged In ❌"}
+      </p>
+
       {userInfo && (
         <div>
           <h4>User Info from Auth Context:</h4>
           <pre>{JSON.stringify(userInfo, null, 2)}</pre>
         </div>
       )}
-      
+
       <div>
         <h4>LocalStorage Status:</h4>
-        <p>{localStorageData ? 'User data exists in localStorage ✅' : 'No user data in localStorage ❌'}</p>
+        <p>
+          {localStorageData
+            ? "User data exists in localStorage ✅"
+            : "No user data in localStorage ❌"}
+        </p>
         {localStorageData && localStorageData.token && (
           <p>Token starts with: {localStorageData.token.substring(0, 10)}...</p>
         )}
       </div>
-      
-      <div style={{ marginTop: '15px' }}>
-        <button 
+
+      <div style={{ marginTop: "15px" }}>
+        <button
           style={buttonStyle}
           onClick={handleClientRedirect}
-          disabled={!user || (user.role !== 'user' && user.role !== 'admin')}
+          disabled={!user || (user.role !== "user" && user.role !== "admin")}
         >
           Go to Client Area
         </button>
-        
-        <button 
+
+        <button
           style={buttonStyle}
           onClick={handleAdminRedirect}
-          disabled={!user || user.role !== 'admin'}
+          disabled={!user || user.role !== "admin"}
         >
           Go to Admin Area
         </button>
-        
-        <button 
-          style={{...buttonStyle, backgroundColor: user ? '#f44336' : '#ccc'}}
+
+        <button
+          style={{ ...buttonStyle, backgroundColor: user ? "#f44336" : "#ccc" }}
           onClick={handleLogout}
           disabled={!user}
         >

@@ -32,7 +32,10 @@ function MainRoute() {
     return <Navigate to="/welcome" replace />;
   }
   if (user.role === "admin") {
-    return <Navigate to="/admin" replace />;
+    console.log(
+      "MainRoute: Admin user detected, redirecting to /admin/calendario"
+    );
+    return <Navigate to="/admin/calendario" replace />;
   }
   return <Navigate to="/app" replace />;
 }
@@ -95,7 +98,11 @@ function App() {
               </AuthRoute>
             }
           >
-            {/* <Route index element={<Dashboard />} /> */}
+            {/* Redirect index route to calendario */}
+            <Route
+              index
+              element={<Navigate to="/admin/calendario" replace />}
+            />
             <Route path="calendario" element={<Schedule />} />
             <Route path="inventario" element={<Inventory />} />
           </Route>{" "}

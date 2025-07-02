@@ -15,7 +15,7 @@ const ClientLogin = () => {
     if (!loading && user) {
       console.log("Usuario autenticado, redirigiendo...", user);
       if (user.role === "admin") {
-        navigate("/admin/dashboard", { replace: true });
+        navigate("/admin/calendario", { replace: true });
       } else {
         navigate("/cliente", { replace: true });
       }

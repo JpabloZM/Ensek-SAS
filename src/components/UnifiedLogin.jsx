@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAlertas } from "../admin/hooks/useAlertas";
 import { useAuth } from "../hooks/useAuth";
@@ -36,17 +36,29 @@ const UnifiedLogin = () => {
       ? `${from}?serviceType=${serviceType}`
       : from;
 
-  // If already logged in, redirect based on role
+  // Check for user session at component mount only - no dependency array means it runs once
+  const initialRender = useRef(true);
+
   useEffect(() => {
-    if (user) {
-      if (user.role === "admin") {
-        navigate("/admin/dashboard", { replace: true });
-      } else {
-        // Check if we need to redirect to a specific path with service type
-        navigate(redirectPath, { replace: true });
+    // Only run once when component mounts
+    if (initialRender.current) {
+      initialRender.current = false;
+
+      if (user) {
+        console.log(
+          "UnifiedLogin: User already logged in at initial render, redirecting"
+        );
+
+        // Use window.location for a hard navigation instead of React Router
+        // This is more drastic but breaks the loop
+        if (user.role === "admin") {
+          window.location.href = "/admin/calendario";
+        } else {
+          window.location.href = redirectPath;
+        }
       }
     }
-  }, [user, navigate, redirectPath]);
+  }, []);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -87,12 +99,16 @@ const UnifiedLogin = () => {
         "success"
       );
 
-      // After successful login, redirect based on user role
+      // Use window.location for a hard redirect to break any potential loops
+      console.log(
+        `Login successful, redirecting ${user.role} user via window.location`
+      );
+
       setTimeout(() => {
         if (user.role === "admin") {
-          navigate("/admin/dashboard", { replace: true });
+          window.location.href = "/admin/calendario";
         } else {
-          navigate(redirectPath, { replace: true });
+          window.location.href = redirectPath;
         }
       }, 1500);
     } catch (error) {
@@ -174,8 +190,8 @@ const UnifiedLogin = () => {
         <div className="auth-link">
           <Link to="/welcome">Volver a Inicio</Link>
         </div>
-        </div>
       </div>
+    </div>
   );
 };
 
