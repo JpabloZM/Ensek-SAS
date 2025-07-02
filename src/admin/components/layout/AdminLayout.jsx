@@ -75,6 +75,7 @@ const AdminLayout = () => {
               {darkMode ? <FaSun /> : <FaMoon />}
             </button>
             <button
+              className="logout-btn"
               onClick={async () => {
                 await logout();
                 navigate("/admin/login");

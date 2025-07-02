@@ -94,7 +94,7 @@ body.dark-theme .modal-footer {
 body.dark-theme
   button:not([class*="btn-"]):not(.swal2-confirm):not(.swal2-cancel):not(
     .add-button
-  ):not(.submit-button):not(.theme-toggle-btn) {
+  ):not(.submit-button):not(.theme-toggle-btn):not(.logout-btn) {
   background-color: var(--dark-surface) !important;
   color: var(--dark-text) !important;
   border-color: var(--dark-border) !important;
@@ -112,6 +112,19 @@ body.dark-theme .btn-primary:hover,
 body.dark-theme button.primary:hover {
   background-color: var(--primary-green-dark) !important;
   border-color: var(--primary-green-dark) !important;
+}
+
+/* Estilo específico para el botón de cerrar sesión en modo oscuro */
+body.dark-theme .user-menu .logout-btn {
+  background-color: transparent !important;
+  border: 1px solid var(--primary-green) !important;
+  color: var(--primary-green) !important;
+  transition: all 0.3s ease !important;
+}
+
+body.dark-theme .user-menu .logout-btn:hover {
+  background-color: var(--primary-green) !important;
+  color: white !important;
 }
 
 /* Preservar estilos originales para botones específicos de acción */

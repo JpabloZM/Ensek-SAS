@@ -340,20 +340,29 @@ const Calendar = ({ darkMode = false }) => {
   };
   const handleAgregarServicio = async (nuevoServicio) => {
     try {
-      // Create service in database
-      const createdService = await serviceService.saveService({
+      // Asegurarnos de que todos los campos necesarios estén presentes
+      const currentDate = new Date().toISOString();
+      // Asegurarse de que todos los campos obligatorios estén presentes
+      const serviceData = {
         name: nuevoServicio.clientName,
         email: nuevoServicio.clientEmail,
         phone: nuevoServicio.clientPhone,
         address: nuevoServicio.address || "No especificada",
-        serviceType: nuevoServicio.serviceType || "other",
-        description: nuevoServicio.descripcion,
-        preferredDate: nuevoServicio.preferredDate || new Date().toISOString(),
-        document: nuevoServicio.document || "N/A",
+        serviceType: nuevoServicio.serviceType || "other", // Usar serviceType directamente
+        description: nuevoServicio.descripcion || "",
+        preferredDate: nuevoServicio.preferredDate || currentDate,
+        // Asegurarse de que document siempre tenga un valor válido
+        document: nuevoServicio.document || "1234567890",
         status: "pending",
-      });
+      };
 
-      // Map MongoDB document to local service format
+      console.log("Creando nuevo servicio con datos:", serviceData);
+
+      // Create service in database
+      const createdService = await serviceService.saveService(serviceData);
+      console.log("Servicio creado:", createdService);
+
+      // Map MongoDB document to local service format with all fields populated
       const localService = {
         id: createdService._id,
         nombre: createdService.serviceType,
@@ -365,12 +374,19 @@ const Calendar = ({ darkMode = false }) => {
         clientEmail: createdService.email,
         clientPhone: createdService.phone,
         address: createdService.address,
-        preferredDate: createdService.preferredDate,
+        preferredDate: createdService.preferredDate || currentDate,
+        _id: createdService._id,
       };
 
       // Add to local state
       const serviciosActualizados = [...serviciosPendientes, localService];
       setServiciosPendientes(serviciosActualizados);
+
+      // También actualizamos los servicios para que se refleje inmediatamente
+      setLocalServices((prev) => [...prev, createdService]);
+
+      // Forzar refresco del listado de servicios
+      await getAllServices(true);
 
       return createdService;
     } catch (error) {

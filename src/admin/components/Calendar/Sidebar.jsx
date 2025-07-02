@@ -125,23 +125,36 @@ const Sidebar = ({
           "commercial-fumigation": "Fumigación Comercial",
         };
 
+        // Preparar datos del formulario asegurando que serviceType tenga el valor correcto para el backend
         return {
-          nombre: serviceTypes[nombre] || nombre,
-          serviceType: nombre,
+          nombre: serviceTypes[nombre] || nombre, // Nombre en español para mostrar
+          serviceType: nombre, // Valor original para el backend (pest-control, gardening, etc.)
           clientName,
           clientEmail,
           clientPhone,
           address,
           descripcion,
+          // Agregar el documento como campo obligatorio para el backend
+          document: "1234567890", // Valor por defecto ya que no se solicita en el formulario
         };
       },
     });
     if (formValues) {
+      const currentDate = new Date().toISOString();
+      // Asegurarse de que todos los campos estén presentes y con los tipos correctos
       const servicioNuevo = {
         ...formValues,
         status: "pending",
-        preferredDate: new Date().toISOString(),
+        preferredDate: currentDate,
+        // Asegurar que estos campos siempre estén presentes
+        nombre: formValues.nombre,
+        serviceType: formValues.serviceType, // Mantener serviceType original para enviar al backend
+        // Documento es un campo obligatorio en el backend
+        document: "1234567890", // Valor por defecto ya que no se pide en el formulario
+        estado: "pendiente",
       };
+
+      console.log("Enviando nuevo servicio:", servicioNuevo);
 
       try {
         const savedService = await onAgregarServicio(servicioNuevo);

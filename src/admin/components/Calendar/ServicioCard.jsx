@@ -25,6 +25,11 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
   const { mostrarAlerta } = useAlertas();
   const [technicians, setTechnicians] = useState([]);
 
+  // Validar y preparar el servicio cuando se recibe
+  useEffect(() => {
+    console.log("Servicio en ServicioCard:", servicio);
+  }, [servicio]);
+
   useEffect(() => {
     const loadTechnicians = async () => {
       try {
@@ -39,24 +44,33 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
   }, []);
 
   const getTipoServicioEspanol = (tipo) => {
+    if (!tipo) return "No especificado";
     return serviciosEnEspanol[tipo] || tipo;
   };
 
   const capitalizarPrimeraLetra = (texto) => {
+    if (!texto) return "No especificado";
     return texto.charAt(0).toUpperCase() + texto.slice(1);
   };
 
   const formatearFecha = (fecha, incluirAno = false) => {
     if (!fecha) return "No especificada";
-    const date = new Date(fecha);
-    const opciones = {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      ...(incluirAno && { year: "numeric" }),
-    };
-    const fechaFormateada = date.toLocaleDateString("es-CO", opciones);
-    return capitalizarPrimeraLetra(fechaFormateada);
+    try {
+      const date = new Date(fecha);
+      if (isNaN(date.getTime())) return "No especificada";
+
+      const opciones = {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        ...(incluirAno && { year: "numeric" }),
+      };
+      const fechaFormateada = date.toLocaleDateString("es-CO", opciones);
+      return capitalizarPrimeraLetra(fechaFormateada);
+    } catch (error) {
+      console.error("Error al formatear fecha:", error, fecha);
+      return "No especificada";
+    }
   };
 
   const mostrarDetallesServicio = () => {

@@ -46,8 +46,12 @@ const getServices = async () => {
 // Create a new service
 const saveService = async (service) => {
   try {
-    const response = await axios.post(API_URL, service);
-    const savedService = response.data;
+    console.log("Enviando datos al servidor:", service);
+    const config = getAuthConfig();
+    const response = await axios.post(API_URL, service, config);
+    const savedService = response.data.service; // Obtener el servicio de response.data.service
+
+    console.log("Respuesta del servidor:", response.data);
 
     // Update cache with new service
     const cachedServices = localStorage.getItem("cachedServices");
@@ -60,7 +64,17 @@ const saveService = async (service) => {
     return savedService;
   } catch (error) {
     console.error("Error al crear servicio:", error);
-    throw error.response?.data?.message || error.message || "Error desconocido";
+    console.error("Response data:", error.response?.data);
+    console.error("Response status:", error.response?.status);
+
+    // Mensaje de error más detallado
+    const errorMessage =
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message ||
+      "Error al crear el servicio";
+
+    throw new Error(errorMessage);
   }
 };
 
@@ -150,9 +164,12 @@ const deleteService = async (serviceId) => {
 
     console.log("Deleting service with ID:", serviceId);
     const config = getAuthConfig();
-    
+
     // Ensure we're using a valid ID format
-    const cleanId = typeof serviceId === 'string' ? serviceId.replace("evento-", "") : serviceId;
+    const cleanId =
+      typeof serviceId === "string"
+        ? serviceId.replace("evento-", "")
+        : serviceId;
     console.log("Clean ID for deletion:", cleanId);
 
     const response = await axios.delete(`${API_URL}/${cleanId}`, config);

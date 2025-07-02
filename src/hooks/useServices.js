@@ -32,7 +32,30 @@ export const useServices = () => {
     try {
       setLoading(true);
       setError(null);
+      console.log("Enviando datos para crear servicio:", serviceData);
+
+      // Validar que los campos requeridos estén presentes
+      const requiredFields = [
+        "name",
+        "email",
+        "phone",
+        "document",
+        "address",
+        "serviceType",
+        "preferredDate",
+      ];
+      const missingFields = requiredFields.filter(
+        (field) => !serviceData[field]
+      );
+
+      if (missingFields.length > 0) {
+        throw new Error(
+          `Faltan campos requeridos: ${missingFields.join(", ")}`
+        );
+      }
+
       const newService = await serviceService.saveService(serviceData);
+      console.log("Servicio creado con éxito:", newService);
       setServices((prev) => [...prev, newService]);
       return newService;
     } catch (err) {
