@@ -1,0 +1,113 @@
+/* Additional dark mode styles for admin interface */
+
+/* General calendar page container */
+.dark-theme .schedule-page {
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+}
+
+/* Calendar content container */
+.dark-theme .schedule-content {
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+}
+
+/* Forms in dark mode */
+.dark-theme .form-control,
+.dark-theme input,
+.dark-theme select,
+.dark-theme textarea {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+  border-color: #444 !important;
+}
+
+.dark-theme .form-control:focus {
+  box-shadow: 0 0 0 0.2rem rgba(135, 201, 71, 0.25) !important;
+}
+
+/* Modal dialogs */
+.dark-theme .modal-content {
+  background-color: #1a1c22 !important;
+  color: #fff !important;
+}
+
+.dark-theme .modal-header,
+.dark-theme .modal-footer {
+  border-color: #444 !important;
+}
+
+/* Dropdown menus */
+.dark-theme .dropdown-menu {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+  border-color: #444 !important;
+}
+
+.dark-theme .dropdown-item {
+  color: #fff !important;
+}
+
+.dark-theme .dropdown-item:hover {
+  background-color: rgba(135, 201, 71, 0.1) !important;
+}
+
+/* Tables */
+.dark-theme table {
+  color: #fff !important;
+}
+
+.dark-theme thead {
+  background-color: #2c2e35 !important;
+}
+
+.dark-theme tbody tr:nth-child(odd) {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark-theme tbody tr:hover {
+  background-color: rgba(135, 201, 71, 0.1) !important;
+}
+
+/* Alert and notification styling */
+.dark-theme .alert {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+  border-color: #444 !important;
+}
+
+.dark-theme .alert-success {
+  background-color: rgba(40, 167, 69, 0.2) !important;
+  border-color: rgba(40, 167, 69, 0.3) !important;
+}
+
+.dark-theme .alert-danger {
+  background-color: rgba(220, 53, 69, 0.2) !important;
+  border-color: rgba(220, 53, 69, 0.3) !important;
+}
+
+/* SweetAlert2 dark theme */
+.dark-theme .swal2-popup {
+  background-color: #1a1c22 !important;
+  color: #fff !important;
+}
+
+.dark-theme .swal2-title,
+.dark-theme .swal2-html-container {
+  color: #fff !important;
+}
+
+.dark-theme .swal2-input,
+.dark-theme .swal2-textarea {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+  border-color: #444 !important;
+}
+
+/* Fix for any popovers or tooltips */
+.dark-theme .popover,
+.dark-theme .tooltip-inner {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+  border-color: #444 !important;
+}

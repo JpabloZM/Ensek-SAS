@@ -1,0 +1,186 @@
+/* Dark Mode styles for the Calendar */
+
+/* Main calendar container */
+.dark-theme .calendar-container {
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+}
+
+/* Full Calendar dark theme */
+.dark-theme #calendario {
+  background-color: #1a1c22;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.dark-theme .fc {
+  color: var(--text-light);
+}
+
+/* Calendar headers */
+.dark-theme .fc-col-header {
+  background-color: #2c2e35;
+}
+
+.dark-theme .fc-col-header-cell-cushion {
+  color: var(--primary-green);
+}
+
+/* Day cells */
+.dark-theme .fc-daygrid-day {
+  background-color: #1e2027;
+}
+
+.dark-theme .fc-daygrid-day-number {
+  color: #e0e0e0;
+}
+
+/* Today's cell */
+.dark-theme .fc-day-today {
+  background-color: rgba(135, 201, 71, 0.1) !important;
+}
+
+/* Events */
+.dark-theme .fc-event {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Time grid */
+.dark-theme .fc-timegrid-slot {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-theme .fc-timegrid-axis {
+  background-color: #2c2e35;
+  color: var(--text-light);
+}
+
+/* Buttons and controls */
+.dark-theme .fc-button-primary {
+  background-color: #444 !important;
+  border-color: #555 !important;
+}
+
+.dark-theme .fc-button-primary:not(:disabled):hover {
+  background-color: #555 !important;
+}
+
+.dark-theme .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: var(--primary-green) !important;
+  border-color: var(--primary-green) !important;
+}
+
+/* Main content area */
+.dark-theme .main-content {
+  background-color: #1a1c22;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Calendar header */
+.dark-theme .calendar-header h2 {
+  color: var(--primary-green);
+}
+
+/* Resource timeline headers */
+.dark-theme .fc-resource-timeline th,
+.dark-theme .fc-scrollgrid-sync-inner {
+  background-color: #2c2e35;
+  color: var(--text-light);
+}
+
+/* Popover and tooltips */
+.dark-theme .fc-popover {
+  background-color: #2c2e35;
+  border-color: #444;
+}
+
+.dark-theme .fc-popover-header {
+  background-color: #1a1c22;
+  color: var(--text-light);
+}
+
+/* Sidebar styles for dark theme */
+.dark-theme .sidebar {
+  background-color: #1a1c22;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border: 1px solid #444;
+}
+
+.dark-theme .sidebar h4 {
+  color: #87c947;
+}
+
+.dark-theme .sidebar .form-control {
+  background-color: #2c2e35;
+  color: #fff;
+  border-color: #444;
+}
+
+.dark-theme .sidebar .form-control:focus {
+  border-color: #87c947;
+  box-shadow: 0 0 0 2px rgba(135, 201, 71, 0.2);
+}
+
+.dark-theme .sidebar .form-label {
+  color: #e0e0e0;
+}
+
+.dark-theme .sidebar .btn {
+  background-color: #2c2e35;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+.dark-theme .sidebar .btn-primary {
+  background-color: #87c947;
+  color: white;
+  border-color: #87c947;
+}
+
+.dark-theme .sidebar .btn-primary:hover {
+  background-color: #78b33d;
+  border-color: #78b33d;
+}
+
+/* Estilos para las tarjetas de servicios en modo oscuro */
+.dark-theme .servicios-container::-webkit-scrollbar-track {
+  background: #2c2e35;
+}
+
+.dark-theme .servicios-container::-webkit-scrollbar-thumb {
+  background: #87c947;
+}
+
+.dark-theme .servicios-container::-webkit-scrollbar-thumb:hover {
+  background: #78b33d;
+}
+
+.dark-theme .servicio-card {
+  background-color: #2c2e35;
+  border-color: #444;
+  color: #e0e0e0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.dark-theme .servicio-card:hover {
+  background-color: #3a3a3a;
+  border-color: #555;
+}
+
+.dark-theme .servicio-card h5 {
+  color: #87c947;
+}
+
+.dark-theme .servicio-card p {
+  color: #ccc;
+}
+
+/* Estilos para las iniciales de los técnicos en modo oscuro */
+.dark-theme .tecnico-initials {
+  background-color: transparent !important;
+  color: #87c947 !important;
+}
+
+/* Estilos para el nombre del técnico en modo oscuro */
+.dark-theme .tecnico-nombre {
+  color: #e0e0e0;
+}

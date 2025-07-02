@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useInventory } from "../../../hooks/useInventory";
 import { useAlertas } from "../../hooks/useAlertas";
 import Swal from "sweetalert2";
+import { withDarkMode } from "../../utils/sweetalert-config";
 import "./Inventory.css";
+import "./dark-mode-inventory.css";
 
 const calculateStatus = (quantity, minimumStock) => {
   if (quantity <= 0) return "out_of_stock";
@@ -10,7 +12,7 @@ const calculateStatus = (quantity, minimumStock) => {
   return "available";
 };
 
-const Inventory = () => {
+const Inventory = ({ darkMode = false }) => {
   const [items, setItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterState, setFilterState] = useState("");
@@ -85,19 +87,21 @@ const Inventory = () => {
     if (!(await validarFormulario())) return;
 
     try {
-      const result = await Swal.fire({
-        title: "¿Agregar nuevo item?",
-        text: "¿Estás seguro de agregar este item al inventario?",
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonColor: "#87c947",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Sí, agregar",
-        cancelButtonText: "Cancelar",
-      });
+      const result = await Swal.fire(
+        withDarkMode({
+          title: "¿Agregar nuevo item?",
+          text: "¿Estás seguro de agregar este item al inventario?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#87c947",
+          cancelButtonColor: darkMode ? "#444" : "#d33",
+          confirmButtonText: "Sí, agregar",
+          cancelButtonText: "Cancelar",
+        })
+      );
 
       if (result.isConfirmed) {
-        // Preparar datos para enviar        // Validate required fields
+        // Preparar datos para enviar
         if (!formData.name?.trim()) {
           throw new Error("El nombre es requerido");
         }
@@ -163,16 +167,18 @@ const Inventory = () => {
   };
 
   const handleDelete = async (id) => {
-    const result = await Swal.fire({
-      title: "¿Estás seguro?",
-      text: "Esta acción no se puede deshacer",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#87c947",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar",
-    });
+    const result = await Swal.fire(
+      withDarkMode({
+        title: "¿Estás seguro?",
+        text: "Esta acción no se puede deshacer",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#87c947",
+        cancelButtonColor: darkMode ? "#444" : "#d33",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+      })
+    );
 
     if (result.isConfirmed) {
       try {
@@ -221,7 +227,6 @@ const Inventory = () => {
       resetForm();
     } catch (error) {
       await mostrarMensaje("error", "Error al actualizar el item");
-      mostrarMensaje("error", "Error al actualizar el item");
     }
   };
 
@@ -272,10 +277,15 @@ const Inventory = () => {
     setShowForm(false);
   };
 
-  if (loading) return <div className="loading">Cargando...</div>;
+  if (loading)
+    return (
+      <div className={`loading ${darkMode ? "dark-theme" : ""}`}>
+        Cargando...
+      </div>
+    );
 
   return (
-    <div className="inventory">
+    <div className={`inventory ${darkMode ? "dark-theme" : ""}`}>
       <div className="inventory-header">
         <h1>Inventario</h1>
         <button className="add-button" onClick={() => setShowForm(true)}>
@@ -327,7 +337,7 @@ const Inventory = () => {
                   <select
                     id="unit"
                     name="unit"
-                    className="unit-select"
+                    className={`unit-select ${darkMode ? "dark-select" : ""}`}
                     value={formData.unit}
                     onChange={(e) =>
                       setFormData({ ...formData, unit: e.target.value })
@@ -335,7 +345,11 @@ const Inventory = () => {
                     required
                   >
                     {validUnits.map((unit) => (
-                      <option key={unit.value} value={unit.value}>
+                      <option
+                        key={unit.value}
+                        value={unit.value}
+                        className={darkMode ? "dark-option" : ""}
+                      >
                         {unit.label}
                       </option>
                     ))}
@@ -419,14 +433,25 @@ const Inventory = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <select
-            className="filter-select"
+            className={`filter-select ${darkMode ? "dark-select" : ""}`}
             value={filterState}
             onChange={(e) => setFilterState(e.target.value)}
           >
-            <option value="">Todos los estados</option>
-            <option value="available">Disponible</option>
-            <option value="low_stock">Bajo Stock</option>
-            <option value="out_of_stock">Agotado</option>
+            <option value="" className={darkMode ? "dark-option" : ""}>
+              Todos los estados
+            </option>
+            <option value="available" className={darkMode ? "dark-option" : ""}>
+              Disponible
+            </option>
+            <option value="low_stock" className={darkMode ? "dark-option" : ""}>
+              Bajo Stock
+            </option>
+            <option
+              value="out_of_stock"
+              className={darkMode ? "dark-option" : ""}
+            >
+              Agotado
+            </option>
           </select>
         </div>
 

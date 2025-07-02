@@ -1,0 +1,229 @@
+/* Dark Mode styles for the Inventory component */
+:root {
+  --bg-dark: #2c2e35;
+  --primary-green: #87c947;
+  --text-light: #fff;
+}
+
+/* Main inventory container */
+.dark-theme .inventory {
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+}
+
+/* Inventory header */
+.dark-theme .inventory-header h1 {
+  color: var(--primary-green);
+}
+
+/* Add button */
+.dark-theme .add-button {
+  background-color: var(--primary-green);
+  color: white;
+}
+
+.dark-theme .add-button:hover {
+  background-color: #78b33d;
+}
+
+/* Search and filter inputs */
+.dark-theme .search-input,
+.dark-theme .filter-select {
+  background-color: #2c2e35;
+  color: #fff;
+  border-color: #444;
+}
+
+.dark-theme .search-input::placeholder {
+  color: #aaa;
+}
+
+.dark-theme .filter-select option {
+  background-color: #2c2e35;
+  color: #fff;
+}
+
+.dark-theme .search-input:focus,
+.dark-theme .filter-select:focus {
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 2px rgba(135, 201, 71, 0.2);
+}
+
+/* Table container */
+.dark-theme .table-container {
+  background-color: #1e2027;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Table styles */
+.dark-theme table {
+  color: #fff;
+}
+
+.dark-theme th {
+  background-color: #2c2e35;
+  color: var(--primary-green);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dark-theme td {
+  border-bottom: 1px solid #444;
+}
+
+.dark-theme tr:hover {
+  background-color: rgba(135, 201, 71, 0.1);
+}
+
+/* Status badges */
+.dark-theme .estado-disponible {
+  background-color: rgba(20, 167, 79, 0.3);
+  color: #5cdb95;
+}
+
+.dark-theme .estado-bajo-stock {
+  background-color: rgba(255, 193, 7, 0.3);
+  color: #ffc107;
+}
+
+.dark-theme .estado-agotado {
+  background-color: rgba(220, 53, 69, 0.3);
+  color: #ff6b6b;
+}
+
+/* Action buttons */
+.dark-theme .btn-editar {
+  color: #5cdb95;
+}
+
+.dark-theme .btn-eliminar {
+  color: #ff6b6b;
+}
+
+.dark-theme .btn-editar:hover {
+  color: #78b33d;
+}
+
+.dark-theme .btn-eliminar:hover {
+  color: #ff4d4d;
+}
+
+/* Modal styles */
+.dark-theme .modal-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.dark-theme .modal-content {
+  background-color: #1a1c22;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .modal-content h2 {
+  color: var(--primary-green);
+}
+
+/* Form styles */
+.dark-theme .inventory .form-group label {
+  color: #e0e0e0;
+}
+
+.dark-theme .inventory .form-group input,
+.dark-theme .inventory .form-group textarea,
+.dark-theme .inventory .form-group select {
+  background-color: #2c2e35;
+  color: #fff;
+  border-color: #444;
+  caret-color: #fff;
+}
+
+.dark-theme .inventory .form-group input::placeholder,
+.dark-theme .inventory .form-group textarea::placeholder {
+  color: #aaa;
+}
+
+.dark-theme .inventory .form-group input:hover,
+.dark-theme .inventory .form-group textarea:hover,
+.dark-theme .inventory .form-group select:hover,
+.dark-theme .inventory .form-group input:focus,
+.dark-theme .inventory .form-group textarea:focus,
+.dark-theme .inventory .form-group select:focus {
+  border-color: var(--primary-green);
+  background-color: #2c2e35;
+}
+
+/* Select dropdown arrow */
+.dark-theme .form-group select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2387c947' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.8em;
+  padding-right: 2.5rem;
+}
+
+.dark-theme .form-group select option {
+  background-color: #2c2e35;
+  color: #fff;
+}
+
+/* Clases adicionales para el select y sus opciones en modo oscuro */
+.dark-select {
+  color: #fff !important;
+  background-color: #2c2e35 !important;
+}
+
+.dark-option {
+  color: #fff !important;
+  background-color: #2c2e35 !important;
+}
+
+/* Estilos para hover de opciones en modo oscuro */
+.dark-option:hover,
+.dark-option:focus {
+  background-color: #444 !important;
+}
+
+/* Form buttons */
+.dark-theme .form-buttons button[type="button"] {
+  background-color: #3a3a3a;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+.dark-theme .form-buttons button[type="submit"] {
+  background-color: var(--primary-green);
+  color: white;
+}
+
+.dark-theme .form-buttons button[type="button"]:hover {
+  background-color: #4a4a4a;
+  border-color: #666;
+}
+
+.dark-theme .form-buttons button[type="submit"]:hover {
+  background-color: #78b33d;
+}
+
+/* No results message */
+.dark-theme .no-results {
+  color: #999;
+}
+
+/* Scrollbar */
+.dark-theme .table-container::-webkit-scrollbar-track {
+  background: #2c2e35;
+}
+
+.dark-theme .table-container::-webkit-scrollbar-thumb {
+  background-color: #444;
+  border-radius: 20px;
+}
+
+.dark-theme .table-container::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+/* Estilos de loading */
+.dark-theme .loading {
+  color: var(--text-light);
+  background-color: var(--bg-dark);
+}

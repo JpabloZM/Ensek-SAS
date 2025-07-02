@@ -112,9 +112,7 @@ const Home = () => {
 
         <div className="hero-content">
           <h1>Bienvenido a ENSEK</h1>
-          <p>
-            Saneamineto ambiental
-          </p>
+          <p>Saneamineto ambiental</p>
           <div className="cta-buttons">
             <Link to="/welcome/servicios" className="cta-button primary">
               Nuestros Servicios
@@ -143,6 +141,42 @@ const Home = () => {
             <i className="fas fa-star"></i>
             <h3>Calidad</h3>
             <p>Servicio garantizado</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="partners-section">
+        <h2>Nuestros Aliados</h2>
+        <div className="partners-container">
+          <div className="partner-logo">
+            <img
+              src="https://placehold.co/200x100/004122/FFFFFF/png?text=EcoSolutions"
+              alt="EcoSolutions"
+            />
+          </div>
+          <div className="partner-logo">
+            <img
+              src="https://placehold.co/200x100/006837/FFFFFF/png?text=GreenTech"
+              alt="GreenTech"
+            />
+          </div>
+          <div className="partner-logo">
+            <img
+              src="https://placehold.co/200x100/009245/FFFFFF/png?text=BioPlanet"
+              alt="BioPlanet"
+            />
+          </div>
+          <div className="partner-logo">
+            <img
+              src="https://placehold.co/200x100/66b417/FFFFFF/png?text=AguaPura"
+              alt="AguaPura"
+            />
+          </div>
+          <div className="partner-logo">
+            <img
+              src="https://placehold.co/200x100/87c947/FFFFFF/png?text=EcoVida"
+              alt="EcoVida"
+            />
           </div>
         </div>
       </section>

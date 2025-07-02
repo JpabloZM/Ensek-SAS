@@ -1,17 +1,49 @@
+@import "./dark-mode-admin.css";
+@import "./sweetalert-dark-mode.css";
+@import "./global-dark-theme.css";
+
+:root {
+  /* Colores principales */
+  --primary-green: #87c947;
+  --dark-green: #66b417;
+  --dark-green2: #004122;
+  --light-green: #c5f198;
+  --hover-green: #66b417;
+  --bg-green: #f8ffec;
+  --bg-dark: #2c2e35;
+  --text-dark: #333;
+  --text-light: #fff;
+}
+
 .admin-layout {
   min-height: 100vh;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-green);
   overflow: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.admin-layout.light-theme {
+  background-color: var(--bg-green);
+  color: var(--text-dark);
+}
+
+.admin-layout.dark-theme {
+  background-color: var(--bg-dark);
+  color: var(--text-light);
 }
 
 .admin-header {
-  background-color: #004122;
+  background-color: var(--dark-green2);
   padding: 1rem 2rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
+  transition: background-color 0.3s ease;
+}
+
+.admin-header.dark-theme {
+  background-color: #1a1c22;
 }
 
 .admin-nav {
@@ -76,11 +108,34 @@
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .user-menu button:hover {
   background-color: #87c947;
   color: white;
+}
+
+.theme-toggle-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border-radius: 50% !important;
+  background-color: rgba(135, 201, 71, 0.1) !important;
+  border-color: rgba(135, 201, 71, 0.5) !important;
+  color: #87c947;
+  transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+  transform: rotate(30deg);
+  background-color: rgba(135, 201, 71, 0.2) !important;
 }
 
 .admin-main {
@@ -92,12 +147,49 @@
   overflow: hidden;
   position: relative;
   height: calc(100vh - 64px); /* Altura total menos el header */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark-theme .admin-main {
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+}
+
+.light-theme .admin-main {
+  background-color: var(--bg-green);
+  color: var(--text-dark);
 }
 
 /* Contenedor para el contenido con scroll si es necesario */
 .admin-content {
   height: 100%;
   overflow-y: auto;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark-theme .admin-content {
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+}
+
+.dark-theme .card,
+.dark-theme .panel,
+.dark-theme .box,
+.dark-theme .container {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--text-light) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-theme input,
+.dark-theme select,
+.dark-theme textarea {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-light) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.admin-content {
   padding: 1rem;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */

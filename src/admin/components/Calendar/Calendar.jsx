@@ -18,7 +18,7 @@ import { userService } from "../../../client/services/userService";
 import "./Calendar.css";
 import "./styles/forms.css";
 
-const Calendar = () => {
+const Calendar = ({ darkMode = false }) => {
   const { services, loading, error, updateService, getAllServices } =
     useServices();
   const [serviciosPendientes, setServiciosPendientes] = useState([]);
@@ -88,7 +88,7 @@ const Calendar = () => {
         _id: service._id,
         id: service._id,
         nombre: service.serviceType,
-        descripcion: service.description || '',
+        descripcion: service.description || "",
         duracion: service.duration || 60,
         color: "#ffd54f",
         estado: service.status || "pendiente",
@@ -98,7 +98,7 @@ const Calendar = () => {
         address: service.address,
         preferredDate: service.preferredDate,
         updatedAt: service.updatedAt,
-        createdAt: service.createdAt
+        createdAt: service.createdAt,
       }));
 
     console.log("Pending services:", pendingServices);
@@ -383,7 +383,8 @@ const Calendar = () => {
       });
       throw error;
     }
-  };  const handleEliminarServicio = async (servicioId) => {
+  };
+  const handleEliminarServicio = async (servicioId) => {
     try {
       if (!servicioId) {
         throw new Error("ID de servicio no proporcionado");
@@ -399,7 +400,7 @@ const Calendar = () => {
         confirmButtonColor: "#d33",
         cancelButtonColor: "#3085d6",
         confirmButtonText: "Sí, eliminar",
-        cancelButtonText: "Cancelar"
+        cancelButtonText: "Cancelar",
       });
 
       if (!confirmResult.isConfirmed) {
@@ -429,14 +430,14 @@ const Calendar = () => {
       mostrarAlerta({
         title: "¡Eliminado!",
         text: "El servicio ha sido eliminado correctamente.",
-        icon: "success"
+        icon: "success",
       });
     } catch (error) {
       console.error("Error al eliminar servicio:", error);
       mostrarAlerta({
         title: "Error",
         text: error.message || "No se pudo eliminar el servicio",
-        icon: "error"
+        icon: "error",
       });
     }
   };
@@ -1911,7 +1912,7 @@ const Calendar = () => {
   }, []);
 
   return (
-    <div className="calendar-container">
+    <div className={`calendar-container ${darkMode ? "dark-theme" : ""}`}>
       <Sidebar
         serviciosPendientes={serviciosPendientes}
         onAgregarServicio={handleAgregarServicio}

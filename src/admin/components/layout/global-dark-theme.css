@@ -1,0 +1,185 @@
+/* Estilos globales para modo oscuro */
+
+/* Variables globales */
+:root {
+  --dark-bg: #1a1c22;
+  --dark-surface: #2c2e35;
+  --dark-border: #444;
+  --dark-text: #fff;
+  --dark-text-secondary: #ccc;
+  --primary-green: #87c947;
+  --primary-green-dark: #66b417;
+  --primary-green-light: #a3d96e;
+}
+
+/* Aplicar estilo oscuro a SweetAlert2 */
+body.dark-theme .swal2-popup {
+  background-color: var(--dark-bg) !important;
+  color: var(--dark-text) !important;
+  border-color: var(--dark-border) !important;
+}
+
+body.dark-theme .swal2-title,
+body.dark-theme .swal2-content,
+body.dark-theme .swal2-html-container {
+  color: var(--dark-text) !important;
+}
+
+body.dark-theme .swal2-input,
+body.dark-theme .swal2-textarea,
+body.dark-theme .swal2-select {
+  background-color: var(--dark-surface) !important;
+  color: var(--dark-text) !important;
+  border-color: var(--dark-border) !important;
+}
+
+body.dark-theme .swal2-input::placeholder,
+body.dark-theme .swal2-textarea::placeholder {
+  color: var(--dark-text-secondary) !important;
+}
+
+/* Botones de SweetAlert */
+body.dark-theme .swal2-confirm {
+  background-color: var(--primary-green) !important;
+  color: white !important;
+}
+
+body.dark-theme .swal2-cancel {
+  background-color: #444 !important;
+  color: white !important;
+}
+
+/* Formularios, inputs y selects globales */
+body.dark-theme input,
+body.dark-theme select,
+body.dark-theme textarea,
+body.dark-theme .form-control {
+  background-color: var(--dark-surface) !important;
+  color: var(--dark-text) !important;
+  border-color: var(--dark-border) !important;
+}
+
+body.dark-theme input:focus,
+body.dark-theme select:focus,
+body.dark-theme textarea:focus,
+body.dark-theme .form-control:focus {
+  border-color: var(--primary-green) !important;
+  box-shadow: 0 0 0 0.2rem rgba(135, 201, 71, 0.25) !important;
+  background-color: var(--dark-surface) !important;
+}
+
+body.dark-theme input::placeholder,
+body.dark-theme textarea::placeholder {
+  color: var(--dark-text-secondary) !important;
+}
+
+/* Opciones de select */
+body.dark-theme option {
+  background-color: var(--dark-surface) !important;
+  color: var(--dark-text) !important;
+}
+
+/* Modales */
+body.dark-theme .modal-content,
+body.dark-theme .modal-header,
+body.dark-theme .modal-body,
+body.dark-theme .modal-footer {
+  background-color: var(--dark-bg) !important;
+  color: var(--dark-text) !important;
+  border-color: var(--dark-border) !important;
+}
+
+/* Preservar estilos específicos para botones importantes */
+/* Regla general para botones estándar */
+body.dark-theme
+  button:not([class*="btn-"]):not(.swal2-confirm):not(.swal2-cancel):not(
+    .add-button
+  ):not(.submit-button):not(.theme-toggle-btn) {
+  background-color: var(--dark-surface) !important;
+  color: var(--dark-text) !important;
+  border-color: var(--dark-border) !important;
+}
+
+/* Botones primarios */
+body.dark-theme .btn-primary,
+body.dark-theme button.primary {
+  background-color: var(--primary-green) !important;
+  border-color: var(--primary-green) !important;
+  color: white !important;
+}
+
+body.dark-theme .btn-primary:hover,
+body.dark-theme button.primary:hover {
+  background-color: var(--primary-green-dark) !important;
+  border-color: var(--primary-green-dark) !important;
+}
+
+/* Preservar estilos originales para botones específicos de acción */
+/* Botón agregar */
+body.dark-theme .add-button {
+  background-color: #87c947 !important;
+  color: white !important;
+}
+
+body.dark-theme .add-button:hover {
+  background-color: #78b33d !important;
+}
+
+/* Botón submit/guardar */
+body.dark-theme .submit-button {
+  background-color: #87c947 !important;
+  color: white !important;
+}
+
+body.dark-theme .submit-button:hover {
+  background-color: #78b33d !important;
+}
+
+/* Botones en formularios */
+body.dark-theme .form-buttons button[type="submit"] {
+  background-color: #87c947 !important;
+  color: white !important;
+}
+
+body.dark-theme .form-buttons button[type="submit"]:hover {
+  background-color: #78b33d !important;
+}
+
+body.dark-theme .form-buttons button[type="button"] {
+  background-color: #3a3a3a !important;
+  color: #e0e0e0 !important;
+  border: 1px solid #555 !important;
+}
+
+body.dark-theme .form-buttons button[type="button"]:hover {
+  background-color: #4a4a4a !important;
+}
+
+/* Botones de acción específicos */
+body.dark-theme .btn-editar {
+  color: #5cdb95 !important;
+  background-color: transparent !important;
+}
+
+body.dark-theme .btn-eliminar {
+  color: #ff6b6b !important;
+  background-color: transparent !important;
+}
+
+body.dark-theme .btn-editar:hover {
+  color: #78b33d !important;
+}
+
+body.dark-theme .btn-eliminar:hover {
+  color: #ff4d4d !important;
+}
+
+/* Botón de alternar tema */
+body.dark-theme .theme-toggle-btn {
+  color: #87c947 !important;
+  background-color: transparent !important;
+}
+
+body.dark-theme .theme-toggle-btn:hover {
+  color: #a3d96e !important;
+}

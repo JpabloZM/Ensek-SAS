@@ -1,16 +1,45 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import logo from "../../../assets/images/Logo-removebg.png";
+import { FaMoon, FaSun } from "react-icons/fa";
 import "./AdminLayout.css";
 
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [darkMode, setDarkMode] = useState(false);
   const isAuthPage =
     location.pathname === "/admin/login" ||
     location.pathname === "/admin/registro";
+
+  // Load theme preference from localStorage on component mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("admin-theme");
+    if (savedTheme === "dark") {
+      setDarkMode(true);
+    }
+  }, []);
+
+  // Update localStorage and apply theme whenever darkMode changes
+  useEffect(() => {
+    if (darkMode) {
+      localStorage.setItem("admin-theme", "dark");
+      document.body.classList.add("dark-theme");
+    } else {
+      localStorage.setItem("admin-theme", "light");
+      document.body.classList.remove("dark-theme");
+    }
+  }, [darkMode]);
+
+  // Cleanup effect: remove dark-theme class from body when component unmounts
+  useEffect(() => {
+    // Cuando el componente se desmonte, eliminar la clase dark-theme del body
+    return () => {
+      document.body.classList.remove("dark-theme");
+    };
+  }, []);
 
   // Removed authentication checks since they're now handled by AuthRoute
 
@@ -20,8 +49,8 @@ const AdminLayout = () => {
   }
 
   return (
-    <div className="admin-layout">
-      <header className="admin-header">
+    <div className={`admin-layout ${darkMode ? "dark-theme" : "light-theme"}`}>
+      <header className={`admin-header ${darkMode ? "dark-theme" : ""}`}>
         <nav className="admin-nav">
           <div className="logo">
             <Link to="/admin/calendario">
@@ -37,6 +66,15 @@ const AdminLayout = () => {
           <div className="user-menu">
             <span>{user?.name}</span>
             <button
+              className="theme-toggle-btn"
+              onClick={() => setDarkMode(!darkMode)}
+              title={
+                darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"
+              }
+            >
+              {darkMode ? <FaSun /> : <FaMoon />}
+            </button>
+            <button
               onClick={async () => {
                 await logout();
                 navigate("/admin/login");
@@ -49,7 +87,7 @@ const AdminLayout = () => {
       </header>
 
       <main className="admin-main">
-        <Outlet />
+        <Outlet context={{ darkMode }} />
       </main>
     </div>
   );
