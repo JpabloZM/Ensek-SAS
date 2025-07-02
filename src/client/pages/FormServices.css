@@ -14,7 +14,7 @@
 /* Decoraciones laterales */
 .form-container::after,
 .form-container::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 300px;
   height: 300px;
@@ -65,7 +65,8 @@
 
 /* Animaciones para los elementos decorativos */
 @keyframes floatLeft {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) rotate(0deg);
   }
   50% {
@@ -74,7 +75,8 @@
 }
 
 @keyframes floatRight {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) rotate(0deg);
   }
   50% {
@@ -93,12 +95,15 @@
 }
 
 .decoration-dots::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 100%;
   height: 100%;
-  background-image: 
-    radial-gradient(circle, var(--primary-green) 1px, transparent 1px),
+  background-image: radial-gradient(
+      circle,
+      var(--primary-green) 1px,
+      transparent 1px
+    ),
     radial-gradient(circle, var(--primary-green) 1px, transparent 1px);
   background-size: 20px 20px;
   background-position: 0 0, 10px 10px;
@@ -128,12 +133,15 @@
 }
 
 .form-decoration-dots::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 100%;
   height: 100%;
-  background-image: 
-    radial-gradient(circle, var(--primary-green) 1px, transparent 1px),
+  background-image: radial-gradient(
+      circle,
+      var(--primary-green) 1px,
+      transparent 1px
+    ),
     radial-gradient(circle, var(--primary-green) 1px, transparent 1px);
   background-size: 15px 15px;
   background-position: 0 0, 7.5px 7.5px;
@@ -193,7 +201,7 @@
 
 /* Efecto de luz ambiental */
 .form-container::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   left: -50%;
@@ -209,8 +217,12 @@
 }
 
 @keyframes ambientLight {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Partículas flotantes */
@@ -225,15 +237,34 @@
   animation: float 15s infinite;
 }
 
-.particle:nth-child(1) { left: 10%; animation-delay: 0s; }
-.particle:nth-child(2) { left: 20%; animation-delay: 2s; }
-.particle:nth-child(3) { left: 30%; animation-delay: 4s; }
-.particle:nth-child(4) { right: 10%; animation-delay: 6s; }
-.particle:nth-child(5) { right: 20%; animation-delay: 8s; }
-.particle:nth-child(6) { right: 30%; animation-delay: 10s; }
+.particle:nth-child(1) {
+  left: 10%;
+  animation-delay: 0s;
+}
+.particle:nth-child(2) {
+  left: 20%;
+  animation-delay: 2s;
+}
+.particle:nth-child(3) {
+  left: 30%;
+  animation-delay: 4s;
+}
+.particle:nth-child(4) {
+  right: 10%;
+  animation-delay: 6s;
+}
+.particle:nth-child(5) {
+  right: 20%;
+  animation-delay: 8s;
+}
+.particle:nth-child(6) {
+  right: 30%;
+  animation-delay: 10s;
+}
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) scale(1);
     opacity: 0.3;
   }
@@ -269,23 +300,21 @@
   color: var(--primary-green);
   margin-bottom: 2rem;
   font-size: 2rem;
-  text-shadow: 
-    0 0 5px rgba(var(--primary-green-rgb), 0.5),
+  text-shadow: 0 0 5px rgba(var(--primary-green-rgb), 0.5),
     0 0 10px rgba(var(--primary-green-rgb), 0.3),
     0 0 15px rgba(var(--primary-green-rgb), 0.2);
   animation: neonPulse 2s infinite;
 }
 
 @keyframes neonPulse {
-  0%, 100% {
-    text-shadow: 
-      0 0 5px rgba(var(--primary-green-rgb), 0.5),
+  0%,
+  100% {
+    text-shadow: 0 0 5px rgba(var(--primary-green-rgb), 0.5),
       0 0 10px rgba(var(--primary-green-rgb), 0.3),
       0 0 15px rgba(var(--primary-green-rgb), 0.2);
   }
   50% {
-    text-shadow: 
-      0 0 10px rgba(var(--primary-green-rgb), 0.7),
+    text-shadow: 0 0 10px rgba(var(--primary-green-rgb), 0.7),
       0 0 20px rgba(var(--primary-green-rgb), 0.5),
       0 0 30px rgba(var(--primary-green-rgb), 0.3);
   }
@@ -339,11 +368,85 @@
   outline: none;
   border-color: var(--primary-green);
   background: rgba(55, 55, 55, 0.9);
-  box-shadow: 
-    0 0 15px rgba(var(--primary-green-rgb), 0.2),
+  box-shadow: 0 0 15px rgba(var(--primary-green-rgb), 0.2),
     inset 0 0 10px rgba(var(--primary-green-rgb), 0.1);
   transform: translateY(-2px);
   color: white;
+}
+
+/* Estilos específicos para el elemento select en el formulario */
+.form-group select {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  background-color: rgba(45, 45, 45, 0.9) !important;
+  border: 2px solid rgba(255, 255, 255, 0.1) !important; /* Color de borde normal */
+  box-shadow: none !important; /* Sin resplandor verde por defecto */
+  transition: all 0.3s ease !important;
+}
+
+.form-group select:focus {
+  border-color: var(
+    --primary-green
+  ) !important; /* Borde verde solo al enfocar */
+  box-shadow: 0 0 15px rgba(var(--primary-green-rgb), 0.2),
+    inset 0 0 10px rgba(var(--primary-green-rgb), 0.1) !important;
+}
+
+.form-group select option {
+  background-color: #2d2d2d !important;
+  color: white !important;
+  padding: 10px !important;
+  font-size: 1rem !important;
+  text-shadow: none !important;
+  -webkit-text-fill-color: white !important;
+}
+
+/* Estilos adicionales para los elementos option */
+.form-group select option:hover,
+.form-group select option:focus,
+.form-group select option:active {
+  background-color: rgba(135, 201, 71, 0.2) !important;
+  color: white !important;
+  box-shadow: none !important;
+}
+
+.form-group select option:checked {
+  background-color: rgba(135, 201, 71, 0.4) !important;
+  color: white !important;
+  font-weight: bold !important;
+}
+
+/* Estilos específicos para Firefox */
+@-moz-document url-prefix() {
+  .form-group select {
+    color: white !important;
+    background-color: rgba(45, 45, 45, 0.9) !important;
+  }
+
+  .form-group select option {
+    background-color: #2d2d2d !important;
+    color: white !important;
+  }
+}
+
+/* Estilos específicos para Edge y Chrome */
+@supports (-ms-ime-align: auto) {
+  .form-group select option,
+  .form-group select::-ms-value {
+    color: white !important;
+    background-color: #2d2d2d !important;
+  }
+}
+
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .form-group select {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    padding-right: 30px !important;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 8px center !important;
+  }
 }
 
 /* Contenedor de botones */
@@ -358,10 +461,12 @@
 
 /* Botón épico con efectos */
 .cta-button.primary {
-  background: linear-gradient(45deg, 
-    var(--primary-green), 
+  background: linear-gradient(
+    45deg,
+    var(--primary-green),
     var(--hover-green),
-    var(--primary-green));
+    var(--primary-green)
+  );
   background-size: 200% 200%;
   color: white;
   padding: 1.2rem 2.5rem;
@@ -375,8 +480,7 @@
   overflow: hidden;
   cursor: pointer;
   transition: all 0.5s ease;
-  box-shadow: 
-    0 5px 15px rgba(0, 0, 0, 0.3),
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3),
     0 0 20px rgba(var(--primary-green-rgb), 0.2),
     inset 0 0 10px rgba(255, 255, 255, 0.1);
   animation: gradientMove 3s ease infinite;
@@ -385,7 +489,7 @@
 
 /* Efecto de brillo */
 .cta-button.primary::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   left: -50%;
@@ -403,10 +507,11 @@
 
 /* Efecto de borde brillante */
 .cta-button.primary::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: -2px;
-  background: linear-gradient(45deg,
+  background: linear-gradient(
+    45deg,
     transparent,
     rgba(var(--primary-green-rgb), 0.3),
     transparent
@@ -419,8 +524,7 @@
 /* Efectos al hover */
 .cta-button.primary:hover {
   transform: translateY(-5px) scale(1.02);
-  box-shadow: 
-    0 15px 30px rgba(0, 0, 0, 0.4),
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4),
     0 0 50px rgba(var(--primary-green-rgb), 0.4),
     inset 0 0 20px rgba(255, 255, 255, 0.2);
   letter-spacing: 3px;
@@ -446,7 +550,8 @@
 }
 
 @keyframes borderGlow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.5;
     transform: scale(1);
   }
@@ -474,14 +579,13 @@
 }
 
 @keyframes buttonPulse {
-  0%, 100% {
-    box-shadow: 
-      0 5px 15px rgba(0, 0, 0, 0.3),
+  0%,
+  100% {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3),
       0 0 20px rgba(var(--primary-green-rgb), 0.2);
   }
   50% {
-    box-shadow: 
-      0 5px 15px rgba(0, 0, 0, 0.3),
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3),
       0 0 40px rgba(var(--primary-green-rgb), 0.4);
   }
 }
@@ -504,8 +608,6 @@
   opacity: 1;
   transform: scale(1.05);
 }
-
-
 
 /* Animación de entrada */
 @keyframes formAppear {
@@ -541,7 +643,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Estilos del botón durante la carga */
@@ -569,14 +673,13 @@
 }
 
 @keyframes loadingPulse {
-  0%, 100% {
-    box-shadow: 
-      0 5px 15px rgba(0, 0, 0, 0.3),
+  0%,
+  100% {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3),
       0 0 20px rgba(var(--primary-green-rgb), 0.2);
   }
   50% {
-    box-shadow: 
-      0 5px 15px rgba(0, 0, 0, 0.3),
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3),
       0 0 40px rgba(var(--primary-green-rgb), 0.4);
     background-position: 100% 50%;
   }
@@ -611,9 +714,11 @@ form:has(.cta-button.loading) .form-group {
 }
 
 .swal-button {
-  background: linear-gradient(45deg, 
-    var(--primary-green), 
-    var(--hover-green)) !important;
+  background: linear-gradient(
+    45deg,
+    var(--primary-green),
+    var(--hover-green)
+  ) !important;
   padding: 0.8rem 2rem !important;
   font-size: 1rem !important;
   transition: all 0.3s ease !important;
@@ -643,4 +748,43 @@ form:has(.cta-button.loading) .form-group {
 .swal2-backdrop-show {
   background: rgba(0, 0, 0, 0.8) !important;
   backdrop-filter: blur(5px) !important;
+}
+
+/* Estilos con mayor especificidad para el select */
+.form-services .form-group select,
+.form-container .form-services form .form-group select {
+  color: white !important;
+  background-color: rgba(45, 45, 45, 0.9) !important;
+  -webkit-text-fill-color: white !important;
+  -moz-text-fill-color: white !important;
+  appearance: auto !important; /* Asegura que se muestre el desplegable nativo */
+  border: 2px solid rgba(255, 255, 255, 0.1); /* Borde normal no verde */
+  box-shadow: none; /* Sin resplandor verde por defecto */
+}
+
+/* Asegurar que el texto es visible cuando el select está enfocado */
+.form-services .form-group select:focus {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  -moz-text-fill-color: white !important;
+  border-color: var(
+    --primary-green
+  ) !important; /* Borde verde solo al enfocar */
+  box-shadow: 0 0 15px rgba(var(--primary-green-rgb), 0.2),
+    inset 0 0 10px rgba(var(--primary-green-rgb), 0.1) !important;
+}
+
+/* Estilos específicos para el select de tipo de servicio */
+.service-type-select {
+  color: white !important;
+  background-color: rgba(45, 45, 45, 0.9) !important;
+  font-size: 1rem !important;
+  padding: 1rem !important;
+  cursor: pointer !important;
+}
+
+/* Estilos para la primera opción deshabilitada */
+.service-type-select option[value=""] {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.7) !important;
 }

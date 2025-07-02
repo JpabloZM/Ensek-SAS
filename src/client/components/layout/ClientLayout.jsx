@@ -158,34 +158,35 @@ const ClientLayout = () => {
         <div className="welcome-container">
           <div className="welcome-footer-content">
             <div className="welcome-footer-logo">
-              <img src="/logo_ensek.png" alt="ENSEK Logo" />
+              <img src={logo} alt="ENSEK Logo" className="footer-logo-image" />
               <h2>
                 ENSEK <span>SAS</span>
               </h2>
-              <p>Control de plagas y jardinería profesional</p>
+              <p>
+                Manejo integrado de plagas, jardineria <br></br> y paisajismo.
+              </p>
             </div>
             <div className="welcome-footer-links">
               <h3>Enlaces</h3>
               <ul>
                 <li>
-                  <Link to="/">Inicio</Link>
+                  <Link to="/app">Inicio</Link>
                 </li>
                 <li>
-                  <Link to="/servicios">Servicios</Link>
+                  <Link to="/app/servicios">Servicios</Link>
                 </li>
                 <li>
-                  <Link to="/login">Iniciar Sesión</Link>
-                </li>
-                <li>
-                  <Link to="/registro">Registrarse</Link>
+                  <button className="contact-link" onClick={handleContactClick}>
+                    Contacto
+                  </button>
                 </li>
               </ul>
             </div>
             <div className="welcome-footer-contact">
               <h3>Contacto</h3>
-              <p>Email: info@ensek.com</p>
-              <p>Teléfono: (123) 456-7890</p>
-              <p>Dirección: Calle Principal #123, Ciudad</p>
+              <p>Email: directorcomercial.enske@gmail.com</p>
+              <p>Teléfono: (604) 322 85 33 - 323 902 50 53</p>
+              <p>Dirección: Carrera 55b #15-58, Rionegro - Antioquia</p>
               <div className="welcome-social-icons">
                 <a
                   href="https://facebook.com"

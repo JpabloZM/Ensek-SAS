@@ -197,7 +197,7 @@
 
 /* Estilos para los logos */
 .navbar-logo-image {
-  width: 32px;
+  width: 40px;
   height: auto;
   object-fit: contain;
 }
@@ -205,8 +205,12 @@
 .footer-logo-image {
   width: 32px;
   height: 80px;
-  background-color: rgb(107, 107, 107);
   margin-bottom: 5px;
+  /* Agregar efecto para mejorar visibilidad */
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 30%;
+  padding: 3px;
+  box-shadow: 0 0 0 2px #87c947, 0 0 10px rgba(135, 201, 71, 0.5);
 }
 
 /* Elimina cualquier desenfoque (blur) en los formularios y campos de entrada */

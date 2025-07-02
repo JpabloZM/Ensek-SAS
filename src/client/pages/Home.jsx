@@ -113,7 +113,7 @@ const Home = () => {
         <div className="hero-content">
           <h1>Bienvenido a ENSEK</h1>
           <p>
-            Servicios especializados en manejo integrado de plagas y jardinería.
+            Saneamineto ambiental
           </p>
           <div className="cta-buttons">
             <Link to="/welcome/servicios" className="cta-button primary">

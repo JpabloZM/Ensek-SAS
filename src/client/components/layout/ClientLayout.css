@@ -156,6 +156,36 @@ body {
   color: var(--hover-green);
 }
 
+/* Estilos para mejorar la visibilidad del logo en el footer */
+.footer-logo-image {
+  height: 80px;
+  width: auto;
+  margin-bottom: 5px;
+  /* Mejora de visibilidad para el logo */
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 30%;
+  padding: 3px;
+  box-shadow: 0 0 0 2px #87c947, 0 0 10px rgba(135, 201, 71, 0.5);
+}
+
+/* Estilo para el botón de contacto en el footer que parece un enlace */
+.contact-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #fff;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.contact-link:hover {
+  opacity: 1;
+}
+
 /* Media queries para responsive */
 @media (max-width: 1024px) {
   .navbar {
