@@ -1,86 +1,146 @@
 /* Estilos para SweetAlert2 en modo oscuro */
 .dark-theme .swal2-popup {
-  background-color: #1a1c22;
-  color: #fff;
+  background-color: #1a1c22 !important;
+  color: #fff !important;
 }
 
 .dark-theme .swal2-title,
 .dark-theme .swal2-html-container,
 .dark-theme .swal2-content {
-  color: #fff;
+  color: #fff !important;
 }
 
+/* Estilos para inputs, selects y otros campos de formulario */
 .dark-theme .swal2-input,
 .dark-theme .swal2-textarea,
 .dark-theme .swal2-select,
-.dark-theme .swal2-file {
-  background-color: #2c2e35;
-  color: #fff;
-  border-color: #444;
+.dark-theme .swal2-file,
+.dark-theme .swal2-container input,
+.dark-theme .swal2-container select,
+.dark-theme .swal2-container textarea,
+.dark-theme .swal2-popup input,
+.dark-theme .swal2-popup select,
+.dark-theme .swal2-popup textarea,
+.dark-theme .swal2-container .form-control,
+.dark-theme .swal2-popup .form-control {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+  border-color: #444 !important;
 }
 
+/* Estilos para el foco en campos de formulario */
 .dark-theme .swal2-input:focus,
 .dark-theme .swal2-textarea:focus,
-.dark-theme .swal2-select:focus {
-  box-shadow: 0 0 0 3px rgba(135, 201, 71, 0.3);
-  border-color: #87c947;
+.dark-theme .swal2-select:focus,
+.dark-theme .swal2-container input:focus,
+.dark-theme .swal2-container select:focus,
+.dark-theme .swal2-container textarea:focus,
+.dark-theme .swal2-popup input:focus,
+.dark-theme .swal2-popup select:focus,
+.dark-theme .swal2-popup textarea:focus,
+.dark-theme .swal2-container .form-control:focus,
+.dark-theme .swal2-popup .form-control:focus {
+  box-shadow: 0 0 0 3px rgba(135, 201, 71, 0.3) !important;
+  border-color: #87c947 !important;
+}
+
+/* Opciones de selección */
+.dark-theme .swal2-select option,
+.dark-theme .swal2-container select option,
+.dark-theme .swal2-popup select option,
+.dark-theme .swal2-container .form-control option,
+.dark-theme .swal2-popup .form-control option {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
 }
 
 .dark-theme .swal2-radio,
 .dark-theme .swal2-checkbox {
-  color: #fff;
+  color: #fff !important;
+}
+
+/* Contenedores y detalles */
+.dark-theme .swal2-popup .detalles-servicio,
+.dark-theme .swal2-popup .detalles-content {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+  border-color: #444 !important;
 }
 
 /* Botones de SweetAlert2 */
 .dark-theme .swal2-confirm {
-  background-color: #87c947;
+  background-color: #87c947 !important;
 }
 
 .dark-theme .swal2-cancel {
-  background-color: #3a3a3a;
-  color: #fff;
+  background-color: #3a3a3a !important;
+  color: #fff !important;
 }
 
 .dark-theme .swal2-deny {
-  background-color: #dc3545;
+  background-color: #dc3545 !important;
 }
 
 /* Icono de cierre */
 .dark-theme .swal2-close {
-  color: #999;
+  color: #999 !important;
 }
 
 .dark-theme .swal2-close:hover {
-  color: #fff;
+  color: #fff !important;
 }
 
 /* Barra de progreso */
 .dark-theme .swal2-timer-progress-bar {
-  background-color: rgba(135, 201, 71, 0.6);
+  background-color: rgba(135, 201, 71, 0.6) !important;
 }
 
 /* Iconos */
 .dark-theme .swal2-icon.swal2-success {
-  border-color: #87c947;
-  color: #87c947;
+  border-color: #87c947 !important;
+  color: #87c947 !important;
 }
 
 .dark-theme .swal2-icon.swal2-error {
-  border-color: #dc3545;
-  color: #dc3545;
+  border-color: #dc3545 !important;
+  color: #dc3545 !important;
 }
 
 .dark-theme .swal2-icon.swal2-warning {
-  border-color: #ffc107;
-  color: #ffc107;
+  border-color: #ffc107 !important;
+  color: #ffc107 !important;
 }
 
 .dark-theme .swal2-icon.swal2-info {
-  border-color: #0dcaf0;
-  color: #0dcaf0;
+  border-color: #0dcaf0 !important;
+  color: #0dcaf0 !important;
 }
 
 .dark-theme .swal2-icon.swal2-question {
-  border-color: #6c757d;
-  color: #6c757d;
+  border-color: #6c757d !important;
+  color: #6c757d !important;
+}
+
+/* Estilos para detalles específicos */
+.dark-theme .detalle-row {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark-theme .detalle-value {
+  color: #fff !important;
+}
+
+/* Asegurar que las etiquetas tengan el color correcto */
+.dark-theme .swal2-popup label,
+.dark-theme .swal2-popup .form-label {
+  color: #87c947 !important;
+}
+
+/* Sobreescribir cualquier estilo inline que pueda estar estableciendo el fondo blanco */
+.dark-theme .swal2-popup *[style*="background-color: #f8f9fa"],
+.dark-theme .swal2-popup *[style*="background-color:#f8f9fa"],
+.dark-theme .swal2-popup *[style*="background: #f8f9fa"],
+.dark-theme .swal2-popup *[style*="background:#f8f9fa"] {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
 }

@@ -1,0 +1,74 @@
+/* Estilos específicos para elementos de formulario en SweetAlert2 en modo oscuro */
+
+/* Forzar estilos para elementos de detalle */
+body.dark-theme .swal2-popup .detalles-content,
+body.dark-theme .swal2-container .detalles-content {
+  background-color: #2c2e35 !important;
+  color: #ffffff !important;
+  border-color: #444 !important;
+}
+
+/* Estilos para las filas de detalles */
+body.dark-theme .swal2-popup .detalle-row,
+body.dark-theme .swal2-container .detalle-row {
+  background-color: #2c2e35 !important;
+  color: #ffffff !important;
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Estilos para las etiquetas y valores */
+body.dark-theme .swal2-popup .detalle-label,
+body.dark-theme .swal2-container .detalle-label {
+  color: #87c947 !important;
+  background-color: #2c2e35 !important;
+}
+
+body.dark-theme .swal2-popup .detalle-value,
+body.dark-theme .swal2-container .detalle-value {
+  color: #ffffff !important;
+  background-color: #2c2e35 !important;
+}
+
+/* Anular estilos inline que puedan estar estableciendo fondos blancos */
+body.dark-theme .swal2-popup [style*="background"],
+body.dark-theme .swal2-container [style*="background"] {
+  background-color: #2c2e35 !important;
+}
+
+/* Excepciones para elementos específicos */
+body.dark-theme .swal2-popup .swal2-title {
+  background-color: transparent !important;
+}
+
+body.dark-theme .swal2-popup .swal2-html-container {
+  background-color: transparent !important;
+}
+
+body.dark-theme .swal2-popup .swal2-confirm {
+  background-color: #87c947 !important;
+}
+
+/* Asegurarse de que todos los elementos de texto dentro del popup tengan el color correcto */
+body.dark-theme .swal2-popup p,
+body.dark-theme .swal2-popup span,
+body.dark-theme .swal2-popup div:not(.detalle-label) {
+  color: #ffffff !important;
+}
+
+/* Estilo específico para el contenedor detalles-servicio */
+body.dark-theme .swal2-popup .detalles-servicio,
+body.dark-theme .swal2-container .detalles-servicio {
+  background-color: #2c2e35 !important;
+  color: #ffffff !important;
+}
+
+/* Sobrescribir cualquier elemento con fondo blanco */
+body.dark-theme .swal2-popup *[style*="background-color: #ffffff"],
+body.dark-theme .swal2-popup *[style*="background-color: white"],
+body.dark-theme .swal2-popup *[style*="background-color: rgb(255, 255, 255)"],
+body.dark-theme .swal2-popup *[style*="background: white"],
+body.dark-theme .swal2-popup *[style*="background: #ffffff"],
+body.dark-theme .swal2-popup *[style*="background: rgb(255, 255, 255)"] {
+  background-color: #2c2e35 !important;
+  color: #ffffff !important;
+}

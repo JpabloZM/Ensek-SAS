@@ -1,20 +1,31 @@
-.servicio-card {
-  background-color: #ffffff;
-  border: 2px solid #c5f198;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  position: relative;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  flex-shrink: 0;
+/* Hacer los selectores más específicos para aumentar su prioridad */
+html body .sidebar .servicio-card,
+html body .servicios-container .servicio-card,
+html body .servicio-card {
+  background-color: #ffffff !important;
+  border: 2px solid #c5f198 !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+  margin-bottom: 1rem !important;
+  /* Eliminar transition para evitar cualquier animación no deseada */
+  transition: border-color 0.3s ease !important;
+  cursor: pointer !important;
+  position: relative !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+  flex-shrink: 0 !important;
+  /* Añadir !important para forzar estos estilos */
+  transform: none !important;
 }
 
-.servicio-card:hover {
-  border-color: #87c947;
-  box-shadow: 0 4px 8px rgba(135, 201, 71, 0.15);
-  transform: translateY(-2px);
+/* Solo mantenemos el cambio de color del borde al hacer hover, con selectores más específicos */
+html body .sidebar .servicio-card:hover,
+html body .servicios-container .servicio-card:hover,
+html body .servicio-card:hover {
+  background-color: #ffffff !important; /* Forzar el color de fondo igual al estado normal */
+  border-color: #87c947 !important;
+  /* Forzar que no haya transformación o cambio de sombra */
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
 }
 
 .servicio-card .contenido-servicio {
@@ -60,22 +71,30 @@
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
-  background: none;
+  background: rgba(0, 0, 0, 0.15);
   border: none;
-  color: #e74c3c;
-  padding: 0.25rem;
-  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0.15rem;
+  font-size: 0.8rem;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: all 0.2s ease;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* Mantenemos la aparición del botón eliminar al hacer hover sobre la tarjeta */
 .servicio-card:hover .eliminar-servicio {
-  opacity: 1;
+  opacity: 0.7;
 }
 
 .servicio-card .eliminar-servicio:hover {
-  color: #c0392b;
-  transform: scale(1.1);
+  opacity: 1;
+  background: rgba(231, 76, 60, 0.7);
+  color: white;
 }
 
 /* Estilo para cuando la tarjeta está siendo arrastrada */
@@ -83,6 +102,29 @@
   cursor: grabbing;
   opacity: 0.7;
   transform: scale(0.98);
+}
+
+/* Estilos para modo oscuro con selectores más específicos */
+body.dark-theme .sidebar .servicio-card .eliminar-servicio,
+body.dark-theme .servicios-container .servicio-card .eliminar-servicio,
+body.dark-theme .servicio-card .eliminar-servicio {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+/* Mantenemos la aparición del botón eliminar en modo oscuro */
+body.dark-theme .sidebar .servicio-card:hover .eliminar-servicio,
+body.dark-theme .servicios-container .servicio-card:hover .eliminar-servicio,
+body.dark-theme .servicio-card:hover .eliminar-servicio {
+  opacity: 0.7;
+}
+
+body.dark-theme .sidebar .servicio-card .eliminar-servicio:hover,
+body.dark-theme .servicios-container .servicio-card .eliminar-servicio:hover,
+body.dark-theme .servicio-card .eliminar-servicio:hover {
+  background: rgba(231, 76, 60, 0.7);
+  color: white;
+  opacity: 1;
 }
 
 /* Responsive */

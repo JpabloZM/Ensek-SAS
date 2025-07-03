@@ -1,0 +1,82 @@
+/* 
+  Este archivo contiene selectores muy específicos para los botones
+  del modal de asignación, para evitar afectar otros componentes
+*/
+
+/* Contenedor de acciones específico para el modal de asignación */
+.swal2-popup .swal-actions-container {
+  display: flex !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  padding: 0 1rem !important;
+  background-color: inherit !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+  padding-top: 1rem !important;
+}
+
+/* En modo oscuro */
+body.dark-theme .swal2-popup .swal-actions-container {
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Estilos para los botones de asignación */
+.swal2-popup .custom-confirm-btn,
+.swal2-popup .custom-cancel-btn {
+  min-width: 120px !important;
+  padding: 0.6rem 1.5rem !important;
+  margin: 0 0.5rem !important;
+  border-radius: 4px !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  transition: all 0.2s ease !important;
+  box-shadow: none !important;
+}
+
+/* Botón de confirmación (Asignar) */
+.swal2-popup .custom-confirm-btn {
+  background-color: #87c947 !important;
+  color: white !important;
+}
+
+/* Botón de cancelación */
+.swal2-popup .custom-cancel-btn {
+  background-color: transparent !important;
+  border: 1px solid #6c757d !important;
+  color: #6c757d !important;
+}
+
+/* Efectos hover */
+.swal2-popup .custom-confirm-btn:hover {
+  background-color: #79b53d !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(135, 201, 71, 0.4) !important;
+}
+
+.swal2-popup .custom-cancel-btn:hover {
+  background-color: rgba(108, 117, 125, 0.1) !important;
+}
+
+/* Estilos específicos para modo oscuro */
+body.dark-theme .swal2-popup .custom-cancel-btn {
+  color: #adb5bd !important;
+  border-color: #adb5bd !important;
+}
+
+body.dark-theme .swal2-popup .custom-cancel-btn:hover {
+  background-color: rgba(173, 181, 189, 0.15) !important;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 576px) {
+  .swal2-popup .swal-actions-container {
+    flex-direction: column-reverse !important;
+  }
+
+  .swal2-popup .custom-confirm-btn,
+  .swal2-popup .custom-cancel-btn {
+    margin: 0.25rem 0 !important;
+    width: 100% !important;
+  }
+}

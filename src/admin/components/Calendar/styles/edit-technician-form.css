@@ -1,0 +1,68 @@
+/* 
+  Estilos específicos para el formulario de editar técnico
+  Este archivo solo afecta al formulario que aparece en el modal de editar técnico
+*/
+
+/* Asegurar que el fondo del formulario sea el correcto en modo oscuro */
+body.dark-theme .swal2-popup #editTecnicoForm {
+  background-color: #1a1c22 !important;
+}
+
+/* Asegurar que los campos tengan el fondo correcto en modo oscuro */
+body.dark-theme .swal2-popup #editTecnicoForm .form-control {
+  background-color: #2c2e35 !important;
+  color: #ffffff !important;
+  border-color: #444 !important;
+}
+
+/* Asegurar que los placeholders sean visibles en modo oscuro */
+body.dark-theme .swal2-popup #editTecnicoForm .form-control::placeholder {
+  color: #aaa !important;
+  opacity: 0.7 !important;
+}
+
+/* Asegurar que el contenedor tenga el fondo correcto en modo oscuro */
+body.dark-theme .swal2-popup .form-group {
+  background-color: #1a1c22 !important;
+}
+
+/* Estilos para etiquetas en modo oscuro */
+body.dark-theme .swal2-popup #editTecnicoForm .form-label {
+  color: #87c947 !important;
+  background-color: #1a1c22 !important;
+  padding: 0 !important;
+  margin-bottom: 0.5rem !important;
+  font-weight: 600 !important;
+}
+
+/* Asegurar que los contenedores de iconos tengan el fondo correcto */
+body.dark-theme .swal2-popup #editTecnicoForm .input-with-icon {
+  background-color: #1a1c22 !important;
+}
+
+/* Estilos para asegurar que los botones tengan los colores correctos */
+body.dark-theme .swal2-popup .swal2-confirm {
+  background-color: #87c947 !important;
+  color: white !important;
+}
+
+body.dark-theme .swal2-popup .swal2-cancel {
+  background-color: #444 !important;
+  color: white !important;
+}
+
+/* Estilos específicos para el contenedor de SweetAlert2 */
+body.dark-theme .swal2-container {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+body.dark-theme .swal2-popup {
+  background-color: #1a1c22 !important;
+  color: #ffffff !important;
+}
+
+/* Estilos para el título y contenido HTML */
+body.dark-theme .swal2-popup .swal2-title,
+body.dark-theme .swal2-popup .swal2-html-container {
+  color: #ffffff !important;
+}

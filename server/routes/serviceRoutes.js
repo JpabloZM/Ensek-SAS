@@ -28,11 +28,12 @@ router.use((req, res, next) => {
 });
 
 // Rutas públicas
-router.post("/", serviceController.createService);
+router.post("/", serviceController.createServiceRequest); // Changed to save to ServiceRequest
 router.post("/request", serviceController.createServiceRequest);
 
 // Rutas protegidas
 router.get("/", protect, serviceController.getServices);
+router.get("/requests", protect, serviceController.getServiceRequests);
 router.get("/:id", protect, serviceController.getServiceById);
 router.put("/:id", protect, serviceController.updateService);
 router.delete("/:id", protect, serviceController.deleteService);
@@ -40,6 +41,11 @@ router.put(
   "/:id/assign-technician",
   protect,
   serviceController.assignTechnicianToService
+);
+router.put(
+  "/requests/:id/convert",
+  protect,
+  serviceController.convertServiceRequestToService
 );
 
 export default router;

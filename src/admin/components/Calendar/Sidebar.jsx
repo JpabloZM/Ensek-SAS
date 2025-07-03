@@ -195,6 +195,8 @@ const Sidebar = ({
               servicio={servicio}
               onEliminar={() => onEliminarServicio(servicio.id)}
               onAsignarServicio={onAsignarServicio}
+              // Forzar que el componente se renderice con clase correcta
+              className="servicio-card"
             />
           ))}
         </div>

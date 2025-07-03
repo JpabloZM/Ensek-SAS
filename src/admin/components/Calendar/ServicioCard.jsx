@@ -4,6 +4,14 @@ import Swal from "sweetalert2";
 import { userService } from "../../../client/services/userService";
 import "./styles/services.css";
 import "./styles/detalles.css";
+import "./styles/card-reset.css"; // Importamos el archivo de reset para asegurar los estilos
+import "./styles/sweetalert-override.css"; // Importamos estilos específicos para SweetAlert2
+import "./styles/swal-dark-override.css"; // Importamos estilos específicos para SweetAlert2 en modo oscuro
+import "./styles/swal-icon-spacing.css"; // Importamos estilos específicos para el espaciado de los iconos
+import "./styles/swal-buttons.css"; // Importamos estilos específicos para los botones
+import "./styles/assign-modal-buttons.css"; // Importamos estilos específicos para los botones del modal de asignación
+import "./styles/modal-footer.css"; // Importamos estilos para que el footer tenga el mismo color del formulario
+import "./styles/force-dark-modal.css"; // Este debe ser el último CSS importado para asegurar que tenga mayor prioridad
 
 const { getTechnicians: fetchTechnicians } = userService;
 
@@ -74,44 +82,84 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
   };
 
   const mostrarDetallesServicio = () => {
+    // Verificar si estamos en modo oscuro
+    const isDarkMode = document.body.classList.contains("dark-theme");
+
     mostrarAlerta({
       title: `Servicio de ${getTipoServicioEspanol(servicio.nombre)}`,
+      showCloseButton: true,
+      confirmButtonText: "Cerrar",
+      confirmButtonColor: "#87c947",
+      background: isDarkMode ? "#1a1c22" : "#ffffff",
+      color: isDarkMode ? "#ffffff" : "#333333",
+      customClass: {
+        popup: isDarkMode ? "swal-dark-theme" : "",
+        title: isDarkMode ? "swal-dark-title" : "",
+        htmlContainer: isDarkMode ? "swal-dark-content" : "",
+        confirmButton: "swal-confirm-btn",
+      },
       html: `
-        <div class="detalles-content">
-          <div class="detalle-row">
-            <div class="detalle-label">
-              <i class="fas fa-user"></i> Cliente
+        <div class="detalles-content" style="background-color: ${
+          isDarkMode ? "#2c2e35" : "#f8f9fa"
+        }; color: ${isDarkMode ? "#fff" : "#333"}; padding: 1rem;">
+          <div class="detalle-row" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#fff"
+          }; margin-bottom: 0.5rem; padding: 0.75rem 0.5rem; display: flex; align-items: start; line-height: 1.2; border-bottom: 1px solid ${
+        isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+      };">
+            <div class="detalle-label" style="color: #87c947; min-width: 100px; font-weight: 500; display: flex; align-items: center; padding-left: 0.5rem;">
+              <i class="fas fa-user" style="color: #87c947; margin-right: 0.5rem; margin-left: 0.25rem;"></i> Cliente
             </div>
-            <div class="detalle-value">${servicio.clientName}</div>
+            <div class="detalle-value" style="color: ${
+              isDarkMode ? "#fff" : "#333"
+            }; flex: 1; padding-left: 0.5rem;">${servicio.clientName}</div>
           </div>
 
-          <div class="detalle-row">
-            <div class="detalle-label">
-              <i class="fas fa-tools"></i> Servicio
+          <div class="detalle-row" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#fff"
+          }; margin-bottom: 0.4rem; padding: 0.5rem 0; display: flex; align-items: start; line-height: 1.2; border-bottom: 1px solid ${
+        isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+      };">
+            <div class="detalle-label" style="color: #87c947; min-width: 100px; font-weight: 500; display: flex; align-items: center; padding-left: 0.5rem;">
+              <i class="fas fa-tools" style="color: #87c947; margin-right: 0.5rem; margin-left: 0.25rem;"></i> Servicio
             </div>
-            <div class="detalle-value">${getTipoServicioEspanol(
-              servicio.nombre
-            )}</div>
+            <div class="detalle-value" style="color: ${
+              isDarkMode ? "#fff" : "#333"
+            }; flex: 1; padding-left: 0.5rem;">${getTipoServicioEspanol(
+        servicio.nombre
+      )}</div>
           </div>
 
-          <div class="detalle-row">
-            <div class="detalle-label">
-              <i class="fas fa-calendar-alt"></i> Fecha
+          <div class="detalle-row" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#fff"
+          }; margin-bottom: 0.4rem; padding: 0.5rem 0; display: flex; align-items: start; line-height: 1.2; border-bottom: 1px solid ${
+        isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+      };">
+            <div class="detalle-label" style="color: #87c947; min-width: 100px; font-weight: 500; display: flex; align-items: center; padding-left: 0.5rem;">
+              <i class="fas fa-calendar-alt" style="color: #87c947; margin-right: 0.5rem; margin-left: 0.25rem;"></i> Fecha
             </div>
-            <div class="detalle-value">${formatearFecha(
-              servicio.preferredDate,
-              true
-            )}</div>
+            <div class="detalle-value" style="color: ${
+              isDarkMode ? "#fff" : "#333"
+            }; flex: 1; padding-left: 0.5rem;">${formatearFecha(
+        servicio.preferredDate,
+        true
+      )}</div>
           </div>
 
           ${
             servicio.clientPhone
               ? `
-          <div class="detalle-row">
-            <div class="detalle-label">
-              <i class="fas fa-phone"></i> Teléfono
+          <div class="detalle-row" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#fff"
+          }; margin-bottom: 0.4rem; padding: 0.5rem 0; display: flex; align-items: start; line-height: 1.2; border-bottom: 1px solid ${
+                  isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+                };">
+            <div class="detalle-label" style="color: #87c947; min-width: 100px; font-weight: 500; display: flex; align-items: center; padding-left: 0.5rem;">
+              <i class="fas fa-phone" style="color: #87c947; margin-right: 0.5rem; margin-left: 0.25rem;"></i> Teléfono
             </div>
-            <div class="detalle-value">${servicio.clientPhone}</div>
+            <div class="detalle-value" style="color: ${
+              isDarkMode ? "#fff" : "#333"
+            }; flex: 1; padding-left: 0.5rem;">${servicio.clientPhone}</div>
           </div>`
               : ""
           }
@@ -119,11 +167,17 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
           ${
             servicio.clientEmail
               ? `
-          <div class="detalle-row">
-            <div class="detalle-label">
-              <i class="fas fa-envelope"></i> Email
+          <div class="detalle-row" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#fff"
+          }; margin-bottom: 0.4rem; padding: 0.5rem 0; display: flex; align-items: start; line-height: 1.2; border-bottom: 1px solid ${
+                  isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+                };">
+            <div class="detalle-label" style="color: #87c947; min-width: 100px; font-weight: 500; display: flex; align-items: center; padding-left: 0.5rem;">
+              <i class="fas fa-envelope" style="color: #87c947; margin-right: 0.5rem; margin-left: 0.25rem;"></i> Email
             </div>
-            <div class="detalle-value">${servicio.clientEmail}</div>
+            <div class="detalle-value" style="color: ${
+              isDarkMode ? "#fff" : "#333"
+            }; flex: 1; padding-left: 0.5rem;">${servicio.clientEmail}</div>
           </div>`
               : ""
           }
@@ -131,11 +185,17 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
           ${
             servicio.address
               ? `
-          <div class="detalle-row">
-            <div class="detalle-label">
-              <i class="fas fa-map-marker-alt"></i> Dirección
+          <div class="detalle-row" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#fff"
+          }; margin-bottom: 0.4rem; padding: 0.5rem 0; display: flex; align-items: start; line-height: 1.2; border-bottom: 1px solid ${
+                  isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+                };">
+            <div class="detalle-label" style="color: #87c947; min-width: 100px; font-weight: 500; display: flex; align-items: center; padding-left: 0.5rem;">
+              <i class="fas fa-map-marker-alt" style="color: #87c947; margin-right: 0.5rem; margin-left: 0.25rem;"></i> Dirección
             </div>
-            <div class="detalle-value">${servicio.address}</div>
+            <div class="detalle-value" style="color: ${
+              isDarkMode ? "#fff" : "#333"
+            }; flex: 1; padding-left: 0.5rem;">${servicio.address}</div>
           </div>`
               : ""
           }
@@ -143,69 +203,107 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
           ${
             servicio.descripcion
               ? `
-          <div class="detalle-row">
-            <div class="detalle-label">
-              <i class="fas fa-info-circle"></i> Descripción
+          <div class="detalle-row" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#fff"
+          }; margin-bottom: 0.4rem; padding: 0.5rem 0; display: flex; align-items: start; line-height: 1.2; border-bottom: 1px solid ${
+                  isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+                };">
+            <div class="detalle-label" style="color: #87c947; min-width: 100px; font-weight: 500; display: flex; align-items: center; padding-left: 0.5rem;">
+              <i class="fas fa-info-circle" style="color: #87c947; margin-right: 0.5rem; margin-left: 0.25rem;"></i> Descripción
             </div>
-            <div class="detalle-value">${servicio.descripcion}</div>
+            <div class="detalle-value" style="color: ${
+              isDarkMode ? "#fff" : "#333"
+            }; flex: 1; padding-left: 0.5rem;">${servicio.descripcion}</div>
           </div>`
               : ""
           }
         </div>
         <style>
-          .detalles-content {
-            padding: 0.5rem;
-            background: #f8f9fa;
-            border-radius: 4px;
-            font-size: 0.9rem;
-          }
-          .detalle-row {
-            display: flex;
-            align-items: start;
-            margin-bottom: 0.4rem;
-            line-height: 1.2;
-          }
-          .detalle-row:last-child {
-            margin-bottom: 0;
-          }
-          .detalle-label {
-            min-width: 90px;
-            color: #87c947;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-          }
-          .detalle-value {
-            flex: 1;
-            padding-left: 0.5rem;
-          }
+          /* Sobrescribir estilos para asegurar colores correctos */
           .swal2-popup {
             padding: 1rem !important;
+            background-color: ${isDarkMode ? "#1a1c22" : "#ffffff"} !important;
           }
+          
           .swal2-title {
             font-size: 1.1rem !important;
             padding: 0.5rem 0 !important;
             margin-bottom: 0.5rem !important;
+            color: ${isDarkMode ? "#fff" : "#004122"} !important;
           }
+          
           .swal2-html-container {
             margin: 0 !important;
+            color: ${isDarkMode ? "#fff" : "#333"} !important;
           }
+          
+          /* Asegurar fondo oscuro en detalles */
+          .detalles-content, 
+          .detalle-row, 
+          .detalle-row > * {
+            background-color: ${isDarkMode ? "#2c2e35" : "#fff"} !important;
+          }
+          
+          .detalle-label {
+            color: #87c947 !important;
+          }
+          
+          .detalle-value {
+            color: ${isDarkMode ? "#fff" : "#333"} !important;
+          }
+          
           .swal2-actions {
             margin-top: 1rem !important;
           }
+          
           .swal2-confirm {
+            background-color: #87c947 !important;
             margin: 0 !important;
+          }
+          
+          /* Estilos para el formulario */
+          #asignarForm {
+            margin-top: 1rem !important;
+          }
+          
+          /* Estilos específicos para los botones en este modal */
+          .swal-actions-container {
+            margin-top: 1.5rem !important;
+            background-color: ${isDarkMode ? "#1a1c22" : "#ffffff"} !important;
+            border-top: 1px solid ${
+              isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"
+            } !important;
+            padding-top: 1rem !important;
+          }
+          
+          /* Estilos para botón confirmar específico de este modal */
+          .custom-confirm-btn {
+            text-transform: uppercase !important;
+            letter-spacing: 0.03em !important;
+            font-weight: 500 !important;
+          }
+          
+          /* Estilos para botón cancelar específico de este modal */
+          .custom-cancel-btn {
+            text-transform: uppercase !important;
+            letter-spacing: 0.03em !important;
+            font-weight: 500 !important;
+            border: 1px solid ${isDarkMode ? "#adb5bd" : "#6c757d"} !important;
+            color: ${isDarkMode ? "#adb5bd" : "#6c757d"} !important;
           }
         </style>
       `,
       showCloseButton: true,
       confirmButtonText: "Cerrar",
       confirmButtonColor: "#87c947",
-      background: "#ffffff",
+      background: isDarkMode ? "#1a1c22" : "#ffffff",
+      color: isDarkMode ? "#ffffff" : "#333333",
       customClass: {
-        popup: "service-details-popup",
-        content: "service-details-content",
+        popup: `service-details-popup ${isDarkMode ? "swal-dark-theme" : ""}`,
+        content: `service-details-content ${
+          isDarkMode ? "swal-dark-content" : ""
+        }`,
+        htmlContainer: isDarkMode ? "swal-dark-content" : "",
       },
     });
   };
@@ -215,31 +313,58 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
   };
 
   const handleAsignar = async () => {
+    // Verificar si estamos en modo oscuro
+    const isDarkMode = document.body.classList.contains("dark-theme");
+
     const { value: formValues } = await mostrarAlerta({
       title: "Asignar Servicio al Calendario",
       html: `
-        <div class="detalles-servicio mb-2">
-          <p class="mb-1"><strong>Cliente:</strong> ${servicio.clientName}</p>
-          <p class="mb-1"><strong>Dirección:</strong> ${servicio.address}</p>
-          <p class="mb-1"><strong>Descripción:</strong> ${
-            servicio.descripcion
-          }</p>
+        <div class="detalles-servicio mb-2" style="background-color: ${
+          isDarkMode ? "#2c2e35" : "#f8f9fa"
+        }; color: ${
+        isDarkMode ? "#fff" : "#333"
+      }; border-radius: 4px; padding: 0.5rem;">
+          <p class="mb-1"><strong style="color: ${
+            isDarkMode ? "#87c947" : "#004122"
+          };">Cliente:</strong> <span style="color: ${
+        isDarkMode ? "#fff" : "#333"
+      };">${servicio.clientName}</span></p>
+          <p class="mb-1"><strong style="color: ${
+            isDarkMode ? "#87c947" : "#004122"
+          };">Dirección:</strong> <span style="color: ${
+        isDarkMode ? "#fff" : "#333"
+      };">${servicio.address}</span></p>
+          <p class="mb-1"><strong style="color: ${
+            isDarkMode ? "#87c947" : "#004122"
+          };">Descripción:</strong> <span style="color: ${
+        isDarkMode ? "#fff" : "#333"
+      };">${servicio.descripcion}</span></p>
         </div>
         <form id="asignarForm" style="margin-top: 0.5rem;">
           <div class="mb-2">
-            <label class="form-label mb-1">Técnico</label>
-            <select id="tecnicoSelect" class="form-control" required>
+            <label class="form-label mb-1" style="color: #87c947; font-weight: 500; font-size: 0.9rem;">Técnico</label>
+            <select id="tecnicoSelect" class="form-control" required style="background-color: ${
+              isDarkMode ? "#2c2e35" : "#fff"
+            }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
+        isDarkMode ? "#444" : "#ced4da"
+      }; padding: 0.4rem 0.75rem; font-size: 0.9rem;">
               <option value="">Seleccionar técnico...</option>
               ${technicians
                 .map(
                   (technician) =>
-                    `<option value="${technician._id}">${technician.name}</option>`
+                    `<option value="${
+                      technician._id
+                    }" style="background-color: ${
+                      isDarkMode ? "#2c2e35" : "#fff"
+                    }; color: ${isDarkMode ? "#fff" : "#333"};">${
+                      technician.name
+                    }</option>`
                 )
                 .join("")}
             </select>
           </div>
           <div class="mb-2">
-            <label class="form-label mb-1">Fecha</label>
+            <label class="form-label mb-1" style="color: #87c947; font-weight: 500; font-size: 0.9rem;">Fecha</label>
             <input 
               type="date" 
               id="fecha" 
@@ -249,14 +374,29 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
               value="${
                 new Date(servicio.preferredDate).toISOString().split("T")[0]
               }"
+              style="background-color: ${
+                isDarkMode ? "#2c2e35" : "#fff"
+              }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
+        isDarkMode ? "#444" : "#ced4da"
+      }; padding: 0.4rem 0.75rem; font-size: 0.9rem;"
             >
           </div>
           <div class="mb-2">
-            <label class="form-label mb-1">Hora de inicio</label>
-            <input type="time" id="horaInicio" class="form-control" required>
+            <label class="form-label mb-1" style="color: #87c947; font-weight: 500; font-size: 0.9rem;">Hora de inicio</label>
+            <input 
+              type="time" 
+              id="horaInicio" 
+              class="form-control" 
+              required
+              style="background-color: ${
+                isDarkMode ? "#2c2e35" : "#fff"
+              }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
+        isDarkMode ? "#444" : "#ced4da"
+      }; padding: 0.4rem 0.75rem; font-size: 0.9rem;"
+            >
           </div>
           <div class="mb-2">
-            <label class="form-label mb-1">Duración (minutos)</label>
+            <label class="form-label mb-1" style="color: #87c947; font-weight: 500; font-size: 0.9rem;">Duración (minutos)</label>
             <input 
               type="number" 
               id="duracion" 
@@ -265,48 +405,65 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
               min="30" 
               step="15" 
               value="${servicio.duracion || 60}"
+              style="background-color: ${
+                isDarkMode ? "#2c2e35" : "#fff"
+              }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
+        isDarkMode ? "#444" : "#ced4da"
+      }; padding: 0.4rem 0.75rem; font-size: 0.9rem;"
             >
           </div>
         </form>
         <style>
-          .detalles-servicio {
-            font-size: 0.9rem;
-            padding: 0.5rem;
-            background: #f8f9fa;
-            border-radius: 4px;
-          }
           .detalles-servicio p:last-child {
             margin-bottom: 0;
           }
-          .form-label {
-            color: #87c947;
-            font-weight: 500;
-            font-size: 0.9rem;
-          }
-          .form-control {
-            padding: 0.4rem 0.75rem;
-            font-size: 0.9rem;
-          }
           .swal2-popup {
             padding: 1rem;
+            background-color: ${isDarkMode ? "#1a1c22" : "#ffffff"} !important;
+            color: ${isDarkMode ? "#fff" : "#333"} !important;
           }
           .swal2-title {
             font-size: 1.2rem !important;
             padding: 0.5rem 0 !important;
+            color: ${isDarkMode ? "#fff" : "#004122"} !important;
           }
           .swal2-html-container {
             margin: 0.5rem 0 !important;
+            color: ${isDarkMode ? "#fff" : "#333"} !important;
           }
           .swal2-actions {
             margin: 1rem 0 0 0 !important;
           }
+          
+          /* Asegurar que los select y sus opciones respeten el tema */
+          .swal2-popup select,
+          .swal2-popup .form-control {
+            background-color: ${isDarkMode ? "#2c2e35" : "#fff"} !important;
+            color: ${isDarkMode ? "#fff" : "#333"} !important;
+            border-color: ${isDarkMode ? "#444" : "#ced4da"} !important;
+          }
+          
+          .swal2-popup select option {
+            background-color: ${isDarkMode ? "#2c2e35" : "#fff"} !important;
+            color: ${isDarkMode ? "#fff" : "#333"} !important;
+          }
         </style>
       `,
+      background: isDarkMode ? "#1a1c22" : "#ffffff",
+      color: isDarkMode ? "#ffffff" : "#333333",
+      customClass: {
+        popup: isDarkMode ? "swal-dark-theme" : "",
+        title: isDarkMode ? "swal-dark-title" : "",
+        htmlContainer: isDarkMode ? "swal-dark-content" : "",
+        confirmButton: "swal-confirm-btn custom-confirm-btn",
+        cancelButton: "swal-cancel-btn custom-cancel-btn",
+        actions: "swal-actions-container",
+      },
       showCancelButton: true,
       confirmButtonText: "Asignar",
       confirmButtonColor: "#87c947",
       cancelButtonText: "Cancelar",
-      cancelButtonColor: "#e74c3c",
+      cancelButtonColor: isDarkMode ? "transparent" : "#6c757d",
       preConfirm: () => {
         const tecnicoId = document.getElementById("tecnicoSelect").value;
         const fecha = document.getElementById("fecha").value;
@@ -364,8 +521,20 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
     }
   };
 
+  // Determinar si estamos en modo oscuro
+  const isDarkMode = document.body.classList.contains("dark-theme");
+
   return (
-    <div className="servicio-card" onClick={handleClick}>
+    <div
+      className="servicio-card"
+      onClick={handleClick}
+      style={{
+        backgroundColor: isDarkMode ? "#2c2e35" : "#ffffff",
+        borderColor: "#c5f198",
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+        transform: "none",
+      }}
+    >
       <div className="d-flex justify-content-between align-items-start">
         <div className="contenido-servicio">
           <h5>
@@ -397,14 +566,14 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
             <i className="fas fa-info-circle"></i>
           </button>
           <button
-            className="btn btn-link text-danger p-0 eliminar-servicio"
+            className="eliminar-servicio"
             onClick={(e) => {
               e.stopPropagation();
               onEliminar();
             }}
             title="Eliminar servicio"
           >
-            <i className="fas fa-times-circle"></i>
+            <i className="fas fa-times"></i>
           </button>
         </div>
       </div>

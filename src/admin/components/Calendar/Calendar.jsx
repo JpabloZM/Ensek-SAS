@@ -17,6 +17,10 @@ import { serviceService } from "../../../client/services/serviceService";
 import { userService } from "../../../client/services/userService";
 import "./Calendar.css";
 import "./styles/forms.css";
+import "./styles/service-card-override.css"; // Asegurar que estos estilos se apliquen al final
+import "./styles/add-technician-form.css"; // Estilos específicos para el formulario de agregar técnico
+import "./styles/edit-technician-form.css"; // Estilos específicos para el formulario de editar técnico
+import "./styles/dark-mode-form-fields.css"; // Estilos para campos de formulario en modo oscuro
 
 const Calendar = ({ darkMode = false }) => {
   const { services, loading, error, updateService, getAllServices } =
@@ -55,34 +59,14 @@ const Calendar = ({ darkMode = false }) => {
 
     fetchTechnicians();
   }, []); // Solo cargar técnicos una vez al montar
-  // Efecto para procesar servicios cuando cambian
-  useEffect(() => {
-    console.log("Processing services effect...", {
-      loading,
-      servicesAvailable: Boolean(services),
-      servicesLength: services?.length,
-    });
-
-    if (loading) {
-      console.log("Still loading services...");
-      return;
-    }
-
-    if (!services || !Array.isArray(services)) {
-      console.log("No valid services array");
-      setServiciosPendientes([]);
-      setEventos([]);
-      setLocalServices([]); // Limpiar servicios locales
-      return;
-    }
-
-    console.log("Processing services:", services);
-
+  // Function to process services data
+  const processServices = useCallback((servicesData) => {
+    console.log("Processing services data:", servicesData);
     // Actualizar servicios locales
-    setLocalServices(services);
+    setLocalServices(servicesData);
 
     // Procesar servicios pendientes
-    const pendingServices = services
+    const pendingServices = servicesData
       .filter((service) => service.status === "pending")
       .map((service) => ({
         _id: service._id,
@@ -105,31 +89,111 @@ const Calendar = ({ darkMode = false }) => {
     setServiciosPendientes(pendingServices);
 
     // Actualizar eventos del calendario
-    const calendarEvents = services
-      .filter(
-        (service) =>
-          service.status === "pending" || service.status === "completed"
-      )
-      .map((service) => ({
-        id: service._id,
-        title: service.serviceType,
-        start: new Date(service.preferredDate).toISOString(),
-        end: new Date(service.preferredDate).toISOString(),
-        extendedProps: {
-          status: service.status,
-          description: service.description,
-          clientName: service.name,
-          clientEmail: service.email,
-          clientPhone: service.phone,
-          address: service.address,
-        },
-      }));
+    const calendarEvents = servicesData
+      .filter((service) => {
+        // Include confirmed services that have technician assigned
+        if (service.status === "confirmed" && service.technician) {
+          return true;
+        }
+        // Include pending services that need to be displayed on the calendar
+        if (service.status === "pending") {
+          return true;
+        }
+        // Include completed services
+        if (service.status === "completed") {
+          return true;
+        }
+        return false;
+      })
+      .map((service) => {
+        // Create a properly formatted calendar event
+        const event = {
+          id: service._id,
+          title: service.serviceType,
+          // Use scheduledStart/End for confirmed services, preferredDate for pending
+          start: service.scheduledStart || service.preferredDate,
+          end:
+            service.scheduledEnd ||
+            new Date(
+              new Date(service.preferredDate).getTime() + 60 * 60 * 1000
+            ).toISOString(),
+          // Set resourceId only for confirmed services
+          ...(service.technician && { resourceId: service.technician }),
+          backgroundColor:
+            service.status === "confirmed" ? "#87c947" : "#ffd54f",
+          borderColor: service.status === "confirmed" ? "#87c947" : "#ffd54f",
+          extendedProps: {
+            estado: service.status === "confirmed" ? "confirmado" : "pendiente",
+            status: service.status,
+            descripcion: service.description,
+            description: service.description,
+            cliente: service.name,
+            clientName: service.name,
+            telefono: service.phone,
+            clientPhone: service.phone,
+            email: service.email,
+            clientEmail: service.email,
+            direccion: service.address,
+            address: service.address,
+          },
+        };
+        console.log("Created calendar event:", event);
+        return event;
+      });
 
     console.log("Calendar events:", calendarEvents);
     setEventos(calendarEvents);
-  }, [services, loading, error]);
+  }, []);
+
+  // Efecto para procesar servicios cuando cambian
+  useEffect(() => {
+    console.log("Processing services effect...", {
+      loading,
+      servicesAvailable: Boolean(services),
+      servicesLength: services?.length,
+    });
+
+    if (loading) {
+      console.log("Still loading services...");
+      return;
+    }
+
+    // Check for cached services if none are available
+    if (!services || !Array.isArray(services) || services.length === 0) {
+      console.log("No valid services array, checking cache...");
+      const cachedServices = localStorage.getItem("cachedServices");
+
+      if (cachedServices) {
+        try {
+          const parsedServices = JSON.parse(cachedServices);
+          console.log("Found cached services:", parsedServices);
+
+          if (Array.isArray(parsedServices) && parsedServices.length > 0) {
+            console.log("Using cached services for calendar");
+            processServices(parsedServices);
+            return;
+          }
+        } catch (parseError) {
+          console.error("Error parsing cached services:", parseError);
+        }
+      }
+
+      setServiciosPendientes([]);
+      setEventos([]);
+      setLocalServices([]); // Limpiar servicios locales
+      return;
+    }
+
+    console.log("Processing services:", services);
+
+    // Process services data
+    processServices(services);
+  }, [services, loading, processServices]);
 
   const handleAgregarTecnico = async () => {
+    // Verificar si estamos en modo oscuro
+    const isDarkMode = document.body.classList.contains("dark-theme");
+
     const { value: formValues } = await mostrarAlerta({
       title: "Agregar Técnico",
       html: `        <style>
@@ -141,8 +205,8 @@ const Calendar = ({ darkMode = false }) => {
             padding: 0.75rem 1rem;
             border: 2px solid #87c947 !important;
             border-radius: 8px !important;
-            background-color: #ffffff !important;
-            color: #004122 !important;
+            background-color: ${isDarkMode ? "#2c2e35" : "#ffffff"} !important;
+            color: ${isDarkMode ? "#ffffff" : "#004122"} !important;
             font-size: 1rem;
             width: 100%;
             margin-top: 0.25rem;
@@ -154,8 +218,8 @@ const Calendar = ({ darkMode = false }) => {
             outline: none;
           }
           #tecnicoForm .form-control::placeholder {
-            color: #a0a0a0;
-            opacity: 0.8;
+            color: ${isDarkMode ? "#aaa" : "#a0a0a0"};
+            opacity: ${isDarkMode ? "0.7" : "0.8"};
           }
           #tecnicoForm .form-label {
             font-weight: 600 !important;
@@ -167,10 +231,13 @@ const Calendar = ({ darkMode = false }) => {
             position: relative !important;
             transform: none !important;
             pointer-events: auto !important;
+            background-color: ${isDarkMode ? "#1a1c22" : "#ffffff"} !important;
+            padding: 0 !important;
           }
           .input-with-icon {
             position: relative;
             margin-top: 0.5rem;
+            background-color: ${isDarkMode ? "#1a1c22" : "#ffffff"} !important;
           }
           .input-icon {
             position: absolute;
@@ -182,12 +249,16 @@ const Calendar = ({ darkMode = false }) => {
           }
           .swal2-html-container {
             margin: 1rem 0 !important;
+            background-color: ${isDarkMode ? "#1a1c22" : "#ffffff"} !important;
           }
           .swal2-popup {
             padding: 1.5rem !important;
+            background-color: ${isDarkMode ? "#1a1c22" : "#ffffff"} !important;
           }
           #tecnicoForm {
             text-align: left !important;
+            background-color: ${isDarkMode ? "#1a1c22" : "#ffffff"} !important;
+            color: ${isDarkMode ? "#ffffff" : "#004122"} !important;
           }
           #tecnicoForm .form-label {
             transition: none !important;
@@ -199,7 +270,7 @@ const Calendar = ({ darkMode = false }) => {
             color: #87c947 !important;
           }
         </style>
-        <form id="tecnicoForm" class="text-left">
+        <form id="tecnicoForm" class="text-left dark-mode-form-fields">
           <div class="form-group">
             <label class="form-label">Nombre del técnico</label>
             <div class="input-with-icon">
@@ -245,12 +316,13 @@ const Calendar = ({ darkMode = false }) => {
       confirmButtonText: "Guardar",
       cancelButtonText: "Cancelar",
       confirmButtonColor: "#87c947",
-      cancelButtonColor: "#e74c3c",
-      background: "#ffffff",
-      color: "#004122",
+      cancelButtonColor: isDarkMode ? "#444" : "#e74c3c",
+      background: isDarkMode ? "#1a1c22" : "#ffffff",
+      color: isDarkMode ? "#ffffff" : "#004122",
       customClass: {
         confirmButton: "btn-confirm",
         cancelButton: "btn-cancel",
+        popup: isDarkMode ? "dark-theme" : "",
       },
       preConfirm: () => {
         const nombre = document.getElementById("nombreTecnico").value;
@@ -681,6 +753,9 @@ const Calendar = ({ darkMode = false }) => {
         tecnicoActual
       );
 
+      // Verificar si estamos en modo oscuro
+      const isDarkMode = document.body.classList.contains("dark-theme");
+
       const { value: formValues } = await mostrarAlerta({
         title: "Editar Técnico",
         html: `
@@ -689,41 +764,61 @@ const Calendar = ({ darkMode = false }) => {
               margin-bottom: 1.5rem;
               position: relative;
             }
-            .form-control {
+            #editTecnicoForm .form-control {
               padding: 0.75rem 1rem;
               border: 2px solid #87c947 !important;
               border-radius: 8px !important;
-              background-color: #ffffff !important;
-              color: #004122 !important;
+              background-color: ${
+                isDarkMode ? "#2c2e35" : "#ffffff"
+              } !important;
+              color: ${isDarkMode ? "#ffffff" : "#004122"} !important;
               font-size: 1rem;
               width: 100%;
               margin-top: 0.25rem;
               box-shadow: none !important;
             }
-            .form-control:focus {
+            #editTecnicoForm .form-control:focus {
               border-color: #87c947 !important;
               box-shadow: 0 0 0 0.2rem rgba(135, 201, 71, 0.25) !important;
               outline: none;
             }
-            .form-label {
+            #editTecnicoForm .form-control::placeholder {
+              color: ${isDarkMode ? "#aaa" : "#a0a0a0"};
+              opacity: ${isDarkMode ? "0.7" : "0.8"};
+            }
+            #editTecnicoForm            .form-label {
               font-weight: 600 !important;
               color: #87c947 !important;
               display: block !important;
               font-size: 1rem !important;
               margin-bottom: 0.5rem !important;
+              background-color: ${
+                isDarkMode ? "#1a1c22" : "#ffffff"
+              } !important;
+              padding: 0 !important;
             }
             .input-with-icon {
               position: relative;
+              background-color: ${
+                isDarkMode ? "#1a1c22" : "#ffffff"
+              } !important;
             }
             .input-icon {
               position: absolute;
               right: 12px;
               top: 50%;
               transform: translateY(-50%);
-              color: #87c947;
+              color: #87c947 !important;
+            }
+            #editTecnicoForm {
+              text-align: left !important;
+              background-color: ${
+                isDarkMode ? "#1a1c22" : "#ffffff"
+              } !important;
+              color: ${isDarkMode ? "#ffffff" : "#004122"} !important;
             }
           </style>
-          <form id="editTecnicoForm">
+          <form id="editTecnicoForm" class="text-left dark-mode-form-fields">
             <div class="form-group">
               <label class="form-label">Nombre del Técnico</label>
               <div class="input-with-icon">                <input 
@@ -771,7 +866,12 @@ const Calendar = ({ darkMode = false }) => {
         confirmButtonText: "Guardar",
         cancelButtonText: "Cancelar",
         confirmButtonColor: "#87c947",
-        cancelButtonColor: "#e74c3c",
+        cancelButtonColor: isDarkMode ? "#444" : "#e74c3c",
+        background: isDarkMode ? "#1a1c22" : "#ffffff",
+        color: isDarkMode ? "#ffffff" : "#004122",
+        customClass: {
+          popup: isDarkMode ? "dark-theme" : "",
+        },
         preConfirm: () => {
           const nombre = document.getElementById("nombreTecnico").value;
           const email = document.getElementById("emailTecnico").value;
@@ -1578,23 +1678,113 @@ const Calendar = ({ darkMode = false }) => {
         throw new Error("Invalid service ID");
       }
 
-      // Update service in MongoDB
-      const updatedService = await serviceService.updateService(realServiceId, {
-        status: "confirmed",
+      console.log("Assigning service to calendar event:", {
+        serviceId: realServiceId,
         technician: eventoCalendario.resourceId,
-        scheduledStart: eventoCalendario.start,
-        scheduledEnd: eventoCalendario.end,
+        start: eventoCalendario.start,
+        end: eventoCalendario.end,
       });
 
-      // Update UI state
-      setEventos((prevEventos) => [...prevEventos, eventoCalendario]);
+      // First convert the service request to a service if needed
+      // This will create a new service record in the services collection
+      let updatedService;
+      try {
+        console.log("Converting service request to service...");
+        const conversionResult =
+          await serviceService.convertServiceRequestToService(
+            realServiceId,
+            eventoCalendario.resourceId
+          );
+
+        updatedService = conversionResult.service;
+        console.log("Service request converted to service:", updatedService);
+      } catch (conversionError) {
+        console.log(
+          "Not a service request or conversion failed. Falling back to regular update:",
+          conversionError
+        );
+
+        // If conversion fails, fall back to the regular update
+        updatedService = await serviceService.updateService(realServiceId, {
+          status: "confirmed",
+          technician: eventoCalendario.resourceId,
+          scheduledStart: eventoCalendario.start,
+          scheduledEnd: eventoCalendario.end,
+        });
+      }
+
+      console.log("Service successfully updated:", updatedService);
+
+      // Create a properly formatted calendar event with required properties
+      const formattedEvent = {
+        id: updatedService._id,
+        title: updatedService.serviceType,
+        start: updatedService.scheduledStart || updatedService.preferredDate,
+        end:
+          updatedService.scheduledEnd ||
+          new Date(
+            new Date(updatedService.preferredDate).getTime() + 60 * 60 * 1000
+          ).toISOString(),
+        resourceId: updatedService.technician,
+        backgroundColor: "#87c947",
+        borderColor: "#87c947",
+        extendedProps: {
+          estado: "confirmado",
+          status: "confirmed",
+          descripcion: updatedService.description,
+          description: updatedService.description,
+          cliente: updatedService.name,
+          clientName: updatedService.name,
+          telefono: updatedService.phone,
+          clientPhone: updatedService.phone,
+          email: updatedService.email,
+          clientEmail: updatedService.email,
+          direccion: updatedService.address,
+          address: updatedService.address,
+        },
+      };
+
+      console.log("Formatted event for calendar:", formattedEvent);
+
+      // Update UI state with the properly formatted event
+      setEventos((prevEventos) => {
+        // Remove any existing event with the same ID to avoid duplicates
+        const filteredEvents = prevEventos.filter(
+          (e) => e.id !== formattedEvent.id
+        );
+        return [...filteredEvents, formattedEvent];
+      });
+
       setServiciosPendientes((prevServicios) =>
-        prevServicios.filter((s) => s.id !== servicioId)
+        prevServicios.filter(
+          (s) => s.id !== servicioId && s._id !== realServiceId
+        )
       );
 
-      // Save events to localStorage for now (this can be moved to MongoDB later)
-      const eventosActualizados = [...eventos, eventoCalendario];
+      // Save events to localStorage with properly formatted event
+      const eventosActualizados = eventos.filter(
+        (e) => e.id !== formattedEvent.id
+      );
+      eventosActualizados.push(formattedEvent);
       localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
+
+      // Update cached services to ensure persistence between page reloads
+      const cachedServices = localStorage.getItem("cachedServices");
+      if (cachedServices) {
+        try {
+          const parsedServices = JSON.parse(cachedServices);
+          const updatedCache = parsedServices.map((service) =>
+            service._id === realServiceId ? updatedService : service
+          );
+          localStorage.setItem("cachedServices", JSON.stringify(updatedCache));
+          console.log("Cache updated after service assignment");
+        } catch (cacheError) {
+          console.error("Error updating service cache:", cacheError);
+        }
+      }
+
+      // Force a refresh of service data in the background
+      getAllServices(true);
 
       return true;
     } catch (error) {
@@ -1619,27 +1809,68 @@ const Calendar = ({ darkMode = false }) => {
 
   // Función para validar eventos
   const validateEvents = (rawEvents) => {
+    console.log("Validating events:", rawEvents);
+    if (!Array.isArray(rawEvents)) {
+      console.warn("Expected events array, got:", typeof rawEvents);
+      return [];
+    }
+
     return rawEvents.filter((event) => {
-      return (
-        event &&
-        event.title &&
+      if (!event) {
+        console.warn("Found null or undefined event");
+        return false;
+      }
+
+      // Check for required properties
+      const hasTitle = event.title && typeof event.title === "string";
+      const hasStart =
         event.start &&
-        typeof event.title === "string" &&
-        (event.start instanceof Date || typeof event.start === "string")
-      );
+        (event.start instanceof Date || typeof event.start === "string");
+
+      // If missing required properties, log for debugging
+      if (!hasTitle || !hasStart) {
+        console.warn("Invalid event skipped:", {
+          id: event.id,
+          hasTitle,
+          hasStart,
+          event,
+        });
+        return false;
+      }
+
+      // For events with resourceId (assigned to technicians), make sure it exists
+      if (event.resourceId && typeof event.resourceId !== "string") {
+        console.warn("Invalid resourceId for event:", event);
+        return false;
+      }
+
+      return true;
     });
   };
 
   // Manejador de eventos montados
   const handleEventDidMount = (info) => {
     try {
+      console.log("Event mounted:", {
+        id: info.event.id,
+        title: info.event.title,
+        resourceId: info.event.getResources().map((r) => r.id),
+        start: info.event.start,
+        extendedProps: info.event.extendedProps,
+      });
+
       // Validar que el evento tenga las propiedades necesarias
       if (!info.event.display) {
         info.event.setDisplay("auto");
       }
 
       // Aplicar clase de estado si no está presente
-      const estado = info.event.extendedProps?.estado;
+      const estado =
+        info.event.extendedProps?.estado ||
+        (info.event.extendedProps?.status === "confirmed"
+          ? "confirmado"
+          : "pendiente");
+
       if (estado) {
         const claseEstado = `estado-${estado}`;
         if (!info.el.classList.contains(claseEstado)) {
@@ -1648,16 +1879,51 @@ const Calendar = ({ darkMode = false }) => {
 
         // Establecer el color de fondo basado en el estado si no se ha establecido
         if (!info.event.backgroundColor) {
-          info.event.setProp("backgroundColor", getColorByEstado(estado));
-          info.event.setProp("borderColor", getColorByEstado(estado));
+          const color = getColorByEstado(estado);
+          info.event.setProp("backgroundColor", color);
+          info.event.setProp("borderColor", color);
           info.event.setProp("textColor", "white");
         }
+      }
+
+      // Add custom CSS classes for better visibility
+      if (info.event.getResources().length > 0) {
+        info.el.classList.add("assigned-event");
+      }
+
+      // Fix for making sure technician events are visible
+      if (
+        info.event.getResources().length > 0 &&
+        !info.el.classList.contains("fc-event-assigned")
+      ) {
+        info.el.classList.add("fc-event-assigned");
       }
     } catch (error) {
       console.error("Error al montar evento:", error);
       console.log("Evento problemático:", info.event);
     }
   };
+
+  // Debug function to monitor calendar events
+  useEffect(() => {
+    console.log("Calendar events updated:", eventos);
+
+    // Check for events with technicians assigned
+    const assignedEvents = eventos.filter((event) => event.resourceId);
+    console.log("Events assigned to technicians:", assignedEvents);
+
+    // Check for any potential issues with events
+    const issueEvents = eventos.filter(
+      (event) =>
+        !event.title ||
+        !event.start ||
+        (event.resourceId && typeof event.resourceId !== "string")
+    );
+
+    if (issueEvents.length > 0) {
+      console.warn("Found events with potential issues:", issueEvents);
+    }
+  }, [eventos]);
 
   // Función para manejar el clic derecho en un servicio
   const handleContextMenu = (e, servicio) => {
@@ -1927,6 +2193,34 @@ const Calendar = ({ darkMode = false }) => {
     };
   }, []);
 
+  // Aplicar la licencia cuando el componente se monte - enfoque más sencillo y seguro
+  useEffect(() => {
+    // Eliminar solo el mensaje de licencia específico
+    const removeLicenseMessage = () => {
+      const licenseMessages = document.querySelectorAll(".fc-license-message");
+      if (licenseMessages.length > 0) {
+        console.log(
+          `Ocultando ${licenseMessages.length} mensaje(s) de licencia`
+        );
+        licenseMessages.forEach((msg) => {
+          if (msg) {
+            msg.style.display = "none";
+          }
+        });
+      }
+    };
+
+    // Aplicar después de un breve retraso para asegurarnos de que el calendario se haya renderizado
+    const timeoutId = setTimeout(removeLicenseMessage, 1000);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, []);
+
+  // No necesitamos el código anterior que trataba de modificar window.FC
+  // ya que hemos establecido la licencia de varias otras maneras
+
   return (
     <div className={`calendar-container ${darkMode ? "dark-theme" : ""}`}>
       <Sidebar
@@ -1946,6 +2240,8 @@ const Calendar = ({ darkMode = false }) => {
               resourceTimeGridPlugin,
               multiMonthPlugin,
             ]}
+            schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
+            licenseKey="GPL-My-Project-Is-Open-Source"
             initialView="resourceTimeGridDay"
             headerToolbar={{
               left: "prev,next today",

@@ -156,9 +156,41 @@ export const updateServiceRequestStatus = async (req, res) => {
 
 export const getServices = async (req, res) => {
   try {
-    const services = await ServiceModel.find().sort({ createdAt: -1 });
-    res.json(services);
+    // Get both confirmed services and pending service requests
+    const [services, serviceRequests] = await Promise.all([
+      ServiceModel.find().sort({ createdAt: -1 }),
+      ServiceRequest.find({ status: "pending" }).sort({ createdAt: -1 }),
+    ]);
+
+    // Format service requests to match service structure for frontend compatibility
+    const formattedRequests = serviceRequests.map((req) => ({
+      _id: req._id,
+      name: req.name,
+      email: req.email,
+      phone: req.phone,
+      document: "1234567890", // Default document for service requests
+      address: req.address,
+      serviceType: req.serviceType,
+      description: req.description,
+      preferredDate: req.preferredDate,
+      status: req.status,
+      technician: null,
+      createdAt: req.createdAt,
+      updatedAt: req.updatedAt,
+      isServiceRequest: true, // Flag to identify this is from ServiceRequest collection
+    }));
+
+    // Combine both lists and sort by creation date
+    const allServices = [...services, ...formattedRequests].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    console.log(
+      `Returning ${services.length} services and ${formattedRequests.length} service requests`
+    );
+    res.json(allServices);
   } catch (error) {
+    console.error("Error fetching services:", error);
     res.status(500).json({
       message: "Error al obtener los servicios",
       error: error.message,
@@ -171,13 +203,19 @@ export const getServices = async (req, res) => {
 // @access  Public
 export const createService = async (req, res) => {
   try {
-    console.log('Creating service with data:', req.body);
-    
+    console.log(
+      "Creating service (redirected to service request) with data:",
+      req.body
+    );
+
+    // We'll now create this as a service request instead of a direct service
+    // This change allows all initial service entries to go to the serviceRequests table
+
     const {
       name,
       email,
       phone,
-      document,
+      document, // We'll store this but it's not used in ServiceRequest
       address,
       serviceType,
       description,
@@ -185,47 +223,60 @@ export const createService = async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    const requiredFields = ['name', 'email', 'phone', 'document', 'address', 'serviceType', 'preferredDate'];
-    const missingFields = requiredFields.filter(field => !req.body[field]);
-    
+    const requiredFields = [
+      "name",
+      "email",
+      "phone",
+      "address",
+      "serviceType",
+      "preferredDate",
+    ];
+    const missingFields = requiredFields.filter((field) => !req.body[field]);
+
     if (missingFields.length > 0) {
       return res.status(400).json({
         success: false,
-        message: 'Faltan campos requeridos',
-        missingFields
+        message: "Faltan campos requeridos",
+        missingFields,
       });
     }
 
-    // Create service
-    const service = await ServiceModel.create({
+    // Create service request instead of direct service
+    const serviceRequest = await ServiceRequest.create({
+      user: req.user ? req.user._id : null,
       name,
       email,
       phone,
-      document,
       address,
       serviceType,
       description,
       preferredDate: new Date(preferredDate),
-      status: 'pending'
+      status: "pending",
+      notes: document ? `Documento: ${document}` : "",
     });
 
-    if (service) {
+    if (serviceRequest) {
       res.status(201).json({
         success: true,
-        service
+        // Return with a service property for backward compatibility
+        service: {
+          ...serviceRequest.toJSON(),
+          _id: serviceRequest._id,
+          id: serviceRequest._id,
+        },
       });
     } else {
       res.status(400).json({
         success: false,
-        message: "Invalid service data"
+        message: "Invalid service data",
       });
     }
   } catch (error) {
-    console.error('Error creating service:', error);
+    console.error("Error creating service:", error);
     res.status(500).json({
       success: false,
       message: "Error al crear el servicio",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -359,7 +410,6 @@ export const assignTechnicianToService = async (req, res) => {
   try {
     const { technicianId } = req.body;
 
-    // Validate and convert technicianId to ObjectId
     const technicianObjectId = new mongoose.Types.ObjectId(technicianId);
 
     const service = await ServiceModel.findByIdAndUpdate(
@@ -376,6 +426,58 @@ export const assignTechnicianToService = async (req, res) => {
   } catch (error) {
     res.status(400).json({
       message: "Error al asignar técnico al servicio",
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Convert a service request to a confirmed service
+// @route   PUT /api/services/requests/:id/convert
+// @access  Private/Admin
+export const convertServiceRequestToService = async (req, res) => {
+  try {
+    const serviceRequest = await ServiceRequest.findById(req.params.id);
+
+    if (!serviceRequest) {
+      return res.status(404).json({
+        success: false,
+        message: "Service request not found",
+      });
+    }
+
+    // Create a new service from the service request data
+    const newService = new ServiceModel({
+      name: serviceRequest.name,
+      email: serviceRequest.email,
+      phone: serviceRequest.phone,
+      document: req.body.document || "1234567890", // Default document if not provided
+      address: serviceRequest.address,
+      serviceType: serviceRequest.serviceType,
+      description: serviceRequest.description,
+      preferredDate: serviceRequest.preferredDate,
+      status: "confirmed",
+      technician: req.body.technician || null,
+    });
+
+    // Save the new service
+    const savedService = await newService.save();
+
+    // Update the service request status to "converted"
+    serviceRequest.status = "completed";
+    serviceRequest.notes = `Converted to service ID: ${savedService._id}`;
+    await serviceRequest.save();
+
+    res.json({
+      success: true,
+      message: "Service request converted to service",
+      serviceRequest,
+      service: savedService,
+    });
+  } catch (error) {
+    console.error("Error converting service request:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
       error: error.message,
     });
   }

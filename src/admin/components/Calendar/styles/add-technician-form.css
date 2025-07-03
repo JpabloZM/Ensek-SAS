@@ -1,0 +1,99 @@
+/* 
+  Estilos específicos para el formulario de agregar técnico
+  Este archivo solo afecta al formulario que aparece en el modal de agregar técnico
+*/
+
+/* Estilos para el modo oscuro - formulario de agregar técnico */
+body.dark-theme .swal2-popup #tecnicoForm .form-control,
+body.dark-theme .swal2-popup #editTecnicoForm .form-control {
+  background-color: #2c2e35 !important;
+  color: #ffffff !important;
+  border-color: #444 !important;
+}
+
+/* Placeholder en modo oscuro */
+body.dark-theme .swal2-popup #tecnicoForm .form-control::placeholder,
+body.dark-theme .swal2-popup #editTecnicoForm .form-control::placeholder {
+  color: #aaa !important;
+  opacity: 0.7 !important;
+}
+
+/* Color del contenedor del formulario */
+body.dark-theme .swal2-popup .form-group {
+  background-color: #1a1c22 !important;
+}
+
+/* Asegurar que el popup completo tenga el color correcto */
+body.dark-theme .swal2-popup {
+  background-color: #1a1c22 !important;
+}
+
+/* Color del contenedor en modo oscuro */
+body.dark-theme .swal2-popup #tecnicoForm,
+body.dark-theme .swal2-popup #editTecnicoForm {
+  background-color: #1a1c22 !important;
+  color: #ffffff !important;
+}
+
+/* Estilos para los contenedores de los campos en modo oscuro */
+body.dark-theme .swal2-popup #tecnicoForm .input-with-icon,
+body.dark-theme .swal2-popup #editTecnicoForm .input-with-icon {
+  background-color: #1a1c22 !important;
+}
+
+/* Color de texto en etiquetas en modo oscuro */
+body.dark-theme .swal2-popup #tecnicoForm .form-label,
+body.dark-theme .swal2-popup #editTecnicoForm .form-label {
+  color: #87c947 !important;
+  background-color: #1a1c22 !important;
+  padding: 0 !important;
+  margin-bottom: 0.5rem !important;
+  font-weight: 600 !important;
+  display: block !important;
+}
+
+/* Estilos generales para clases reusables */
+.dark-mode-form-fields input,
+.dark-mode-form-fields select,
+.dark-mode-form-fields textarea {
+  background-color: #2c2e35 !important;
+  color: #ffffff !important;
+  border-color: #444 !important;
+}
+
+/* Estilos generales para SweetAlert2 en modo oscuro */
+body.dark-theme .swal2-popup .swal2-title,
+body.dark-theme .swal2-popup .swal2-html-container,
+body.dark-theme .swal2-popup .swal2-content {
+  color: #ffffff !important;
+}
+
+/* Botones en modo oscuro */
+body.dark-theme .swal2-popup .swal2-cancel {
+  background-color: #444 !important;
+  color: #ffffff !important;
+}
+
+/* Estilos adicionales para el contenedor y el contenido en modo oscuro */
+body.dark-theme .swal2-popup .swal2-html-container {
+  background-color: #1a1c22 !important;
+  color: #ffffff !important;
+}
+
+/* Asegurar que los botones tengan el color correcto */
+body.dark-theme .swal2-popup .swal2-confirm {
+  background-color: #87c947 !important;
+  color: white !important;
+}
+
+/* Color específico para el botón cancelar en modo oscuro */
+body.dark-theme .swal2-popup .swal2-cancel {
+  background-color: #444 !important;
+  color: white !important;
+}
+
+/* Estilos para el título del modal en modo oscuro */
+body.dark-theme .swal2-popup .swal2-title {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}

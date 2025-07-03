@@ -28,18 +28,83 @@ const getAuthConfig = () => {
   };
 };
 
-// Get all services
+// Get all services with improved caching
 const getServices = async () => {
   try {
+    const currentTime = Date.now();
+    const elapsedTime = currentTime - lastRequestTime;
+
+    // Check if we need to throttle and use cached data temporarily
+    if (elapsedTime < MIN_REQUEST_INTERVAL && pendingRequest) {
+      console.log(
+        `Request throttled (${elapsedTime}ms < ${MIN_REQUEST_INTERVAL}ms). Using pending request.`
+      );
+      return pendingRequest;
+    }
+
+    // Check if we need to throttle but have cached data
+    if (elapsedTime < MIN_REQUEST_INTERVAL) {
+      const cachedServices = localStorage.getItem("cachedServices");
+      if (cachedServices) {
+        console.log(`Request throttled. Using cached services.`);
+        const parsed = JSON.parse(cachedServices);
+
+        // Start a background refresh for next time
+        pendingRequest = refreshServicesInBackground();
+
+        return parsed;
+      }
+    }
+
+    // Update the last request time
+    lastRequestTime = currentTime;
+
+    // Make the actual API call
     const config = getAuthConfig();
     console.log("Fetching services with config:", config);
 
     const response = await axios.get(API_URL, config);
     console.log("Services fetched:", response.data);
+
+    // Cache the results
+    localStorage.setItem("cachedServices", JSON.stringify(response.data));
+    pendingRequest = null;
+
     return response.data;
   } catch (error) {
     console.error("Error al obtener servicios:", error);
+
+    // If fetch fails, try to use cached data
+    const cachedServices = localStorage.getItem("cachedServices");
+    if (cachedServices) {
+      console.log("Using cached services after fetch error");
+      return JSON.parse(cachedServices);
+    }
+
     throw error.response?.data?.message || error.message || "Error desconocido";
+  }
+};
+
+// Background refresh function to update cached services
+const refreshServicesInBackground = async () => {
+  try {
+    const config = getAuthConfig();
+    const response = await axios.get(API_URL, config);
+    console.log("Background refresh successful:", response.data);
+
+    // Cache the results
+    localStorage.setItem("cachedServices", JSON.stringify(response.data));
+    return response.data;
+  } catch (error) {
+    console.error("Background refresh error:", error);
+
+    // Return cached data if available
+    const cachedServices = localStorage.getItem("cachedServices");
+    if (cachedServices) {
+      return JSON.parse(cachedServices);
+    }
+
+    throw error;
   }
 };
 
@@ -231,10 +296,58 @@ const assignTechnician = async (serviceId, technicianId) => {
   }
 };
 
+// Get all service requests
+const getServiceRequests = async () => {
+  try {
+    const config = getAuthConfig();
+    const response = await axios.get(`${API_URL}/requests`, config);
+    return response.data.serviceRequests;
+  } catch (error) {
+    console.error("Error fetching service requests:", error);
+    throw error.response?.data?.message || error.message || "Error desconocido";
+  }
+};
+
+// Convert a service request to a service
+const convertServiceRequestToService = async (requestId, technicianId) => {
+  try {
+    const config = getAuthConfig();
+
+    const response = await axios.put(
+      `${API_URL}/requests/${requestId}/convert`,
+      {
+        technician: technicianId,
+        document: "1234567890", // Default document
+      },
+      config
+    );
+
+    // Update cache to reflect the change
+    const cachedServices = localStorage.getItem("cachedServices");
+    if (cachedServices) {
+      try {
+        const services = JSON.parse(cachedServices);
+        // Add the new service to the cache
+        services.push(response.data.service);
+        localStorage.setItem("cachedServices", JSON.stringify(services));
+      } catch (cacheError) {
+        console.error("Error updating cache after conversion:", cacheError);
+      }
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Error converting service request:", error);
+    throw error.response?.data?.message || error.message || "Error desconocido";
+  }
+};
+
 export const serviceService = {
   getServices,
   saveService,
   updateService,
   deleteService,
   assignTechnician,
+  getServiceRequests,
+  convertServiceRequestToService,
 };

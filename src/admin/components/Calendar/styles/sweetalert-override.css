@@ -1,0 +1,64 @@
+/* Estilos específicos para SweetAlert2 en los componentes del calendario */
+
+/* Asegurar que los detalles de servicios en el modal tengan el fondo correcto en modo oscuro */
+body.dark-theme .swal2-popup .detalles-servicio,
+body.dark-theme .swal2-container .detalles-servicio,
+body.dark-theme .swal2-popup .detalles-content,
+body.dark-theme .swal2-container .detalles-content {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+  border-color: #444 !important;
+}
+
+/* Estilos para los inputs y selects dentro del modal */
+body.dark-theme .swal2-popup input,
+body.dark-theme .swal2-popup select,
+body.dark-theme .swal2-popup textarea,
+body.dark-theme .swal2-popup .form-control,
+body.dark-theme .swal2-container input,
+body.dark-theme .swal2-container select,
+body.dark-theme .swal2-container textarea,
+body.dark-theme .swal2-container .form-control {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+  border-color: #444 !important;
+}
+
+/* Opciones de los selects */
+body.dark-theme .swal2-popup select option,
+body.dark-theme .swal2-container select option {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+}
+
+/* Filas de detalles y valores */
+body.dark-theme .swal2-popup .detalle-row,
+body.dark-theme .swal2-container .detalle-row {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-theme .swal2-popup .detalle-value,
+body.dark-theme .swal2-container .detalle-value {
+  color: #fff !important;
+}
+
+/* Etiquetas en los formularios */
+body.dark-theme .swal2-popup label,
+body.dark-theme .swal2-popup .form-label,
+body.dark-theme .swal2-container label,
+body.dark-theme .swal2-container .form-label {
+  color: #87c947 !important;
+}
+
+/* Anular cualquier elemento con estilo inline de fondo blanco */
+body.dark-theme .swal2-popup *[style*="background-color: #f8f9fa"],
+body.dark-theme .swal2-popup *[style*="background-color:#f8f9fa"],
+body.dark-theme .swal2-popup *[style*="background: #f8f9fa"],
+body.dark-theme .swal2-popup *[style*="background:#f8f9fa"],
+body.dark-theme .swal2-container *[style*="background-color: #f8f9fa"],
+body.dark-theme .swal2-container *[style*="background-color:#f8f9fa"],
+body.dark-theme .swal2-container *[style*="background: #f8f9fa"],
+body.dark-theme .swal2-container *[style*="background:#f8f9fa"] {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+}

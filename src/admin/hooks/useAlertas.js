@@ -6,6 +6,39 @@ export const useAlertas = () => {
     return document.body.classList.contains("dark-theme");
   };
 
+  // Función para forzar la actualización de las animaciones después de mostrar el diálogo
+  const forceAnimationUpdate = () => {
+    setTimeout(() => {
+      const successIcons = document.querySelectorAll(
+        ".swal2-icon.swal2-success"
+      );
+      if (successIcons.length > 0) {
+        successIcons.forEach((icon) => {
+          // Forzar repintado de los elementos
+          icon.style.display = "none";
+          void icon.offsetHeight; // Trigger reflow
+          icon.style.display = "flex";
+
+          // Asegurar que las líneas tengan las clases correctas
+          const tipLine = icon.querySelector(".swal2-success-line-tip");
+          const longLine = icon.querySelector(".swal2-success-line-long");
+
+          if (tipLine) {
+            tipLine.style.animation = "none";
+            void tipLine.offsetHeight; // Trigger reflow
+            tipLine.style.animation = "swal2-animate-success-line-tip 0.75s";
+          }
+
+          if (longLine) {
+            longLine.style.animation = "none";
+            void longLine.offsetHeight; // Trigger reflow
+            longLine.style.animation = "swal2-animate-success-line-long 0.75s";
+          }
+        });
+      }
+    }, 50); // Pequeño retraso para asegurar que el diálogo esté completamente renderizado
+  };
+
   // Clases CSS personalizadas para los componentes de SweetAlert2
   const defaultClasses = {
     popup: `swal2-popup-custom ${isDarkMode() ? "dark-theme" : ""}`,
@@ -15,6 +48,7 @@ export const useAlertas = () => {
     htmlContainer: "swal2-html-container",
     input: isDarkMode() ? "dark-input" : "",
     select: isDarkMode() ? "dark-select" : "",
+    icon: "swal2-icon-custom-animation", // Clase personalizada para iconos
   };
 
   // Configuración adaptada al tema
@@ -27,10 +61,17 @@ export const useAlertas = () => {
       confirmButtonColor: config.confirmButtonColor || "#87c947",
       cancelButtonColor:
         config.cancelButtonColor || (darkMode ? "#444" : "#d33"),
+      didOpen: (popup) => {
+        // Llamar al didOpen original si existe
+        if (config.didOpen) {
+          config.didOpen(popup);
+        }
+        // Forzar actualización de animaciones
+        forceAnimationUpdate();
+      },
     };
   };
 
-  // Mostrar un mensaje simple
   const mostrarMensaje = async (tipo, mensaje) => {
     const iconos = {
       exito: "success",
@@ -49,7 +90,6 @@ export const useAlertas = () => {
     });
   };
 
-  // Mostrar una alerta con más opciones
   const mostrarAlerta = async (title, text, icon) => {
     // Si el primer parámetro es un objeto, usamos la configuración directamente
     if (typeof title === "object") {
@@ -76,7 +116,6 @@ export const useAlertas = () => {
     });
   };
 
-  // Mostrar un diálogo de confirmación
   const mostrarConfirmacion = async (config) => {
     return await Swal.fire({
       ...config,
@@ -88,18 +127,18 @@ export const useAlertas = () => {
     });
   };
 
-  // Mostrar un formulario
   const mostrarFormulario = (titulo, html, tipo = "info") => {
     return Swal.fire({
       title: titulo,
       html: html,
       icon: tipo,
       showCancelButton: true,
-      confirmButtonColor: "#87c947",
-      cancelButtonColor: isDarkMode() ? "#444" : "#dc3545",
       confirmButtonText: "Guardar",
       cancelButtonText: "Cancelar",
-      ...getSwalConfig(),
+      ...getSwalConfig({
+        confirmButtonColor: "#87c947",
+        cancelButtonColor: isDarkMode() ? "#444" : "#dc3545",
+      }),
     });
   };
 

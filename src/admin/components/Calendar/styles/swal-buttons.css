@@ -1,0 +1,73 @@
+/* 
+  Estilos específicos para los botones de asignación en el modal
+  Esto afecta solo a los botones de confirmación y cancelación en los modales de SweetAlert2
+*/
+
+/* Contenedor de botones */
+.swal2-actions {
+  display: flex !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  margin-top: 1.5rem !important;
+  padding: 0 1rem !important;
+}
+
+/* Estilos generales para ambos botones */
+.swal2-actions button.swal2-styled {
+  flex: 1 !important;
+  margin: 0 0.5rem !important;
+  padding: 0.5rem 1.5rem !important;
+  font-size: 1rem !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* Botón de confirmar (Asignar) */
+.swal2-actions button.swal2-confirm {
+  background-color: #87c947 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 5px rgba(135, 201, 71, 0.3) !important;
+}
+
+/* Botón de cancelar */
+.swal2-actions button.swal2-cancel {
+  background-color: transparent !important;
+  border: 1px solid #6c757d !important;
+  color: #6c757d !important;
+}
+
+/* En modo oscuro, ajustamos algunos estilos */
+body.dark-theme .swal2-actions button.swal2-cancel {
+  color: #adb5bd !important;
+  border-color: #adb5bd !important;
+  background-color: transparent !important;
+}
+
+/* Efectos hover */
+.swal2-actions button.swal2-confirm:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(135, 201, 71, 0.4) !important;
+}
+
+.swal2-actions button.swal2-cancel:hover {
+  background-color: rgba(108, 117, 125, 0.1) !important;
+}
+
+/* En modo oscuro, ajustamos hover del botón cancelar */
+body.dark-theme .swal2-actions button.swal2-cancel:hover {
+  background-color: rgba(173, 181, 189, 0.15) !important;
+}
+
+/* Estilos para pantallas pequeñas */
+@media (max-width: 576px) {
+  .swal2-actions {
+    flex-direction: column-reverse !important;
+  }
+
+  .swal2-actions button.swal2-styled {
+    margin: 0.25rem 0 !important;
+  }
+}

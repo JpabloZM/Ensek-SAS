@@ -1,5 +1,8 @@
 @import "./dark-mode-admin.css";
 @import "./sweetalert-dark-mode.css";
+@import "./sweetalert-icon-fix.css"; /* Fix para las animaciones de iconos */
+@import "./sweetalert-animation-force.css"; /* Correcciones adicionales para animaciones */
+@import "./success-icon-animation-fix.css"; /* Fix específico para la animación del icono de éxito */
 @import "./global-dark-theme.css";
 
 :root {

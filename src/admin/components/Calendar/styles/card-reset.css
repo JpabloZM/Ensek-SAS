@@ -1,0 +1,51 @@
+/* Archivo para resetear estilos específicos de tarjetas de servicio */
+
+/* Resetear estilos de hover para las tarjetas de servicio */
+html body .sidebar .servicio-card,
+html body .servicios-container .servicio-card,
+html body .servicio-card,
+html body.dark-theme .sidebar .servicio-card,
+html body.dark-theme .servicios-container .servicio-card,
+html body.dark-theme .servicio-card {
+  transition: border-color 0.3s ease !important;
+}
+
+/* Estado normal de la tarjeta */
+html body .sidebar .servicio-card,
+html body .servicios-container .servicio-card,
+html body .servicio-card {
+  background-color: #ffffff !important;
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+  border: 2px solid #c5f198 !important;
+}
+
+/* Estado hover de la tarjeta */
+html body .sidebar .servicio-card:hover,
+html body .servicios-container .servicio-card:hover,
+html body .servicio-card:hover {
+  background-color: #ffffff !important;
+  border-color: #87c947 !important;
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Estado normal de la tarjeta en modo oscuro */
+html body.dark-theme .sidebar .servicio-card,
+html body.dark-theme .servicios-container .servicio-card,
+html body.dark-theme .servicio-card {
+  background-color: #2c2e35 !important;
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+  border-color: #444 !important;
+}
+
+/* Estado hover de la tarjeta en modo oscuro */
+html body.dark-theme .sidebar .servicio-card:hover,
+html body.dark-theme .servicios-container .servicio-card:hover,
+html body.dark-theme .servicio-card:hover {
+  background-color: #2c2e35 !important;
+  border-color: #87c947 !important;
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+}

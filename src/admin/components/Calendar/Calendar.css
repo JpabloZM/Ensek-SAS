@@ -5,3 +5,39 @@
 @import "./styles/forms.css";
 @import "./styles/general.css";
 @import "./styles/dark-mode.css";
+
+/* Assigned events styling */
+.fc-event-assigned {
+  background-color: #87c947 !important;
+  border-color: #87c947 !important;
+  color: white !important;
+  font-weight: bold !important;
+  opacity: 0.9 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.fc-event-assigned:hover {
+  opacity: 1 !important;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2) !important;
+  cursor: pointer;
+}
+
+/* Make sure the technician events are clearly visible */
+.fc-timegrid-event-harness .fc-event-assigned {
+  margin: 1px 0 !important;
+  padding: 2px 4px !important;
+}
+
+/* Ensure events don't overlap too much */
+.fc-timegrid-event-harness {
+  z-index: auto !important;
+}
+
+/* Ocultar solo el mensaje de licencia específico */
+.fc-license-message {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}

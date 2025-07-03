@@ -339,7 +339,8 @@
   padding-right: 0.5rem;
 }
 
-/* Estilos para las tarjetas de servicio */
+/* Comentamos estos estilos para que no sobrescriban los de servicio-card.css */
+/*
 .servicio-card {
   background-color: white;
   border: 1px solid var(--light-green);
@@ -367,6 +368,7 @@
   font-size: 0.9rem;
   margin-bottom: 0.25rem;
 }
+*/
 
 .servicio-card .icon-primary {
   color: var(--primary-green);
@@ -444,15 +446,15 @@
   .servicios-container {
     max-height: 300px;
   }
-  
+
   .servicio-card {
     padding: 0.75rem;
   }
-  
+
   .servicio-card .contenido-servicio h5 {
     font-size: 0.9rem;
   }
-  
+
   .servicio-card .contenido-servicio p {
     font-size: 0.8rem;
   }

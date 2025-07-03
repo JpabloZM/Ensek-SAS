@@ -1,0 +1,75 @@
+/* Estilos para forzar el comportamiento de las tarjetas de servicio */
+
+/* Estos estilos se aplicarán al final para asegurarnos que sobrescriben cualquier otro estilo */
+
+/* Tarjeta normal */
+.servicio-card,
+.sidebar .servicio-card,
+.servicios-container .servicio-card {
+  background-color: #ffffff !important;
+  border: 2px solid #c5f198 !important;
+  transition: border-color 0.3s ease !important;
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Tarjeta hover */
+.servicio-card:hover,
+.sidebar .servicio-card:hover,
+.servicios-container .servicio-card:hover {
+  background-color: #ffffff !important;
+  border-color: #87c947 !important;
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Tarjeta en modo oscuro */
+body.dark-theme .servicio-card,
+body.dark-theme .sidebar .servicio-card,
+body.dark-theme .servicios-container .servicio-card {
+  background-color: #2c2e35 !important;
+  border-color: #444 !important;
+  color: #ffffff !important;
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Tarjeta hover en modo oscuro */
+body.dark-theme .servicio-card:hover,
+body.dark-theme .sidebar .servicio-card:hover,
+body.dark-theme .servicios-container .servicio-card:hover {
+  background-color: #2c2e35 !important;
+  border-color: #87c947 !important;
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Botón eliminar */
+.servicio-card .eliminar-servicio {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(0, 0, 0, 0.15) !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  padding: 0.15rem !important;
+  font-size: 0.8rem !important;
+  opacity: 0 !important;
+  transition: all 0.2s ease !important;
+  border-radius: 50% !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.servicio-card:hover .eliminar-servicio {
+  opacity: 0.7 !important;
+}
+
+.servicio-card .eliminar-servicio:hover {
+  opacity: 1 !important;
+  background: rgba(231, 76, 60, 0.7) !important;
+  color: white !important;
+}

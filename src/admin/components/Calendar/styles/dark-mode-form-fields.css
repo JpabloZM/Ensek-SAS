@@ -1,0 +1,106 @@
+/* Estilos para los inputs y selects en los modales en modo oscuro */
+
+/* Para aplicar a los elementos cuando estamos en modo oscuro */
+.dark-mode-form-fields input,
+.dark-mode-form-fields select,
+.dark-mode-form-fields textarea,
+.dark-mode-form-fields .form-control {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+  border-color: #444 !important;
+}
+
+.dark-mode-form-fields select option {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+}
+
+/* Forzar el estilo oscuro en SweetAlert2 */
+.dark-theme .swal2-popup {
+  --swal2-input-bg: #2c2e35 !important;
+  --swal2-input-color: #ffffff !important;
+  --swal2-container-bg: #1a1c22 !important;
+}
+
+/* Estilos para los inputs en SweetAlert2 en modo oscuro */
+.dark-theme .swal2-popup input,
+.dark-theme .swal2-popup select,
+.dark-theme .swal2-popup textarea,
+.dark-theme .swal2-popup .form-control,
+.dark-theme .swal2-container input,
+.dark-theme .swal2-container select,
+.dark-theme .swal2-container textarea,
+.dark-theme .swal2-container .form-control {
+  background-color: var(--swal2-input-bg, #2c2e35) !important;
+  color: var(--swal2-input-color, #ffffff) !important;
+  border-color: #444 !important;
+}
+
+/* Estilos para los placeholders en modo oscuro */
+.dark-theme .swal2-popup input::placeholder,
+.dark-theme .swal2-popup textarea::placeholder,
+.dark-theme .swal2-container input::placeholder,
+.dark-theme .swal2-container textarea::placeholder {
+  color: #aaa !important;
+  opacity: 0.7 !important;
+}
+
+/* Estilos para los formularios dentro de SweetAlert2 */
+.dark-theme .swal2-popup form,
+.dark-theme .swal2-container form {
+  background-color: var(--swal2-container-bg, #1a1c22) !important;
+  color: var(--swal2-input-color, #ffffff) !important;
+}
+
+/* Estilos para las etiquetas de formulario en modo oscuro */
+.dark-theme .swal2-popup form label,
+.dark-theme .swal2-container form label,
+.dark-theme .swal2-popup .form-label,
+.dark-theme .swal2-container .form-label {
+  color: #87c947 !important;
+  background-color: var(--swal2-container-bg, #1a1c22) !important;
+  padding: 0 !important;
+  margin-bottom: 0.5rem !important;
+  font-weight: 600 !important;
+}
+
+/* Estilos para los contenedores de campos en modo oscuro */
+.dark-theme .swal2-popup .form-group,
+.dark-theme .swal2-container .form-group,
+.dark-theme .swal2-popup .input-with-icon,
+.dark-theme .swal2-container .input-with-icon {
+  background-color: var(--swal2-container-bg, #1a1c22) !important;
+  color: var(--swal2-input-color, #ffffff) !important;
+}
+
+/* Estilos para el foco en campos de formulario */
+.dark-theme .swal2-popup input:focus,
+.dark-theme .swal2-popup select:focus,
+.dark-theme .swal2-popup textarea:focus,
+.dark-theme .swal2-popup .form-control:focus {
+  box-shadow: 0 0 0 3px rgba(135, 201, 71, 0.3) !important;
+  border-color: #87c947 !important;
+}
+
+/* Selector más específico para sobrescribir estilos inline */
+.dark-theme .swal2-popup input[style*="background-color"],
+.dark-theme .swal2-popup select[style*="background-color"],
+.dark-theme .swal2-popup textarea[style*="background-color"],
+.dark-theme .swal2-popup div[style*="background-color"] {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+}
+
+/* Selector para los div específicos que contienen detalles de servicio */
+.dark-theme .swal2-popup .detalles-servicio,
+.dark-theme .swal2-popup div.detalles-content {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+}
+
+/* Específicamente target la clase form-control */
+.dark-theme .form-control {
+  background-color: #2c2e35 !important;
+  color: #fff !important;
+  border-color: #444 !important;
+}
