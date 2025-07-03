@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAlertas } from "../admin/hooks/useAlertas";
 import { useAuth } from "../hooks/useAuth";
-import logo from "../assets/images/Logo-removebg.png";
+import EnsekLogo from "./EnsekLogo";
 import "../admin/auth/Auth.css";
 import "./UnifiedLogin.css";
 
@@ -148,7 +148,7 @@ const UnifiedLogin = () => {
 
       <div className="auth-card">
         <div className="auth-logo">
-          <img src={logo} alt="ENSEK Logo" className="login-logo" />
+          <EnsekLogo size="xlarge" className="login-logo" />
         </div>
         <h2>Iniciar Sesión</h2>
         <form onSubmit={handleSubmit} className="auth-form" autoComplete="off">

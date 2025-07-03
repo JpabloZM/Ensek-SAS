@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuth } from "../../../hooks/useAuth";
+import { EnsekLogoLink } from "../components/EnsekLogo";
 import "./AdminLayout.css";
 
 const AdminLayout = () => {
@@ -18,7 +19,7 @@ const AdminLayout = () => {
       <header className="admin-header">
         <nav className="admin-nav">
           <div className="logo">
-            <Link to="/admin/dashboard">ENSEK</Link>
+            <EnsekLogoLink to="/admin/dashboard" size="medium" />
           </div>
           <div className="nav-links">
             <Link to="/admin/dashboard">Panel de Control</Link>

@@ -1,0 +1,27 @@
+/* Estilos específicos para el logo en la vista admin */
+.admin-header .ensek-logo-wrapper,
+.admin-layout .ensek-logo-wrapper,
+.admin-layout.dark-theme .ensek-logo-wrapper,
+.admin-main .ensek-logo-wrapper,
+.admin-layout.dark-theme .admin-main .ensek-logo-wrapper,
+body.dark-theme .admin-layout .ensek-logo-wrapper,
+.admin-logo-white .ensek-logo-wrapper {
+  background-color: #ffffff !important; /* Siempre blanco */
+  border-color: #87c947 !important;
+}
+
+/* Clase específica con la mayor especificidad posible */
+.admin-logo-white .ensek-logo-wrapper,
+.dark-theme .admin-logo-white .ensek-logo-wrapper,
+body.dark-theme .admin-layout .admin-logo-white .ensek-logo-wrapper,
+.admin-layout.dark-theme .admin-logo-white .ensek-logo-wrapper {
+  background-color: #ffffff !important;
+  border-color: #87c947 !important;
+}
+
+/* Asegurar que los logos en toda la interfaz admin siempre sean blancos */
+.admin-layout .ensek-logo-wrapper img,
+.admin-layout.dark-theme .ensek-logo-wrapper img,
+.admin-logo-white .ensek-logo-wrapper img {
+  filter: none !important; /* Remover cualquier filtro que pueda afectar el color */
+}

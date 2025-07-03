@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FaFacebook, FaInstagram, FaBars } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../hooks/useAuth";
+import { EnsekLogoLink } from "../components/EnsekLogo";
 import "./ClientLayout.css";
 
 const ClientLayout = () => {
@@ -9,7 +10,7 @@ const ClientLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  
+
   // Removed the redundant authentication check here since AuthRoute handles it
 
   // Cerrar el menú cuando cambie la ruta
@@ -88,12 +89,10 @@ const ClientLayout = () => {
         >
           <FaBars />
         </button>
-
         <div className="navbar-logo">
-          <Link to="/" onClick={handleLinkClick}>
-            ENSEK
-          </Link>
-        </div>        <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
+          <EnsekLogoLink to="/" onClick={handleLinkClick} size="medium" />
+        </div>{" "}
+        <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
           <Link to="/cliente" onClick={handleLinkClick}>
             Inicio
           </Link>
@@ -108,7 +107,6 @@ const ClientLayout = () => {
             Contacto
           </button>
         </nav>
-
         <div className="navbar-icons">
           <a
             href="https://facebook.com"
@@ -116,7 +114,8 @@ const ClientLayout = () => {
             rel="noopener noreferrer"
           >
             <FaFacebook />
-          </a>          <a
+          </a>{" "}
+          <a
             href="https://instagram.com"
             target="_blank"
             rel="noopener noreferrer"

@@ -2,8 +2,9 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FaFacebook, FaInstagram, FaBars, FaArrowUp } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../hooks/useAuth";
-import logo from "../../../assets/images/Logo-removebg.png";
+import EnsekLogo, { EnsekLogoLink } from "../../../components/EnsekLogo";
 import "./ClientLayout.css";
+import "./logo-styles.css";
 
 const ClientLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -128,9 +129,11 @@ const ClientLayout = () => {
       <header className="navbar">
         <div className="navbar-container">
           <div className="logo">
-            <Link to="/">
-              <img src={logo} alt="ENSEK Logo" className="nav-logo" />
-              <span>ENSEK</span>
+            <Link to="/" className="logo-link">
+              <div className="logo-container">
+                <EnsekLogo size="medium" className="nav-logo-component" />
+                <span className="logo-text">ENSEK</span>
+              </div>
             </Link>
           </div>
           <button
@@ -203,7 +206,7 @@ const ClientLayout = () => {
         <div className="welcome-container">
           <div className="welcome-footer-content">
             <div className="welcome-footer-logo">
-              <img src={logo} alt="ENSEK Logo" className="footer-logo-image" />
+              <EnsekLogo size="large" className="footer-logo-component" />
               <h2>
                 ENSEK <span>SAS</span>
               </h2>

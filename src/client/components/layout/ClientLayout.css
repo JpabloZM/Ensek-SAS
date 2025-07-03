@@ -44,24 +44,25 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.logo a {
+.logo-link {
+  text-decoration: none;
+  color: white;
+}
+
+.logo-container {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  text-decoration: none;
+}
+
+.logo-text {
   color: white;
   font-size: 1.5rem;
   font-weight: bold;
 }
 
-.nav-logo {
-  width: 40px;
-  height: auto;
-  object-fit: contain;
-}
-
-.logo span {
-  color: white;
+.nav-logo-component {
+  display: block;
 }
 
 .navbar-links {

@@ -57,20 +57,25 @@
   margin: 0 auto;
 }
 
-.logo a {
+.logo-link {
   color: white;
-  font-size: 1.5rem;
-  font-weight: bold;
   text-decoration: none;
+}
+
+.logo-container {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.nav-logo {
-  width: 40px;
-  height: auto;
-  object-fit: contain;
+.logo-text {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.nav-logo-component {
+  display: block;
 }
 
 .nav-links {

@@ -1,0 +1,89 @@
+/* Estilos para el logo ENSEK */
+.ensek-logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+.ensek-logo-wrapper {
+  background-color: #ffffff;
+  border: 2px solid #87c947;
+  border-radius: 25%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+.ensek-logo-image {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+}
+
+.ensek-logo-link {
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* Tamaños específicos del logo */
+.ensek-logo-container.small {
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.ensek-logo-container.medium {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.ensek-logo-container.large {
+  width: 60px !important;
+  height: 60px !important;
+}
+
+.ensek-logo-container.xlarge {
+  width: 100px !important;
+  height: 100px !important;
+}
+
+/* Ajustes específicos para tamaños */
+.ensek-logo-container.small .ensek-logo-wrapper {
+  padding: 1px;
+}
+
+.ensek-logo-container.xlarge .ensek-logo-wrapper {
+  padding: 3px;
+}
+
+/* Estilos adicionales para adaptarse a los diferentes contextos */
+.navbar-logo-component {
+  margin: 0;
+}
+
+.footer-logo-component {
+  margin-bottom: 10px;
+}
+
+.login-logo {
+  margin-bottom: 15px;
+}
+
+/* Ajustes para modo oscuro */
+.dark-theme .ensek-logo-wrapper {
+  background-color: #262626;
+  border-color: #87c947;
+}
+
+/* Excepción para la vista admin - siempre mantener el logo con fondo blanco */
+body .admin-layout .ensek-logo-wrapper {
+  background-color: #ffffff !important;
+}

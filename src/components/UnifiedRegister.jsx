@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAlertas } from "../admin/hooks/useAlertas";
 import { useAuth } from "../hooks/useAuth";
-import logo from "../assets/images/Logo-removebg.png";
+import EnsekLogo from "./EnsekLogo";
 import "../admin/auth/Auth.css";
 import "./UnifiedLogin.css";
 import "./UnifiedRegister.css";
@@ -102,7 +102,7 @@ const UnifiedRegister = () => {
 
       <div className="auth-card register-auth-card">
         <div className="auth-logo">
-          <img src={logo} alt="ENSEK Logo" className="login-logo" />
+          <EnsekLogo size="xlarge" className="login-logo" />
         </div>
         <h2>Registro de Cliente</h2>
         <form

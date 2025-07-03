@@ -1,0 +1,21 @@
+/* Estilos para el logo y texto en el WelcomeLayout */
+.logo-link {
+  text-decoration: none;
+  color: white;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo-text {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.navbar-logo-component {
+  display: block;
+}

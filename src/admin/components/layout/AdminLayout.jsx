@@ -1,9 +1,11 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../hooks/useAuth";
-import logo from "../../../assets/images/Logo-removebg.png";
+import EnsekLogo, { EnsekLogoLink } from "../../../components/EnsekLogo";
 import { FaMoon, FaSun } from "react-icons/fa";
 import "./AdminLayout.css";
+import "./admin-logo.css";
+import "./force-white-logo.css";
 
 const AdminLayout = () => {
   const location = useLocation();
@@ -53,9 +55,14 @@ const AdminLayout = () => {
       <header className={`admin-header ${darkMode ? "dark-theme" : ""}`}>
         <nav className="admin-nav">
           <div className="logo">
-            <Link to="/admin/calendario">
-              <img src={logo} alt="ENSEK Logo" className="nav-logo" />
-              <span>ENSEK</span>
+            <Link to="/admin/calendario" className="logo-link">
+              <div className="logo-container">
+                <EnsekLogo
+                  size="medium"
+                  className="nav-logo-component admin-logo-white"
+                />
+                <span className="logo-text">ENSEK</span>
+              </div>
             </Link>
           </div>
           <div className="nav-links">

@@ -2,7 +2,8 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { FaFacebook, FaInstagram, FaBars } from "react-icons/fa";
 import { useState, useEffect } from "react";
 import "./WelcomeLayout.css";
-import logo from "../../../assets/images/Logo-removebg.png";
+import "./logo-styles.css";
+import EnsekLogo, { EnsekLogoLink } from "../../../components/EnsekLogo";
 
 const WelcomeLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -64,12 +65,11 @@ const WelcomeLayout = () => {
           <FaBars style={{ color: "white" }} />
         </button>
         <div className="navbar-logo">
-          <img src={logo} alt="ENSEK Logo" className="navbar-logo-image" />
-          <Link
-            to="/welcome"
-            style={{ color: "white", textDecoration: "none" }}
-          >
-            ENSEK
+          <Link to="/welcome" className="logo-link">
+            <div className="logo-container">
+              <EnsekLogo size="medium" className="navbar-logo-component" />
+              <span className="logo-text">ENSEK</span>
+            </div>
           </Link>
         </div>
         <nav className={`navbar-links ${isMenuOpen ? "active" : ""}`}>
@@ -113,7 +113,7 @@ const WelcomeLayout = () => {
           <div className="welcome-footer-content">
             {" "}
             <div className="welcome-footer-logo">
-              <img src={logo} alt="ENSEK Logo" className="footer-logo-image" />
+              <EnsekLogo size="large" className="footer-logo-component" />
               <h2>
                 ENSEK <span>SAS</span>
               </h2>

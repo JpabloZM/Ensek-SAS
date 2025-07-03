@@ -1,0 +1,27 @@
+/* Estilo global para asegurar que todos los logos en la vista admin tengan fondo blanco */
+/* Este archivo debe ser importado en AdminLayout.jsx */
+
+/* Regla con alta especificidad para asegurarnos que override cualquier otro estilo */
+html body .admin-layout .ensek-logo-wrapper,
+html body.dark-theme .admin-layout .ensek-logo-wrapper,
+html .admin-layout .ensek-logo-wrapper,
+html .admin-layout.dark-theme .ensek-logo-wrapper,
+html .dark-theme .admin-layout .ensek-logo-wrapper,
+html .admin-layout .admin-logo-white .ensek-logo-wrapper {
+  background-color: #ffffff !important;
+  border-color: #87c947 !important;
+}
+
+/* Para asegurar que cualquier tema oscuro no afecte */
+@media (prefers-color-scheme: dark) {
+  html body .admin-layout .ensek-logo-wrapper {
+    background-color: #ffffff !important;
+    border-color: #87c947 !important;
+  }
+}
+
+/* Para sobrescribir cualquier cambio en modo oscuro */
+.dark-theme .admin-layout .ensek-logo-wrapper {
+  background-color: #ffffff !important;
+  border-color: #87c947 !important;
+}
