@@ -31,7 +31,13 @@ const serviceSchema = new mongoose.Schema(
     serviceType: {
       type: String,
       required: [true, "El tipo de servicio es requerido"],
-      enum: ["pest-control", "gardening", "residential-fumigation", "commercial-fumigation", "other"]
+      enum: [
+        "pest-control",
+        "gardening",
+        "residential-fumigation",
+        "commercial-fumigation",
+        "other",
+      ],
     },
     description: {
       type: String,
@@ -43,7 +49,7 @@ const serviceSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "confirmed", "completed", "cancelled"],
+      enum: ["pending", "confirmed", "completed", "cancelled", "facturado"],
       default: "pending",
     },
     technician: {
@@ -51,6 +57,12 @@ const serviceSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
+    technicians: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
     timestamps: true,
@@ -58,26 +70,32 @@ const serviceSchema = new mongoose.Schema(
 );
 
 // Pre-save middleware to ensure dates are properly converted
-serviceSchema.pre('save', function(next) {
+serviceSchema.pre("save", function (next) {
   if (this.preferredDate && !(this.preferredDate instanceof Date)) {
     this.preferredDate = new Date(this.preferredDate);
   }
+
+  if (
+    this.technician &&
+    this.technicians &&
+    !this.technicians.includes(this.technician)
+  ) {
+    this.technicians.push(this.technician);
+  }
+
   next();
 });
 
-// Add any static methods here if needed
-serviceSchema.statics.findByStatus = function(status) {
+serviceSchema.statics.findByStatus = function (status) {
   return this.find({ status });
 };
 
-// Create the model
 const ServiceModel = mongoose.model("Service", serviceSchema);
 
-// Log model initialization
 console.log("ServiceModel initialized:", {
   modelName: ServiceModel.modelName,
   collection: ServiceModel.collection.name,
-  hasSchema: !!ServiceModel.schema
+  hasSchema: !!ServiceModel.schema,
 });
 
 export default ServiceModel;

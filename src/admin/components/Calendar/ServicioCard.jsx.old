@@ -1,0 +1,893 @@
+import React, { useEffect, useState } from "react";
+import { useAlertas } from "../../hooks/useAlertas";
+import Swal from "sweetalert2";
+import { userService } from "../../../client/services/userService";
+import "./styles/services.css";
+import "./styles/detalles.css";
+import "./styles/card-reset.css"; // Importamos el archivo de reset para asegurar los estilos
+import "./styles/sweetalert-override.css"; // Importamos estilos específicos para SweetAlert2
+import "./styles/swal-dark-override.css"; // Importamos estilos específicos para SweetAlert2 en modo oscuro
+import "./styles/swal-icon-spacing.css"; // Importamos estilos específicos para el espaciado de los iconos
+import "./style    // Solo proceder con la asignación si el usuario confirmó el modal
+    // formValues será null si el usuario canceló o cerró el modal sin confirmar
+    if (!formValues || !formValues.isConfirmed) {
+      console.log("Modal cancelado o cerrado sin confirmación. No se realizará asignación.");
+      return; // Salir de la función para no ejecutar nada más
+    }
+    
+    // Si llegamos aquí, el usuario confirmó el modalwal-buttons.css"; // Importamos estilos específicos para los botones
+import "./styles/assign-modal-buttons.css"; // Importamos estilos específicos para los botones del modal de asignación
+import "./styles/modal-footer.css"; // Importamos estilos para que el footer tenga el mismo color del formulario
+import "./styles/force-dark-modal.css"; // Este debe ser el último CSS importado para asegurar que tenga mayor prioridad
+
+const { getTechnicians: fetchTechnicians } = userService;
+
+// Mapeo de nombres de servicios a español
+const serviciosEnEspanol = {
+  aire_acondicionado: "Aire Acondicionado",
+  electrico: "Servicio Eléctrico",
+  plomeria: "Plomería",
+  electrodomesticos: "Electrodomésticos",
+  calefaccion: "Calefacción",
+  mantenimiento: "Mantenimiento General",
+  instalacion: "Instalación",
+  reparacion: "Reparación",
+  "pest-control": "Control de Plagas",
+  // Agregar más mapeos según sea necesario
+};
+
+const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
+  const { mostrarAlerta } = useAlertas();
+  const [technicians, setTechnicians] = useState([]);
+  // Usamos un objeto como clave para mantener persistencia entre apertura/cierre del modal
+  const [selectedTechnicians, setSelectedTechnicians] = useState([]);
+
+  // Validar y preparar el servicio cuando se recibe
+  useEffect(() => {
+    console.log("Servicio en ServicioCard:", servicio);
+  }, [servicio]);
+
+  useEffect(() => {
+    const loadTechnicians = async () => {
+      try {
+        const response = await fetchTechnicians();
+        setTechnicians(response);
+      } catch (error) {
+        console.error("Error fetching technicians:", error);
+      }
+    };
+
+    loadTechnicians();
+  }, []);
+
+  const getTipoServicioEspanol = (tipo) => {
+    if (!tipo) return "No especificado";
+    return serviciosEnEspanol[tipo] || tipo;
+  };
+
+  const capitalizarPrimeraLetra = (texto) => {
+    if (!texto) return "No especificado";
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
+  };
+
+  const formatearFecha = (fecha, incluirAno = false) => {
+    if (!fecha) return "No especificada";
+    try {
+      const date = new Date(fecha);
+      if (isNaN(date.getTime())) return "No especificada";
+
+      const opciones = {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        ...(incluirAno && { year: "numeric" }),
+      };
+      const fechaFormateada = date.toLocaleDateString("es-CO", opciones);
+      return capitalizarPrimeraLetra(fechaFormateada);
+    } catch (error) {
+      console.error("Error al formatear fecha:", error, fecha);
+      return "No especificada";
+    }
+  };
+
+  const mostrarDetallesServicio = () => {
+    // Verificar si estamos en modo oscuro
+    const isDarkMode = document.body.classList.contains("dark-theme");
+
+    mostrarAlerta({
+      title: `Servicio de ${getTipoServicioEspanol(servicio.nombre)}`,
+      showCloseButton: true,
+      confirmButtonText: "Cerrar",
+      confirmButtonColor: "#87c947",
+      background: isDarkMode ? "#1a1c22" : "#ffffff",
+      color: isDarkMode ? "#ffffff" : "#333333",
+      customClass: {
+        popup: isDarkMode ? "swal-dark-theme" : "",
+        title: isDarkMode ? "swal-dark-title" : "",
+        htmlContainer: isDarkMode ? "swal-dark-content" : "",
+        confirmButton: "swal-confirm-btn",
+      },
+      html: `
+        <div class="detalles-content" style="background-color: ${
+          isDarkMode ? "#2c2e35" : "#f8f9fa"
+        }; color: ${isDarkMode ? "#fff" : "#333"}; padding: 1rem;">
+          <div class="detalle-row" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#fff"
+          }; margin-bottom: 0.5rem; padding: 0.75rem 0.5rem; display: flex; align-items: start; line-height: 1.2; border-bottom: 1px solid ${
+        isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+      };">
+            <div class="detalle-label" style="color: #87c947; min-width: 100px; font-weight: 500; display: flex; align-items: center; padding-left: 0.5rem;">
+              <i class="fas fa-user" style="color: #87c947; margin-right: 0.5rem; margin-left: 0.25rem;"></i> Cliente
+            </div>
+            <div class="detalle-value" style="color: ${
+              isDarkMode ? "#fff" : "#333"
+            }; flex: 1; padding-left: 0.5rem;">${servicio.clientName}</div>
+          </div>
+
+          <div class="detalle-row" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#fff"
+          }; margin-bottom: 0.4rem; padding: 0.5rem 0; display: flex; align-items: start; line-height: 1.2; border-bottom: 1px solid ${
+        isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+      };">
+            <div class="detalle-label" style="color: #87c947; min-width: 100px; font-weight: 500; display: flex; align-items: center; padding-left: 0.5rem;">
+              <i class="fas fa-tools" style="color: #87c947; margin-right: 0.5rem; margin-left: 0.25rem;"></i> Servicio
+            </div>
+            <div class="detalle-value" style="color: ${
+              isDarkMode ? "#fff" : "#333"
+            }; flex: 1; padding-left: 0.5rem;">${getTipoServicioEspanol(
+        servicio.nombre
+      )}</div>
+          </div>
+
+          <div class="detalle-row" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#fff"
+          }; margin-bottom: 0.4rem; padding: 0.5rem 0; display: flex; align-items: start; line-height: 1.2; border-bottom: 1px solid ${
+        isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+      };">
+            <div class="detalle-label" style="color: #87c947; min-width: 100px; font-weight: 500; display: flex; align-items: center; padding-left: 0.5rem;">
+              <i class="fas fa-calendar-alt" style="color: #87c947; margin-right: 0.5rem; margin-left: 0.25rem;"></i> Fecha
+            </div>
+            <div class="detalle-value" style="color: ${
+              isDarkMode ? "#fff" : "#333"
+            }; flex: 1; padding-left: 0.5rem;">${formatearFecha(
+        servicio.preferredDate,
+        true
+      )}</div>
+          </div>
+
+          ${
+            servicio.clientPhone
+              ? `
+          <div class="detalle-row" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#fff"
+          }; margin-bottom: 0.4rem; padding: 0.5rem 0; display: flex; align-items: start; line-height: 1.2; border-bottom: 1px solid ${
+                  isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+                };">
+            <div class="detalle-label" style="color: #87c947; min-width: 100px; font-weight: 500; display: flex; align-items: center; padding-left: 0.5rem;">
+              <i class="fas fa-phone" style="color: #87c947; margin-right: 0.5rem; margin-left: 0.25rem;"></i> Teléfono
+            </div>
+            <div class="detalle-value" style="color: ${
+              isDarkMode ? "#fff" : "#333"
+            }; flex: 1; padding-left: 0.5rem;">${servicio.clientPhone}</div>
+          </div>`
+              : ""
+          }
+
+          ${
+            servicio.clientEmail
+              ? `
+          <div class="detalle-row" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#fff"
+          }; margin-bottom: 0.4rem; padding: 0.5rem 0; display: flex; align-items: start; line-height: 1.2; border-bottom: 1px solid ${
+                  isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+                };">
+            <div class="detalle-label" style="color: #87c947; min-width: 100px; font-weight: 500; display: flex; align-items: center; padding-left: 0.5rem;">
+              <i class="fas fa-envelope" style="color: #87c947; margin-right: 0.5rem; margin-left: 0.25rem;"></i> Email
+            </div>
+            <div class="detalle-value" style="color: ${
+              isDarkMode ? "#fff" : "#333"
+            }; flex: 1; padding-left: 0.5rem;">${servicio.clientEmail}</div>
+          </div>`
+              : ""
+          }
+
+          ${
+            servicio.address
+              ? `
+          <div class="detalle-row" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#fff"
+          }; margin-bottom: 0.4rem; padding: 0.5rem 0; display: flex; align-items: start; line-height: 1.2; border-bottom: 1px solid ${
+                  isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+                };">
+            <div class="detalle-label" style="color: #87c947; min-width: 100px; font-weight: 500; display: flex; align-items: center; padding-left: 0.5rem;">
+              <i class="fas fa-map-marker-alt" style="color: #87c947; margin-right: 0.5rem; margin-left: 0.25rem;"></i> Dirección
+            </div>
+            <div class="detalle-value" style="color: ${
+              isDarkMode ? "#fff" : "#333"
+            }; flex: 1; padding-left: 0.5rem;">${servicio.address}</div>
+          </div>`
+              : ""
+          }
+
+          ${
+            servicio.descripcion
+              ? `
+          <div class="detalle-row" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#fff"
+          }; margin-bottom: 0.4rem; padding: 0.5rem 0; display: flex; align-items: start; line-height: 1.2; border-bottom: 1px solid ${
+                  isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+                };">
+            <div class="detalle-label" style="color: #87c947; min-width: 100px; font-weight: 500; display: flex; align-items: center; padding-left: 0.5rem;">
+              <i class="fas fa-info-circle" style="color: #87c947; margin-right: 0.5rem; margin-left: 0.25rem;"></i> Descripción
+            </div>
+            <div class="detalle-value" style="color: ${
+              isDarkMode ? "#fff" : "#333"
+            }; flex: 1; padding-left: 0.5rem;">${servicio.descripcion}</div>
+          </div>`
+              : ""
+          }
+        </div>
+        <style>
+          /* Sobrescribir estilos para asegurar colores correctos */
+          .swal2-popup {
+            padding: 1rem !important;
+            background-color: ${isDarkMode ? "#1a1c22" : "#ffffff"} !important;
+          }
+          
+          .swal2-title {
+            font-size: 1.1rem !important;
+            padding: 0.5rem 0 !important;
+            margin-bottom: 0.5rem !important;
+            color: ${isDarkMode ? "#fff" : "#004122"} !important;
+          }
+          
+          .swal2-html-container {
+            margin: 0 !important;
+            color: ${isDarkMode ? "#fff" : "#333"} !important;
+          }
+          
+          /* Asegurar fondo oscuro en detalles */
+          .detalles-content, 
+          .detalle-row, 
+          .detalle-row > * {
+            background-color: ${isDarkMode ? "#2c2e35" : "#fff"} !important;
+          }
+          
+          .detalle-label {
+            color: #87c947 !important;
+          }
+          
+          .detalle-value {
+            color: ${isDarkMode ? "#fff" : "#333"} !important;
+          }
+          
+          .swal2-actions {
+            margin-top: 1rem !important;
+          }
+          
+          .swal2-confirm {
+            background-color: #87c947 !important;
+            margin: 0 !important;
+          }
+          
+          /* Estilos para el formulario */
+          #asignarForm {
+            margin-top: 1rem !important;
+          }
+          
+          /* Estilos específicos para los botones en este modal */
+          .swal-actions-container {
+            margin-top: 1.5rem !important;
+            background-color: ${isDarkMode ? "#1a1c22" : "#ffffff"} !important;
+            border-top: 1px solid ${
+              isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"
+            } !important;
+            padding-top: 1rem !important;
+          }
+          
+          /* Estilos para botón confirmar específico de este modal */
+          .custom-confirm-btn {
+            text-transform: uppercase !important;
+            letter-spacing: 0.03em !important;
+            font-weight: 500 !important;
+          }
+          
+          /* Estilos para botón cancelar específico de este modal */
+          .custom-cancel-btn {
+            text-transform: uppercase !important;
+            letter-spacing: 0.03em !important;
+            font-weight: 500 !important;
+            border: 1px solid ${isDarkMode ? "#adb5bd" : "#6c757d"} !important;
+            color: ${isDarkMode ? "#adb5bd" : "#6c757d"} !important;
+          }
+        </style>
+      `,
+      showCloseButton: true,
+      confirmButtonText: "Cerrar",
+      confirmButtonColor: "#87c947",
+      background: isDarkMode ? "#1a1c22" : "#ffffff",
+      color: isDarkMode ? "#ffffff" : "#333333",
+      customClass: {
+        popup: `service-details-popup ${isDarkMode ? "swal-dark-theme" : ""}`,
+        content: `service-details-content ${
+          isDarkMode ? "swal-dark-content" : ""
+        }`,
+        htmlContainer: isDarkMode ? "swal-dark-content" : "",
+      },
+    });
+  };
+
+  const handleClick = () => {
+    handleAsignar();
+  };
+
+  // Función para renderizar las opciones de técnicos seleccionados
+  const renderSelectedTechnicians = () => {
+    // Verificar si estamos en modo oscuro
+    const isDarkMode = document.body.classList.contains("dark-theme");
+
+    if (selectedTechnicians.length === 0) return "";
+
+    return `
+      <div class="selected-technicians mb-2" style="background-color: ${
+        isDarkMode ? "#2c2e35" : "#f8f9fa"
+      }; border-radius: 4px; padding: 0.5rem; margin-top: 0.5rem;">
+        <h5 style="color: ${
+          isDarkMode ? "#87c947" : "#004122"
+        }; margin-bottom: 0.5rem; font-size: 0.9rem;">Técnicos seleccionados</h5>
+        <div class="technician-tags">
+          ${selectedTechnicians
+            .map(
+              (tech) => `
+            <div class="technician-tag" style="display: inline-block; background: ${
+              isDarkMode ? "#1a1c22" : "#e9ecef"
+            }; color: ${
+                isDarkMode ? "#fff" : "#333"
+              }; padding: 3px 10px; border-radius: 15px; margin-right: 5px; margin-bottom: 5px; font-size: 0.85rem;">
+              ${tech.name}
+              <span class="remove-technician" data-id="${
+                tech._id
+              }" style="cursor: pointer; margin-left: 5px; color: ${
+                isDarkMode ? "#ff6b6b" : "#dc3545"
+              }; font-weight: bold;">&times;</span>
+            </div>
+          `
+            )
+            .join("")}
+        </div>
+      </div>
+    `;
+  };
+
+  const handleAsignar = async () => {
+    // No reiniciar la lista de técnicos aquí para mantener las selecciones previas
+    // Verificar si estamos en modo oscuro
+    const isDarkMode = document.body.classList.contains("dark-theme");
+
+    const mostrarModal = async () => {
+      // Movemos la definición de localSelectedTechnicians fuera de didOpen
+      // para que sea accesible en preConfirm
+      let localSelectedTechnicians = [...selectedTechnicians];
+
+      // Mostrar el modal con SweetAlert2
+      const formValues = await Swal.fire({
+        title: "Asignar servicio a técnicos",
+        html: `
+          <div class="detalles-servicio mb-2" style="background-color: ${
+            isDarkMode ? "#2c2e35" : "#f8f9fa"
+          }; color: ${
+          isDarkMode ? "#fff" : "#333"
+        }; border-radius: 4px; padding: 0.5rem;">
+            <p class="mb-1"><strong style="color: ${
+              isDarkMode ? "#87c947" : "#004122"
+            };">Cliente:</strong> <span style="color: ${
+          isDarkMode ? "#fff" : "#333"
+        };">${servicio.clientName}</span></p>
+            <p class="mb-1"><strong style="color: ${
+              isDarkMode ? "#87c947" : "#004122"
+            };">Dirección:</strong> <span style="color: ${
+          isDarkMode ? "#fff" : "#333"
+        };">${servicio.address}</span></p>
+            <p class="mb-1"><strong style="color: ${
+              isDarkMode ? "#87c947" : "#004122"
+            };">Descripción:</strong> <span style="color: ${
+          isDarkMode ? "#fff" : "#333"
+        };">${servicio.descripcion}</span></p>
+          </div>
+          <form id="asignarForm" style="margin-top: 0.5rem;">
+            <div class="mb-2">
+              <label class="form-label mb-1" style="color: #87c947; font-weight: 500; font-size: 0.9rem;">Técnico</label>
+              <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                <select id="tecnicoSelect" class="form-control" style="background-color: ${
+                  isDarkMode ? "#2c2e35" : "#fff"
+                }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
+          isDarkMode ? "#444" : "#ced4da"
+        }; padding: 0.4rem 0.75rem; font-size: 0.9rem; flex-grow: 1;">
+                  <option value="">Seleccionar técnico...</option>
+                  ${technicians
+                    .filter(
+                      (tech) =>
+                        !selectedTechnicians.some(
+                          (selected) => selected._id === tech._id
+                        )
+                    )
+                    .map(
+                      (technician) =>
+                        `<option value="${
+                          technician._id
+                        }" style="background-color: ${
+                          isDarkMode ? "#2c2e35" : "#fff"
+                        }; color: ${isDarkMode ? "#fff" : "#333"};">${
+                          technician.name
+                        }</option>`
+                    )
+                    .join("")}
+                </select>
+                <button type="button" id="addTechnician" class="btn" style="background-color: #87c947; color: #fff; padding: 0.4rem 0.75rem; font-size: 0.9rem; border: none; border-radius: 4px;">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div id="selectedTechniciansContainer">
+              ${renderSelectedTechnicians()}
+            </div>
+            
+            <div class="mb-2">
+              <label class="form-label mb-1" style="color: #87c947; font-weight: 500; font-size: 0.9rem;">Fecha</label>
+              <input 
+                type="date" 
+                id="fecha" 
+                class="form-control" 
+                required 
+                min="${new Date().toISOString().split("T")[0]}"
+                value="${
+                  new Date(servicio.preferredDate).toISOString().split("T")[0]
+                }"
+                style="background-color: ${
+                  isDarkMode ? "#2c2e35" : "#fff"
+                }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
+          isDarkMode ? "#444" : "#ced4da"
+        }; padding: 0.4rem 0.75rem; font-size: 0.9rem;"
+              >
+            </div>
+            <div class="mb-2">
+              <label class="form-label mb-1" style="color: #87c947; font-weight: 500; font-size: 0.9rem;">Hora de inicio</label>
+              <input 
+                type="time" 
+                id="horaInicio" 
+                class="form-control" 
+                required
+                style="background-color: ${
+                  isDarkMode ? "#2c2e35" : "#fff"
+                }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
+          isDarkMode ? "#444" : "#ced4da"
+        }; padding: 0.4rem 0.75rem; font-size: 0.9rem;"
+              >
+            </div>
+            <div class="mb-2">
+              <label class="form-label mb-1" style="color: #87c947; font-weight: 500; font-size: 0.9rem;">Duración (minutos)</label>
+              <input 
+                type="number" 
+                id="duracion" 
+                class="form-control" 
+                required 
+                min="30" 
+                step="15" 
+                value="${servicio.duracion || 60}"
+                style="background-color: ${
+                  isDarkMode ? "#2c2e35" : "#fff"
+                }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
+          isDarkMode ? "#444" : "#ced4da"
+        }; padding: 0.4rem 0.75rem; font-size: 0.9rem;"
+              >
+            </div>
+          </form>
+          <style>
+            .detalles-servicio p:last-child {
+              margin-bottom: 0;
+            }
+            .swal2-popup {
+              padding: 1rem;
+              background-color: ${
+                isDarkMode ? "#1a1c22" : "#ffffff"
+              } !important;
+              color: ${isDarkMode ? "#fff" : "#333"} !important;
+            }
+            .swal2-title {
+              font-size: 1.2rem !important;
+              padding: 0.5rem 0 !important;
+              color: ${isDarkMode ? "#fff" : "#004122"} !important;
+            }
+            .swal2-html-container {
+              margin: 0.5rem 0 !important;
+              color: ${isDarkMode ? "#fff" : "#333"} !important;
+            }
+            .swal2-actions {
+              margin: 1rem 0 0 0 !important;
+            }
+            
+            /* Asegurar que los select y sus opciones respeten el tema */
+            .swal2-popup select,
+            .swal2-popup .form-control {
+              background-color: ${isDarkMode ? "#2c2e35" : "#fff"} !important;
+              color: ${isDarkMode ? "#fff" : "#333"} !important;
+              border-color: ${isDarkMode ? "#444" : "#ced4da"} !important;
+            }
+            
+            .swal2-popup select option {
+              background-color: ${isDarkMode ? "#2c2e35" : "#fff"} !important;
+              color: ${isDarkMode ? "#fff" : "#333"} !important;
+            }
+            
+            /* Estilos para los tags de técnicos */
+            .technician-tags {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 5px;
+            }
+          </style>
+        `,
+        background: isDarkMode ? "#1a1c22" : "#ffffff",
+        color: isDarkMode ? "#ffffff" : "#333333",
+        customClass: {
+          popup: isDarkMode ? "swal-dark-theme" : "",
+          title: isDarkMode ? "swal-dark-title" : "",
+          htmlContainer: isDarkMode ? "swal-dark-content" : "",
+          confirmButton: "swal-confirm-btn custom-confirm-btn",
+          cancelButton: "swal-cancel-btn custom-cancel-btn",
+          actions: "swal-actions-container",
+        },
+        showCancelButton: true,
+        confirmButtonText: "Asignar",
+        confirmButtonColor: "#87c947",
+        cancelButtonText: "Cancelar",
+        cancelButtonColor: isDarkMode ? "transparent" : "#6c757d",
+        didOpen: () => {
+          // Ya no definimos localSelectedTechnicians aquí, usamos la variable de arriba
+
+          // Función mejorada para actualizar la lista de técnicos en la UI
+          const updateTechniciansList = () => {
+            const container = document.getElementById(
+              "selectedTechniciansContainer"
+            );
+            if (!container) return; // Protección contra errores
+
+            // Construir HTML para los técnicos seleccionados
+            const techsHtml = localSelectedTechnicians
+              .map(
+                (tech) => `
+              <div class="technician-tag" style="display: inline-block; background: ${
+                isDarkMode ? "#1a1c22" : "#e9ecef"
+              }; color: ${
+                  isDarkMode ? "#fff" : "#333"
+                }; padding: 3px 10px; border-radius: 15px; margin-right: 5px; margin-bottom: 5px; font-size: 0.85rem;">
+                ${tech.name}
+                <span class="remove-technician" data-id="${
+                  tech._id
+                }" style="cursor: pointer; margin-left: 5px; color: ${
+                  isDarkMode ? "#ff6b6b" : "#dc3545"
+                }; font-weight: bold;">&times;</span>
+              </div>
+            `
+              )
+              .join("");
+
+            // Actualizar el contenedor con los técnicos seleccionados
+            if (localSelectedTechnicians.length > 0) {
+              container.innerHTML = `
+                <div class="selected-technicians mb-2" style="background-color: ${
+                  isDarkMode ? "#2c2e35" : "#f8f9fa"
+                }; border-radius: 4px; padding: 0.5rem; margin-top: 0.5rem;">
+                  <h5 style="color: ${
+                    isDarkMode ? "#87c947" : "#004122"
+                  }; margin-bottom: 0.5rem; font-size: 0.9rem;">Técnicos seleccionados</h5>
+                  <div class="technician-tags">
+                    ${techsHtml}
+                  </div>
+                </div>
+              `;
+            } else {
+              container.innerHTML = "";
+            }
+
+            // Actualizar el select para filtrar técnicos ya seleccionados
+            const select = document.getElementById("tecnicoSelect");
+            if (select) {
+              select.innerHTML = `
+                <option value="">Seleccionar técnico...</option>
+                ${technicians
+                  .filter(
+                    (tech) =>
+                      !localSelectedTechnicians.some(
+                        (selected) => selected._id === tech._id
+                      )
+                  )
+                  .map(
+                    (tech) =>
+                      `<option value="${tech._id}">${tech.name}</option>`
+                  )
+                  .join("")}
+              `;
+            }
+
+            // Agregar eventos a los nuevos botones de eliminar
+            document.querySelectorAll(".remove-technician").forEach((btn) => {
+              btn.addEventListener("click", function (e) {
+                e.stopPropagation(); // Evitar que el evento burbujee
+                const techId = this.getAttribute("data-id");
+
+                // Actualizar la lista local
+                localSelectedTechnicians = localSelectedTechnicians.filter(
+                  (tech) => tech._id !== techId
+                );
+
+                // Actualizar el estado de React para mantener sincronizada la información
+                setSelectedTechnicians([...localSelectedTechnicians]);
+
+                // Actualizar la UI inmediatamente
+                updateTechniciansList();
+              });
+            });
+          };
+
+          // Manejar el evento de agregar técnico
+          const addTechnicianButton = document.getElementById("addTechnician");
+          if (addTechnicianButton) {
+            addTechnicianButton.addEventListener("click", () => {
+              const select = document.getElementById("tecnicoSelect");
+              const techId = select.value;
+
+              if (!techId) return;
+
+              const techName = select.options[select.selectedIndex].text;
+              const newSelectedTech = { _id: techId, name: techName };
+
+              // Verificar que no esté ya seleccionado (doble verificación)
+              if (
+                !localSelectedTechnicians.some((tech) => tech._id === techId)
+              ) {
+                // Agregar a la lista local
+                localSelectedTechnicians.push(newSelectedTech);
+
+                // Actualizar el estado de React para mantener sincronizada la información
+                setSelectedTechnicians([...localSelectedTechnicians]);
+
+                // Actualizar la UI inmediatamente
+                updateTechniciansList();
+              }
+            });
+          }
+
+          // Inicializar la lista al abrir el modal
+          updateTechniciansList();
+        },
+        preConfirm: () => {
+          const fecha = document.getElementById("fecha").value;
+          const horaInicio = document.getElementById("horaInicio").value;
+          const duracion = document.getElementById("duracion").value;
+
+          // Validación mínima
+          if (!fecha || !horaInicio || !duracion) {
+            Swal.showValidationMessage(
+              "Por favor complete todos los campos de fecha y hora"
+            );
+            return false;
+          }
+
+          // Verificar que hay al menos un técnico seleccionado
+          // Ahora localSelectedTechnicians está accesible aquí
+          if (
+            !localSelectedTechnicians ||
+            localSelectedTechnicians.length === 0
+          ) {
+            Swal.showValidationMessage("Debe seleccionar al menos un técnico");
+            return false;
+          }
+
+          // IMPORTANTE: Sincronizar el estado de React con la variable local antes de continuar
+          setSelectedTechnicians([...localSelectedTechnicians]);
+
+          return {
+            fecha,
+            horaInicio,
+            duracion,
+            tecnicosSeleccionados: [...localSelectedTechnicians],
+          };
+        },
+      });
+
+      return formValues;
+    };
+
+    const formValues = await mostrarModal();
+
+    // Solo proceder con la asignación si el usuario confirmó el modal
+    // formValues será null si el usuario canceló o cerró el modal sin confirmar
+    if (!formValues || formValues.isConfirmed !== true) {
+      console.log("Modal cancelado o cerrado sin confirmación. No se realizará asignación.");
+      return; // Salir de la función para no ejecutar nada más
+    }
+    
+    // Si llegamos aquí, el usuario confirmó el modal
+    console.log("Modal confirmado, procediendo con la asignación de servicio");
+    const { fecha, horaInicio, duracion, tecnicosSeleccionados } = formValues;
+
+    // Usamos los técnicos seleccionados que nos devolvió el modal
+    // Si no hay tecnicosSeleccionados, usamos el estado React actual como respaldo
+    const tecnicos = tecnicosSeleccionados || selectedTechnicians;
+
+    // Crear un evento en el calendario para cada técnico seleccionado
+    const resultados = [];
+
+    // Guardamos la cantidad de técnicos para mostrar mensaje correcto
+    const cantidadTecnicos = tecnicos.length;
+
+    console.log("Asignando servicios a técnicos:", {
+      cantidad: cantidadTecnicos,
+      tecnicos: tecnicos,
+      fecha,
+      horaInicio,
+      duracion,
+    });
+
+    for (const tecnico of tecnicos) {
+      // Create calendar event
+      const fechaInicio = new Date(`${fecha}T${horaInicio}`);
+      const fechaFin = new Date(
+        fechaInicio.getTime() + parseInt(duracion) * 60000
+      );
+
+      const eventoCalendario = {
+        id: servicio._id || servicio.id, // Usar el ID real del servicio
+        title: `${servicio.nombre} - ${servicio.clientName}`,
+        start: fechaInicio.toISOString(),
+        end: fechaFin.toISOString(),
+        resourceId: tecnico._id,
+        backgroundColor: "#87c947",
+        borderColor: "#87c947",
+        className: "estado-confirmado", // Agregar la clase para el estilo
+        textColor: "white",
+        display: "block",
+        extendedProps: {
+            estado: "confirmado",
+            status: "confirmed",
+            descripcion: servicio.descripcion,
+            description: servicio.descripcion,
+            cliente: servicio.clientName,
+            clientName: servicio.clientName,
+            telefono: servicio.clientPhone,
+            clientPhone: servicio.clientPhone,
+            email: servicio.clientEmail,
+            clientEmail: servicio.clientEmail,
+            direccion: servicio.address,
+            address: servicio.address,
+            serviceId: servicio._id || servicio.id,
+          },
+        };
+
+        // Asegurarnos de usar el ID correcto del servicio
+        const serviceId = servicio._id || servicio.id;
+
+        // Guardar técnicos seleccionados para enviar al backend
+        // Usamos los técnicos del bucle actual (tecnicos) en lugar de selectedTechnicians
+        const technicianIds = tecnicos.map((tech) => tech._id);
+
+        // Agregar el técnico actual como técnico principal para este evento específico
+        eventoCalendario.technicianIds = technicianIds;
+
+        console.log("Configurando evento para técnico:", {
+          tecnico: tecnico.name,
+          tecnicoId: tecnico._id,
+          technicianIds,
+          serviceId,
+        });
+
+        try {
+          // Asignar servicio con el técnico actual como principal
+          const resultado = await onAsignarServicio(
+            eventoCalendario,
+            serviceId,
+            technicianIds
+          );
+          resultados.push(resultado);
+        } catch (error) {
+          console.error(
+            "Error al asignar servicio al técnico:",
+            tecnico.name,
+            error
+          );
+        }
+      }
+
+      // Verificar si todas las asignaciones fueron exitosas
+      const todasExitosas = resultados.every((res) => res === true);
+      
+      // Mensaje personalizado según la cantidad de técnicos
+      let mensajeExito;
+      if (cantidadTecnicos === 1) {
+        mensajeExito = `El servicio ha sido asignado correctamente a ${tecnicos[0].name}`;
+      } else if (cantidadTecnicos > 1) {
+        mensajeExito = `El servicio ha sido asignado a los ${cantidadTecnicos} técnicos seleccionados`;
+      } else {
+        mensajeExito = "El servicio ha sido asignado correctamente";
+      }
+
+      mostrarAlerta({
+        icon: todasExitosas ? "success" : "warning",
+        title: todasExitosas ? "Servicio Asignado" : "Asignación Parcial",
+        text: todasExitosas
+          ? mensajeExito
+          : "El servicio fue asignado a algunos técnicos, pero hubo errores",
+        timer: 2500,
+        showConfirmButton: false,
+      });
+
+      // Solo limpiamos la selección después de una asignación exitosa
+      if (todasExitosas) {
+        setSelectedTechnicians([]);
+      }
+    }
+  };
+
+  // Determinar si estamos en modo oscuro
+  const isDarkMode = document.body.classList.contains("dark-theme");
+
+  return (
+    <div
+      className="servicio-card"
+      onClick={handleClick}
+      style={{
+        backgroundColor: isDarkMode ? "#2c2e35" : "#ffffff",
+        borderColor: "#c5f198",
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+        transform: "none",
+      }}
+    >
+      <div className="d-flex justify-content-between align-items-start">
+        <div className="contenido-servicio">
+          <h5>
+            <i className="fas fa-tag icon-primary"></i>{" "}
+            {getTipoServicioEspanol(servicio.nombre)}
+          </h5>
+          <p className="mb-1">
+            <i className="fas fa-user icon-primary"></i> {servicio.clientName}
+          </p>
+          <p className="mb-1">
+            {" "}
+            <i className="fas fa-calendar-alt icon-primary"></i>{" "}
+            {formatearFecha(servicio.preferredDate, false)}
+          </p>
+          <p className="mb-0 descripcion-truncada">
+            <i className="fas fa-info-circle icon-primary"></i>{" "}
+            {servicio.descripcion}
+          </p>
+        </div>
+        <div className="botones-container">
+          <button
+            className="btn btn-link text-primary p-0 ver-detalles"
+            onClick={(e) => {
+              e.stopPropagation();
+              mostrarDetallesServicio();
+            }}
+            title="Ver detalles"
+          >
+            <i className="fas fa-info-circle"></i>
+          </button>
+          <button
+            className="eliminar-servicio"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEliminar();
+            }}
+            title="Eliminar servicio"
+          >
+            <i className="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ServicioCard;

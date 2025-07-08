@@ -104,7 +104,8 @@ html body .servicio-card:hover {
   transform: scale(0.98);
 }
 
-/* Estilos para modo oscuro con selectores más específicos */
+/* Los estilos específicos para el modo oscuro ahora se manejan en card-buttons.css para mantener una apariencia unificada */
+/* Comentado para permitir que los estilos unificados de card-buttons.css tengan efecto
 body.dark-theme .sidebar .servicio-card .eliminar-servicio,
 body.dark-theme .servicios-container .servicio-card .eliminar-servicio,
 body.dark-theme .servicio-card .eliminar-servicio {
@@ -112,7 +113,6 @@ body.dark-theme .servicio-card .eliminar-servicio {
   color: rgba(0, 0, 0, 0.8);
 }
 
-/* Mantenemos la aparición del botón eliminar en modo oscuro */
 body.dark-theme .sidebar .servicio-card:hover .eliminar-servicio,
 body.dark-theme .servicios-container .servicio-card:hover .eliminar-servicio,
 body.dark-theme .servicio-card:hover .eliminar-servicio {
@@ -126,6 +126,7 @@ body.dark-theme .servicio-card .eliminar-servicio:hover {
   color: white;
   opacity: 1;
 }
+*/
 
 /* Responsive */
 @media (max-width: 768px) {

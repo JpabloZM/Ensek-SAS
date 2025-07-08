@@ -1,0 +1,117 @@
+/* 
+ * ESTILOS UNIFICADOS PARA LOS BOTONES DE ACCIÓN
+ * Este archivo contiene los estilos definitivos para los botones de acción de las tarjetas de servicio.
+ * Los botones de info, asignar y eliminar utilizan un estilo unificado: 
+ * fondo transparente, borde verde, forma circular y mismo efecto hover.
+ */
+.servicio-card .botones-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(135, 201, 71, 0.2);
+}
+
+/* Estilos unificados para todos los botones */
+.servicio-card .ver-detalles,
+.servicio-card .asignar-servicio,
+.servicio-card .eliminar-servicio {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 0.95rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1/1;
+  cursor: pointer;
+  
+  /* Estilo simple y unificado para todos los botones */
+  color: #004122;
+  background-color: transparent;
+  border: 1px solid #87c947;
+}
+
+/* Hover states unificados para todos los botones */
+.servicio-card .ver-detalles:hover,
+.servicio-card .asignar-servicio:hover,
+.servicio-card .eliminar-servicio:hover {
+  color: #87c947;
+  background-color: rgba(0, 65, 34, 0.05);
+  transform: scale(1.05);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos responsive para los botones */
+@media (max-width: 768px) {
+  .servicio-card .botones-container {
+    gap: 10px;
+  }
+
+  .servicio-card .ver-detalles,
+  .servicio-card .asignar-servicio,
+  .servicio-card .eliminar-servicio {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Estilos para modo oscuro - aplicados a todos los botones */
+.dark-theme .servicio-card .ver-detalles,
+.dark-theme .servicio-card .asignar-servicio,
+.dark-theme .servicio-card .eliminar-servicio {
+  border-color: #87c947;
+  color: #87c947;
+}
+
+.dark-theme .servicio-card .ver-detalles:hover,
+.dark-theme .servicio-card .asignar-servicio:hover,
+.dark-theme .servicio-card .eliminar-servicio:hover {
+  background-color: rgba(135, 201, 71, 0.15);
+}
+
+/* Selectores más específicos para garantizar prioridad */
+body.dark-theme .sidebar .servicio-card .ver-detalles,
+body.dark-theme .sidebar .servicio-card .asignar-servicio, 
+body.dark-theme .sidebar .servicio-card .eliminar-servicio,
+body.dark-theme .servicios-container .servicio-card .ver-detalles,
+body.dark-theme .servicios-container .servicio-card .asignar-servicio,
+body.dark-theme .servicios-container .servicio-card .eliminar-servicio {
+  border-color: #87c947;
+  color: #87c947;
+  background-color: transparent;
+  opacity: 1;
+}
+
+body.dark-theme .sidebar .servicio-card .ver-detalles:hover,
+body.dark-theme .sidebar .servicio-card .asignar-servicio:hover,
+body.dark-theme .sidebar .servicio-card .eliminar-servicio:hover,
+body.dark-theme .servicios-container .servicio-card .ver-detalles:hover,
+body.dark-theme .servicios-container .servicio-card .asignar-servicio:hover,
+body.dark-theme .servicios-container .servicio-card .eliminar-servicio:hover {
+  background-color: rgba(135, 201, 71, 0.15);
+  color: #87c947;
+  opacity: 1;
+}
+
+/* Asegurar que estos estilos tengan mayor prioridad */
+.servicio-card .ver-detalles,
+.servicio-card .asignar-servicio,
+.servicio-card .eliminar-servicio {
+  background-color: transparent !important;
+  border: 1px solid #87c947 !important;
+  color: #004122 !important;
+}
+
+.dark-theme .servicio-card .ver-detalles,
+.dark-theme .servicio-card .asignar-servicio,
+.dark-theme .servicio-card .eliminar-servicio {
+  color: #87c947 !important;
+}

@@ -169,6 +169,25 @@ const updateService = async (id, updates) => {
           throw new Error("No se encontró el servicio local");
         }
 
+        // Preparar los técnicos (múltiples o uno solo)
+        let technicianValue = updates.technician;
+        let techniciansArray = [];
+
+        if (
+          updates.technicians &&
+          Array.isArray(updates.technicians) &&
+          updates.technicians.length > 0
+        ) {
+          techniciansArray = [...updates.technicians];
+          // Si no hay técnico principal, usar el primero del array
+          if (!technicianValue && techniciansArray.length > 0) {
+            technicianValue = techniciansArray[0];
+          }
+        } else if (technicianValue) {
+          // Si solo hay técnico principal, agregarlo al array
+          techniciansArray = [technicianValue];
+        }
+
         // Create a new service with all required fields
         const newService = {
           name: existingService.clientName,
@@ -180,7 +199,8 @@ const updateService = async (id, updates) => {
           description: existingService.descripcion,
           preferredDate: updates.scheduledStart || new Date().toISOString(),
           status: updates.status || "confirmed",
-          technician: updates.technician,
+          technician: technicianValue,
+          technicians: techniciansArray,
           scheduledStart: updates.scheduledStart,
           scheduledEnd: updates.scheduledEnd,
         };
@@ -309,16 +329,35 @@ const getServiceRequests = async () => {
 };
 
 // Convert a service request to a service
-const convertServiceRequestToService = async (requestId, technicianId) => {
+const convertServiceRequestToService = async (
+  requestId,
+  technicianId,
+  technicianIds = []
+) => {
   try {
+    console.log("Convirtiendo solicitud de servicio a servicio:", {
+      requestId,
+      technicianId,
+      technicianIds,
+    });
+
     const config = getAuthConfig();
+
+    // Crear el payload para la conversión
+    const payload = {
+      technician: technicianId, // Técnico principal para compatibilidad
+      document: "1234567890", // Default document
+    };
+
+    // Agregar los técnicos múltiples si se proporcionan
+    if (technicianIds && technicianIds.length > 0) {
+      payload.technicians = technicianIds;
+      console.log("Enviando múltiples técnicos al backend:", technicianIds);
+    }
 
     const response = await axios.put(
       `${API_URL}/requests/${requestId}/convert`,
-      {
-        technician: technicianId,
-        document: "1234567890", // Default document
-      },
+      payload,
       config
     );
 

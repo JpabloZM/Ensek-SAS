@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -34,7 +34,19 @@ const Calendar = ({ darkMode = false }) => {
   const [posicionMenu, setPosicionMenu] = useState({ x: 0, y: 0 });
   const [mostrarMenuContextual, setMostrarMenuContextual] = useState(false);
   const [mostrarMenuContextualTecnico, setMostrarMenuContextualTecnico] =
-    useState(false); // Efecto para la carga inicial
+    useState(false);
+  // Referencia para acceder al componente FullCalendar
+  const calendarRef = useRef(null);
+
+  // Función para obtener la API del calendario
+  const getCalendarApi = () => {
+    if (calendarRef.current) {
+      return calendarRef.current.getApi();
+    }
+    return null;
+  };
+
+  // Efecto para la carga inicial
   useEffect(() => {
     const fetchTechnicians = async () => {
       try {
@@ -189,6 +201,93 @@ const Calendar = ({ darkMode = false }) => {
     // Process services data
     processServices(services);
   }, [services, loading, processServices]);
+
+  // Efecto para detectar y manejar actualizaciones del calendario mediante eventos personalizados
+  useEffect(() => {
+    console.log("Setting up calendar update event listener");
+
+    // Handler para el evento personalizado
+    const handleCalendarUpdateEvent = (e) => {
+      console.log("Calendar update event detected:", e.detail);
+
+      try {
+        // Si hay información del evento, añadirlo directamente al calendario
+        if (e.detail && e.detail.event) {
+          const eventData = e.detail.event;
+
+          // Actualizar el estado de eventos
+          setEventos((prevEventos) => {
+            // Filtrar eventos existentes con el mismo ID para evitar duplicados
+            const filteredEvents = prevEventos.filter(
+              (ev) =>
+                ev.id !== eventData.id || ev.resourceId !== eventData.resourceId
+            );
+            return [...filteredEvents, eventData];
+          });
+
+          // Intentar actualizar el calendario usando el ref si está disponible
+          if (calendarRef.current) {
+            const calendarApi = calendarRef.current.getApi();
+            if (calendarApi) {
+              // Eliminar evento existente si existe
+              const existingEvent = calendarApi.getEventById(eventData.id);
+              if (existingEvent) {
+                existingEvent.remove();
+              }
+
+              // Añadir el nuevo evento
+              calendarApi.addEvent(eventData);
+
+              // Refrescar todo el calendario
+              calendarApi.refetchEvents();
+              console.log("Calendar refreshed via calendarRef API");
+            }
+          }
+
+          // Limpiamos el servicio de la lista de pendientes
+          if (eventData.id) {
+            setServiciosPendientes((prev) =>
+              prev.filter(
+                (s) => s.id !== eventData.id && s._id !== eventData.id
+              )
+            );
+          }
+        } else {
+          // Si no hay información detallada, refrescar todo el calendario
+          console.log("No event details provided, refreshing full calendar");
+
+          // Refrescar calendario usando el ref
+          if (calendarRef.current) {
+            const calendarApi = calendarRef.current.getApi();
+            if (calendarApi) {
+              calendarApi.refetchEvents();
+            }
+          }
+
+          // Recargar todos los servicios
+          if (typeof getAllServices === "function") {
+            getAllServices(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error handling calendar update event:", error);
+      }
+    };
+
+    // Registrar el event listener
+    document.addEventListener(
+      "calendar-update-needed",
+      handleCalendarUpdateEvent
+    );
+
+    // Limpieza al desmontar
+    return () => {
+      document.removeEventListener(
+        "calendar-update-needed",
+        handleCalendarUpdateEvent
+      );
+    };
+  }, []);
 
   const handleAgregarTecnico = async () => {
     // Verificar si estamos en modo oscuro
@@ -1164,6 +1263,12 @@ const Calendar = ({ darkMode = false }) => {
         icon: "fa-clock",
         gradient: "linear-gradient(135deg, #ffd54f, #f1c40f)",
       },
+      facturado: {
+        nombre: "Facturado",
+        color: "#7f8c8d",
+        icon: "fa-file-invoice-dollar",
+        gradient: "linear-gradient(135deg, #95a5a6, #7f8c8d)",
+      },
       almuerzo: {
         nombre: "Hora de Almuerzo",
         color: "#3498db",
@@ -1179,24 +1284,42 @@ const Calendar = ({ darkMode = false }) => {
     };
 
     const { value: formValues } = await mostrarAlerta({
-      title: "Agregar Servicio",
+      title: "Nuevo Servicio",
       html: `
       <form id="servicioForm">
-        <input 
-          type="text" 
-          id="nombreServicio" 
-          class="form-control" 
-          placeholder="Nombre del servicio"
-          required
-        >
+        <div class="input-group">
+          <label>Tipo de servicio</label>
+          <select id="nombre" class="form-field" required>
+            <option value="">Seleccionar tipo de servicio...</option>
+            <option value="pest-control">Control de Plagas</option>
+            <option value="gardening">Jardinería</option>
+            <option value="residential-fumigation">Fumigación Residencial</option>
+            <option value="commercial-fumigation">Fumigación Comercial</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Cliente</label>
+          <input type="text" id="clientName" class="form-field" placeholder="Nombre del cliente" required>
+        </div>
+        <div class="input-group">
+          <label>Email</label>
+          <input type="email" id="clientEmail" class="form-field" placeholder="correo@ejemplo.com" required>
+        </div>
+        <div class="input-group">
+          <label>Teléfono</label>
+          <input type="tel" id="clientPhone" class="form-field" placeholder="Teléfono de contacto" required>
+        </div>
+        <div class="input-group">
+          <label>Dirección</label>
+          <input type="text" id="address" class="form-field" placeholder="Dirección del servicio" required>
+        </div>
+        <div class="input-group">
+          <label>Descripción</label>
+          <textarea id="descripcion" class="form-field" placeholder="Descripción detallada del servicio" rows="2" required></textarea>
+        </div>
         
-        <textarea 
-          id="descripcionServicio" 
-          class="form-control"
-          placeholder="Descripción del servicio"
-        ></textarea>
-        
-        <div class="estados-section">
+        <div class="input-group mt-2">
+          <label>Estado del servicio</label>
           <div id="estadosContainer">
             ${Object.entries(estadosServicio)
               .map(
@@ -1222,6 +1345,33 @@ const Calendar = ({ darkMode = false }) => {
           <small><i class="fas fa-clock"></i>${fechaInicio.toLocaleTimeString()}</small>
           <small><i class="fas fa-hourglass-end"></i>${fechaFin.toLocaleTimeString()}</small>
         </div>
+        <style>
+          #servicioForm {
+            display: grid;
+            gap: 10px;
+            padding: 15px;
+          }
+          .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+          }
+          .input-group label {
+            color: #87c947;
+            font-weight: 500;
+          }
+          .form-field {
+            padding: 8px;
+            border: 1px solid #87c947;
+            border-radius: 4px;
+            background: white;
+            width: 100%;
+            box-sizing: border-box;
+          }
+          .mt-2 {
+            margin-top: 12px;
+          }
+        </style>
       </form>
     `,
       showCancelButton: true,
@@ -1268,17 +1418,26 @@ const Calendar = ({ darkMode = false }) => {
         });
       },
       preConfirm: () => {
-        const nombre = document.getElementById("nombreServicio").value;
-        const descripcion = document.getElementById(
-          "descripcionServicio"
-        ).value;
+        const nombre = document.getElementById("nombre").value;
+        const clientName = document.getElementById("clientName").value;
+        const clientEmail = document.getElementById("clientEmail").value;
+        const clientPhone = document.getElementById("clientPhone").value;
+        const address = document.getElementById("address").value;
+        const descripcion = document.getElementById("descripcion").value;
         const estado = document.getElementById("estadoServicio").value;
 
-        if (!nombre) {
+        if (
+          !nombre ||
+          !clientName ||
+          !clientEmail ||
+          !clientPhone ||
+          !address ||
+          !descripcion
+        ) {
           mostrarAlerta({
             icon: "error",
             title: "Error",
-            text: "Por favor ingrese el nombre del servicio",
+            text: "Por favor complete todos los campos",
             confirmButtonColor: "#87c947",
             background: "#f8ffec",
             color: "#004122",
@@ -1298,9 +1457,21 @@ const Calendar = ({ darkMode = false }) => {
           return false;
         }
 
+        const serviceTypes = {
+          "pest-control": "Control de Plagas",
+          gardening: "Jardinería",
+          "residential-fumigation": "Fumigación Residencial",
+          "commercial-fumigation": "Fumigación Comercial",
+        };
+
         return {
-          nombre,
+          nombre: serviceTypes[nombre] || nombre, // Nombre en español para mostrar
+          serviceType: nombre, // Valor original para el backend
           descripcion,
+          clientName,
+          clientEmail,
+          clientPhone,
+          address,
           estado,
           color: estadosServicio[estado].color,
         };
@@ -1311,35 +1482,69 @@ const Calendar = ({ darkMode = false }) => {
       const calendarApi = selectInfo.view.calendar;
       calendarApi.unselect();
 
-      // Crear evento con la clase correcta para el estado
-      const nuevoEvento = {
-        id: `evento-${Date.now()}`,
-        title: formValues.nombre,
-        start: selectInfo.start,
-        end: selectInfo.end,
-        resourceId: selectInfo.resource.id,
-        extendedProps: {
+      let nuevoEvento;
+
+      // Primero crear el servicio en la base de datos
+      try {
+        // Crear un nuevo objeto con los datos del servicio
+        const nuevoServicio = {
+          clientName: formValues.clientName,
+          clientEmail: formValues.clientEmail,
+          clientPhone: formValues.clientPhone,
+          address: formValues.address,
+          serviceType: formValues.serviceType,
           descripcion: formValues.descripcion,
-          estado: formValues.estado,
-        },
-        backgroundColor: formValues.color,
-        borderColor: formValues.color,
-        textColor: "white",
-        className: `estado-${formValues.estado}`,
-        display: "block",
-      };
+          document: "1234567890", // Valor por defecto
+          preferredDate: selectInfo.start.toISOString(),
+        };
 
-      console.log("Event created:", nuevoEvento);
-      console.log("Technicians state:", tecnicos);
+        // Guardar el servicio en la base de datos
+        const createdService = await handleAgregarServicio(nuevoServicio);
 
-      // Agregar evento al estado
-      setEventos((prevEventos) => {
-        const eventosActualizados = [...prevEventos, nuevoEvento];
-        localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
-        return eventosActualizados;
-      });
+        // Crear evento con la clase correcta para el estado y el ID del servicio creado
+        nuevoEvento = {
+          id: createdService ? createdService._id : `evento-${Date.now()}`,
+          title: formValues.nombre,
+          start: selectInfo.start,
+          end: selectInfo.end,
+          resourceId: selectInfo.resource.id,
+          extendedProps: {
+            descripcion: formValues.descripcion,
+            estado: formValues.estado,
+            clientName: formValues.clientName,
+            clientEmail: formValues.clientEmail,
+            clientPhone: formValues.clientPhone,
+            address: formValues.address,
+            serviceType: formValues.serviceType,
+            serviceId: createdService ? createdService._id : null,
+          },
+          backgroundColor: formValues.color,
+          borderColor: formValues.color,
+          textColor: "white",
+          className: `estado-${formValues.estado}`,
+          display: "block",
+        };
 
-      calendarApi.addEvent(nuevoEvento);
+        console.log("Event created:", nuevoEvento);
+        console.log("Technicians state:", tecnicos);
+
+        // Agregar evento al estado
+        setEventos((prevEventos) => {
+          const eventosActualizados = [...prevEventos, nuevoEvento];
+          localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
+          return eventosActualizados;
+        });
+
+        calendarApi.addEvent(nuevoEvento);
+      } catch (error) {
+        console.error("Error al crear el servicio:", error);
+        mostrarAlerta({
+          icon: "error",
+          title: "Error",
+          text: "No se pudo crear el servicio. Por favor, intente nuevamente.",
+          confirmButtonColor: "#87c947",
+        });
+      }
     }
   };
 
@@ -1438,6 +1643,12 @@ const Calendar = ({ darkMode = false }) => {
         color: "#ffd54f",
         icon: "fa-clock",
         gradient: "linear-gradient(135deg, #ffd54f, #f1c40f)",
+      },
+      facturado: {
+        nombre: "Facturado",
+        color: "#7f8c8d",
+        icon: "fa-file-invoice-dollar",
+        gradient: "linear-gradient(135deg, #95a5a6, #7f8c8d)",
       },
       almuerzo: {
         nombre: "Hora de Almuerzo",
@@ -1662,8 +1873,18 @@ const Calendar = ({ darkMode = false }) => {
       });
     }
   };
-  const handleAsignarServicio = async (eventoCalendario, servicioId) => {
+  const handleAsignarServicio = async (
+    eventoCalendario,
+    servicioId,
+    technicianIds = []
+  ) => {
     try {
+      console.log("Iniciando asignación de servicio con parámetros:", {
+        eventoCalendario,
+        servicioId,
+        technicianIds,
+      });
+
       // Ensure we're using the MongoDB ID
       const realServiceId =
         typeof servicioId === "string" && servicioId.startsWith("evento-")
@@ -1681,6 +1902,7 @@ const Calendar = ({ darkMode = false }) => {
       console.log("Assigning service to calendar event:", {
         serviceId: realServiceId,
         technician: eventoCalendario.resourceId,
+        technicians: technicianIds,
         start: eventoCalendario.start,
         end: eventoCalendario.end,
       });
@@ -1693,7 +1915,8 @@ const Calendar = ({ darkMode = false }) => {
         const conversionResult =
           await serviceService.convertServiceRequestToService(
             realServiceId,
-            eventoCalendario.resourceId
+            eventoCalendario.resourceId,
+            technicianIds // Pasar el array de técnicos
           );
 
         updatedService = conversionResult.service;
@@ -1707,7 +1930,8 @@ const Calendar = ({ darkMode = false }) => {
         // If conversion fails, fall back to the regular update
         updatedService = await serviceService.updateService(realServiceId, {
           status: "confirmed",
-          technician: eventoCalendario.resourceId,
+          technician: eventoCalendario.resourceId, // Técnico principal
+          technicians: technicianIds, // Array de todos los técnicos
           scheduledStart: eventoCalendario.start,
           scheduledEnd: eventoCalendario.end,
         });
@@ -1718,64 +1942,187 @@ const Calendar = ({ darkMode = false }) => {
       // Create a properly formatted calendar event with required properties
       const formattedEvent = {
         id: updatedService._id,
-        title: updatedService.serviceType,
-        start: updatedService.scheduledStart || updatedService.preferredDate,
+        title: `${
+          eventoCalendario.title || updatedService.serviceType || "Servicio"
+        } - ${
+          updatedService.name ||
+          eventoCalendario.extendedProps?.clientName ||
+          "Cliente"
+        }`,
+        start:
+          updatedService.scheduledStart ||
+          eventoCalendario.start ||
+          updatedService.preferredDate,
         end:
           updatedService.scheduledEnd ||
+          eventoCalendario.end ||
           new Date(
             new Date(updatedService.preferredDate).getTime() + 60 * 60 * 1000
           ).toISOString(),
-        resourceId: updatedService.technician,
+        resourceId: eventoCalendario.resourceId, // Usar el técnico específico para este evento
         backgroundColor: "#87c947",
         borderColor: "#87c947",
+        className: "estado-confirmado",
+        textColor: "white",
+        display: "block",
         extendedProps: {
           estado: "confirmado",
           status: "confirmed",
-          descripcion: updatedService.description,
-          description: updatedService.description,
-          cliente: updatedService.name,
-          clientName: updatedService.name,
-          telefono: updatedService.phone,
-          clientPhone: updatedService.phone,
-          email: updatedService.email,
-          clientEmail: updatedService.email,
-          direccion: updatedService.address,
-          address: updatedService.address,
+          descripcion:
+            updatedService.description ||
+            eventoCalendario.extendedProps?.descripcion,
+          description:
+            updatedService.description ||
+            eventoCalendario.extendedProps?.description,
+          cliente:
+            updatedService.name || eventoCalendario.extendedProps?.clientName,
+          clientName:
+            updatedService.name || eventoCalendario.extendedProps?.clientName,
+          telefono:
+            updatedService.phone || eventoCalendario.extendedProps?.clientPhone,
+          clientPhone:
+            updatedService.phone || eventoCalendario.extendedProps?.clientPhone,
+          email:
+            updatedService.email || eventoCalendario.extendedProps?.clientEmail,
+          clientEmail:
+            updatedService.email || eventoCalendario.extendedProps?.clientEmail,
+          direccion:
+            updatedService.address || eventoCalendario.extendedProps?.address,
+          address:
+            updatedService.address || eventoCalendario.extendedProps?.address,
+          technicians: technicianIds, // Guardar los IDs de todos los técnicos en las props extendidas
+          serviceId: updatedService._id || realServiceId,
         },
       };
 
       console.log("Formatted event for calendar:", formattedEvent);
 
+      // MÉTODO 1: Actualizar el estado React
       // Update UI state with the properly formatted event
       setEventos((prevEventos) => {
         // Remove any existing event with the same ID to avoid duplicates
         const filteredEvents = prevEventos.filter(
-          (e) => e.id !== formattedEvent.id
+          (e) =>
+            e.id !== formattedEvent.id ||
+            e.resourceId !== formattedEvent.resourceId
         );
         return [...filteredEvents, formattedEvent];
       });
 
-      setServiciosPendientes((prevServicios) =>
-        prevServicios.filter(
-          (s) => s.id !== servicioId && s._id !== realServiceId
-        )
-      );
+      // MÉTODO 2: Intentar agregar usando calendarRef directo
+      try {
+        if (calendarRef && calendarRef.current) {
+          const calendarApi = calendarRef.current.getApi();
+          if (calendarApi) {
+            console.log("Adding event directly via calendar API ref");
+
+            // Primero eliminamos eventos existentes con el mismo ID para evitar duplicados
+            const existingEvent = calendarApi.getEventById(formattedEvent.id);
+            if (existingEvent) {
+              console.log(
+                "Removing existing event before adding new one",
+                existingEvent
+              );
+              existingEvent.remove();
+            }
+
+            // Agregamos el nuevo evento
+            calendarApi.addEvent(formattedEvent);
+
+            // Refrescamos para asegurar que se muestre
+            calendarApi.refetchEvents();
+
+            console.log("Event added successfully via calendarRef");
+          }
+        }
+      } catch (calendarRefError) {
+        console.warn("Error using calendarRef:", calendarRefError);
+      }
+
+      // MÉTODO 3: Buscar el calendario en el DOM y usar su API
+      try {
+        const calendarElement = document.querySelector(".fc");
+        if (calendarElement && calendarElement._fullCalendar) {
+          console.log("Found FullCalendar instance in DOM");
+          const calendarInstance = calendarElement._fullCalendar;
+          calendarInstance.addEvent(formattedEvent);
+          console.log("Event added via DOM FullCalendar instance");
+        }
+      } catch (domError) {
+        console.warn("Error accessing calendar through DOM:", domError);
+      }
+
+      // MÉTODO 4: Usar un evento personalizado para notificar a otros componentes
+      try {
+        console.log("Dispatching custom event for calendar refresh");
+        const customEvent = new CustomEvent("calendar-update-needed", {
+          detail: {
+            event: formattedEvent,
+            action: "add",
+            timestamp: new Date().getTime(),
+          },
+        });
+        document.dispatchEvent(customEvent);
+      } catch (customEventError) {
+        console.warn("Error dispatching custom event:", customEventError);
+      }
+
+      // Siempre quitar de servicios pendientes después de asignar, sin importar cuántos técnicos
+      // Esto evita que el servicio aparezca como pendiente cuando ya está asignado
+      setServiciosPendientes((prevServicios) => {
+        console.log("Removing from pending services:", {
+          servicioId,
+          realServiceId,
+          currentPending: prevServicios.length,
+        });
+        return prevServicios.filter(
+          (s) =>
+            s.id !== servicioId &&
+            s._id !== servicioId &&
+            s.id !== updatedService._id &&
+            s._id !== updatedService._id
+        );
+      });
 
       // Save events to localStorage with properly formatted event
-      const eventosActualizados = eventos.filter(
-        (e) => e.id !== formattedEvent.id
+      const currentEventos = JSON.parse(
+        localStorage.getItem("eventos") || "[]"
+      );
+      const eventosActualizados = currentEventos.filter(
+        (e) =>
+          e.id !== formattedEvent.id ||
+          e.resourceId !== formattedEvent.resourceId
       );
       eventosActualizados.push(formattedEvent);
       localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
+      console.log("Updated localStorage events:", {
+        before: currentEventos.length,
+        after: eventosActualizados.length,
+      });
 
       // Update cached services to ensure persistence between page reloads
       const cachedServices = localStorage.getItem("cachedServices");
       if (cachedServices) {
         try {
           const parsedServices = JSON.parse(cachedServices);
-          const updatedCache = parsedServices.map((service) =>
-            service._id === realServiceId ? updatedService : service
-          );
+          // Buscar el servicio por ID y actualizarlo o agregarlo si no existe
+          let serviceUpdated = false;
+          const updatedCache = parsedServices.map((service) => {
+            if (
+              service._id === realServiceId ||
+              service._id === updatedService._id
+            ) {
+              serviceUpdated = true;
+              return updatedService;
+            }
+            return service;
+          });
+
+          // Si no se actualizó ningún servicio, agregar el nuevo
+          if (!serviceUpdated) {
+            updatedCache.push(updatedService);
+          }
+
           localStorage.setItem("cachedServices", JSON.stringify(updatedCache));
           console.log("Cache updated after service assignment");
         } catch (cacheError) {
@@ -1783,8 +2130,46 @@ const Calendar = ({ darkMode = false }) => {
         }
       }
 
+      // También eliminar el servicio de la lista pendiente en localStorage
+      try {
+        const localPendingServices = JSON.parse(
+          localStorage.getItem("serviciosPendientes") || "[]"
+        );
+        const filteredLocalPending = localPendingServices.filter(
+          (s) =>
+            s.id !== servicioId &&
+            s._id !== realServiceId &&
+            s.id !== updatedService._id &&
+            s._id !== updatedService._id
+        );
+        localStorage.setItem(
+          "serviciosPendientes",
+          JSON.stringify(filteredLocalPending)
+        );
+        console.log("Updated local pending services storage", {
+          before: localPendingServices.length,
+          after: filteredLocalPending.length,
+        });
+      } catch (localStorageError) {
+        console.error(
+          "Error updating localStorage pending services:",
+          localStorageError
+        );
+      }
+
+      // Forzar un refresco del calendario
+      document.dispatchEvent(
+        new CustomEvent("calendar-update-needed", {
+          detail: { event: formattedEvent },
+        })
+      );
+
       // Force a refresh of service data in the background
-      getAllServices(true);
+      if (typeof getAllServices === "function") {
+        getAllServices(true);
+      } else {
+        console.warn("getAllServices function not available for refresh");
+      }
 
       return true;
     } catch (error) {
@@ -1904,6 +2289,66 @@ const Calendar = ({ darkMode = false }) => {
     }
   };
 
+  // Event listener to refresh calendar when new events are added
+  useEffect(() => {
+    const handleCalendarUpdateNeeded = (event) => {
+      console.log("Calendar update needed event received", event.detail);
+
+      // Force a refresh of the calendar by updating a key event
+      if (event.detail && event.detail.event) {
+        // Primero intenta usar nuestra referencia directa al calendario
+        const calendarApi = getCalendarApi();
+        if (calendarApi) {
+          console.log("Refreshing calendar with ref API");
+          calendarApi.refetchEvents();
+
+          // Si hay un evento específico, intenta agregarlo directamente
+          if (event.detail.event) {
+            try {
+              calendarApi.addEvent(event.detail.event);
+            } catch (error) {
+              console.warn("Could not add specific event:", error);
+            }
+          }
+        } else {
+          // Método alternativo: busca el elemento en el DOM
+          const calendarInstance = document.querySelector("#calendario .fc");
+          if (calendarInstance && calendarInstance.fullCalendar) {
+            console.log("Refreshing calendar with direct DOM API");
+            calendarInstance.fullCalendar.refetchEvents();
+          } else {
+            // Como último recurso, forzar una actualización del estado para re-renderizar
+            console.log("Refreshing calendar with state update");
+            setEventos((prevEventos) => [...prevEventos]);
+          }
+        }
+
+        // También actualizar la lista de servicios pendientes
+        const servicioId = event.detail.event?.id;
+        if (servicioId) {
+          console.log("Removing service from pending services:", servicioId);
+          setServiciosPendientes((prevServicios) =>
+            prevServicios.filter(
+              (s) => s.id !== servicioId && s._id !== servicioId
+            )
+          );
+        }
+      }
+    };
+
+    document.addEventListener(
+      "calendar-update-needed",
+      handleCalendarUpdateNeeded
+    );
+
+    return () => {
+      document.removeEventListener(
+        "calendar-update-needed",
+        handleCalendarUpdateNeeded
+      );
+    };
+  }, []);
+
   // Debug function to monitor calendar events
   useEffect(() => {
     console.log("Calendar events updated:", eventos);
@@ -1936,6 +2381,7 @@ const Calendar = ({ darkMode = false }) => {
     setPosicionMenu({ x: e.clientX, y: e.clientY });
 
     // Muestra el menú
+
     setMostrarMenuContextual(true);
 
     // Oculta cualquier otro menú contextual que pudiera estar abierto
@@ -2085,6 +2531,7 @@ const Calendar = ({ darkMode = false }) => {
       confirmado: "#87c947",
       cancelado: "#e74c3c",
       pendiente: "#ffd54f",
+      facturado: "#7f8c8d",
       almuerzo: "#3498db",
       especial: "#9b59b6",
     };
@@ -2221,6 +2668,20 @@ const Calendar = ({ darkMode = false }) => {
   // No necesitamos el código anterior que trataba de modificar window.FC
   // ya que hemos establecido la licencia de varias otras maneras
 
+  // La función getCalendarApi ya está definida arriba
+
+  // Función para agregar directamente un evento al calendario usando la API
+  const addEventToCalendar = (event) => {
+    const api = getCalendarApi();
+    if (api) {
+      console.log("Adding event directly via calendar API:", event);
+      api.addEvent(event);
+      return true;
+    }
+    console.warn("Calendar API not available, couldn't add event directly");
+    return false;
+  };
+
   return (
     <div className={`calendar-container ${darkMode ? "dark-theme" : ""}`}>
       <Sidebar
@@ -2233,6 +2694,7 @@ const Calendar = ({ darkMode = false }) => {
         <CalendarHeader onAgregarTecnico={handleAgregarTecnico} />
         <div id="calendario">
           <FullCalendar
+            ref={calendarRef}
             plugins={[
               dayGridPlugin,
               timeGridPlugin,

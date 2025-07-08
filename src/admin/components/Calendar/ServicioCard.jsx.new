@@ -11,7 +11,6 @@ import "./styles/swal-icon-spacing.css"; // Importamos estilos específicos para
 import "./styles/swal-buttons.css"; // Importamos estilos específicos para los botones
 import "./styles/assign-modal-buttons.css"; // Importamos estilos específicos para los botones del modal de asignación
 import "./styles/modal-footer.css"; // Importamos estilos para que el footer tenga el mismo color del formulario
-import "./styles/card-buttons.css"; // Importamos estilos específicos para los botones de la tarjeta
 import "./styles/force-dark-modal.css"; // Este debe ser el último CSS importado para asegurar que tenga mayor prioridad
 
 const { getTechnicians: fetchTechnicians } = userService;
@@ -84,27 +83,24 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
           </div>
           <div class="detalles-row">
             <div class="detalles-label">Email:</div>
-            <div class="detalles-value">${
-              servicio.clientEmail || "No disponible"
-            }</div>
+            <div class="detalles-value">${servicio.clientEmail || "No disponible"
+        }</div>
           </div>
           <div class="detalles-row">
             <div class="detalles-label">Teléfono:</div>
-            <div class="detalles-value">${
-              servicio.clientPhone || "No disponible"
-            }</div>
+            <div class="detalles-value">${servicio.clientPhone || "No disponible"
+        }</div>
           </div>
           <div class="detalles-row">
             <div class="detalles-label">Dirección:</div>
-            <div class="detalles-value">${
-              servicio.address || "No disponible"
-            }</div>
+            <div class="detalles-value">${servicio.address || "No disponible"}</div>
           </div>
           <div class="detalles-row">
             <div class="detalles-label">Descripción:</div>
-            <div class="detalles-value">${
-              servicio.descripcion || servicio.description || "Sin descripción"
-            }</div>
+            <div class="detalles-value">${servicio.descripcion ||
+          servicio.description ||
+          "Sin descripción"
+        }</div>
           </div>
         </div>
       `,
@@ -169,12 +165,10 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
 
     const technicianOptions = technicians
       .filter(
-        (tech) =>
-          !selectedTechnicians.some((selected) => selected._id === tech._id)
+        (tech) => !selectedTechnicians.some((selected) => selected._id === tech._id)
       )
       .map(
-        (tech) =>
-          `<option value="${tech._id}">${tech.name || tech.username}</option>`
+        (tech) => `<option value="${tech._id}">${tech.name || tech.username}</option>`
       )
       .join("");
 
@@ -182,9 +176,7 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
       <div class="asignar-form">
         <div class="form-group">
           <label for="fecha" class="form-label">Fecha del servicio</label>
-          <input type="date" id="fecha" class="form-control" value="${
-            new Date().toISOString().split("T")[0]
-          }" required>
+          <input type="date" id="fecha" class="form-control" value="${new Date().toISOString().split("T")[0]}" required>
         </div>
         
         <div class="form-group time-group">
@@ -229,54 +221,50 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
       let localSelectedTechnicians = [...selectedTechnicians];
 
       // Mostrar el modal con SweetAlert2
-      const result = await Swal.fire({
+      const formValues = await Swal.fire({
         title: "Asignar servicio a técnicos",
         html: `
           <div class="detalles-servicio mb-2" style="background-color: ${
-            isDarkMode ? "#2c2e35" : "#f8f9fa"
+          isDarkMode ? "#2c2e35" : "#f8f9fa"
           }; color: ${
           isDarkMode ? "#fff" : "#333"
-        }; border-radius: 4px; padding: 0.5rem;">
+          }; border-radius: 4px; padding: 0.5rem;">
             <p class="mb-1"><strong style="color: ${
-              isDarkMode ? "#87c947" : "#004122"
-            };">Cliente:</strong> <span style="color: ${
+          isDarkMode ? "#87c947" : "#004122"
+          };">Cliente:</strong> <span style="color: ${
           isDarkMode ? "#fff" : "#333"
-        };">${servicio.clientName}</span></p>
+          };">${servicio.clientName}</span></p>
             <p class="mb-1"><strong style="color: ${
-              isDarkMode ? "#87c947" : "#004122"
-            };">Dirección:</strong> <span style="color: ${
+          isDarkMode ? "#87c947" : "#004122"
+          };">Dirección:</strong> <span style="color: ${
           isDarkMode ? "#fff" : "#333"
-        };">${servicio.address}</span></p>
+          };">${servicio.address}</span></p>
             <p class="mb-1"><strong style="color: ${
-              isDarkMode ? "#87c947" : "#004122"
-            };">Descripción:</strong> <span style="color: ${
+          isDarkMode ? "#87c947" : "#004122"
+          };">Descripción:</strong> <span style="color: ${
           isDarkMode ? "#fff" : "#333"
-        };">${servicio.descripcion}</span></p>
+          };">${servicio.descripcion}</span></p>
           </div>
           <form id="asignarForm" style="margin-top: 0.5rem;">
             <div class="mb-2">
               <label class="form-label mb-1" style="color: #87c947; font-weight: 500; font-size: 0.9rem;">Técnico</label>
               <div style="display: flex; gap: 8px; margin-bottom: 10px;">
                 <select id="tecnicoSelect" class="form-control" style="background-color: ${
-                  isDarkMode ? "#2c2e35" : "#fff"
-                }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
+          isDarkMode ? "#2c2e35" : "#fff"
+          }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
           isDarkMode ? "#444" : "#ced4da"
-        }; padding: 0.4rem 0.75rem; font-size: 0.9rem; flex-grow: 1;">
+          }; padding: 0.4rem 0.75rem; font-size: 0.9rem; flex-grow: 1;">
                   <option value="">Seleccionar técnico...</option>
                   ${technicians
-                    .filter(
-                      (tech) =>
-                        !localSelectedTechnicians.some(
-                          (t) => t._id === tech._id
-                        )
-                    )
-                    .map(
-                      (tech) =>
-                        `<option value="${tech._id}">${
-                          tech.name || tech.username
-                        }</option>`
-                    )
-                    .join("")}
+            .filter(
+              (tech) =>
+                !localSelectedTechnicians.some((t) => t._id === tech._id)
+            )
+            .map(
+              (tech) =>
+                `<option value="${tech._id}">${tech.name || tech.username}</option>`
+            )
+            .join("")}
                 </select>
                 <button id="addTechnician" type="button" style="background-color: #87c947; color: white; border: none; border-radius: 4px; padding: 0 1rem; display: flex; align-items: center; justify-content: center;">
                   <i class="fas fa-plus" style="margin-right: 0.25rem;"></i> Añadir
@@ -284,61 +272,57 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
               </div>
               <div id="selectedTechnicians" style="margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 6px;">
                 ${localSelectedTechnicians
-                  .map(
-                    (tech) => `
+            .map(
+              (tech) => `
                   <div class="selected-tech" style="background-color: ${
-                    isDarkMode ? "#2c2e35" : "#e9f5d8"
-                  }; color: ${
-                      isDarkMode ? "#fff" : "#004122"
-                    }; padding: 3px 10px; border-radius: 50px; display: flex; align-items: center; font-size: 0.85rem;">
+                isDarkMode ? "#2c2e35" : "#e9f5d8"
+                }; color: ${
+                isDarkMode ? "#fff" : "#004122"
+                }; padding: 3px 10px; border-radius: 50px; display: flex; align-items: center; font-size: 0.85rem;">
                     <span>${tech.name}</span>
                     <button type="button" class="remove-technician" data-id="${
-                      tech._id
-                    }" style="background: none; border: none; color: ${
-                      isDarkMode ? "#ff6b6b" : "#e74c3c"
-                    }; margin-left: 5px; cursor: pointer; display: flex; align-items: center; padding: 0 2px;">
+                tech._id
+                }" style="background: none; border: none; color: ${
+                isDarkMode ? "#ff6b6b" : "#e74c3c"
+                }; margin-left: 5px; cursor: pointer; display: flex; align-items: center; padding: 0 2px;">
                       <i class="fas fa-times-circle"></i>
                     </button>
                   </div>
                 `
-                  )
-                  .join("")}
+            )
+            .join("")}
               </div>
             </div>
             
             <div class="mb-2">
               <label class="form-label mb-1" style="color: #87c947; font-weight: 500; font-size: 0.9rem;">Fecha</label>
-              <input type="date" id="fecha" class="form-control" value="${
-                new Date().toISOString().split("T")[0]
-              }" style="background-color: ${
+              <input type="date" id="fecha" class="form-control" value="${new Date()
+            .toISOString()
+            .split("T")[0]}" style="background-color: ${
           isDarkMode ? "#2c2e35" : "#fff"
-        }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
+          }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
           isDarkMode ? "#444" : "#ced4da"
-        };">
+          };">
             </div>
             
             <div style="display: flex; gap: 10px;">
               <div class="mb-2" style="flex: 1;">
                 <label class="form-label mb-1" style="color: #87c947; font-weight: 500; font-size: 0.9rem;">Hora de inicio</label>
-                <input type="time" id="horaInicio" class="form-control" value="${new Date()
-                  .getHours()
-                  .toString()
-                  .padStart(2, "0")}:${new Date()
-          .getMinutes()
-          .toString()
-          .padStart(2, "0")}" style="background-color: ${
+                <input type="time" id="horaInicio" class="form-control" value="${
+          new Date().getHours().toString().padStart(2, "0")
+          }:${new Date().getMinutes().toString().padStart(2, "0")}" style="background-color: ${
           isDarkMode ? "#2c2e35" : "#fff"
-        }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
+          }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
           isDarkMode ? "#444" : "#ced4da"
-        };">
+          };">
               </div>
               <div class="mb-2" style="flex: 1;">
                 <label class="form-label mb-1" style="color: #87c947; font-weight: 500; font-size: 0.9rem;">Duración (min)</label>
                 <input type="number" id="duracion" class="form-control" value="60" min="30" step="15" style="background-color: ${
-                  isDarkMode ? "#2c2e35" : "#fff"
-                }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
+          isDarkMode ? "#2c2e35" : "#fff"
+          }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
           isDarkMode ? "#444" : "#ced4da"
-        };">
+          };">
               </div>
             </div>
           </form>
@@ -365,16 +349,16 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
               .map(
                 (tech) => `
               <div class="selected-tech" style="background-color: ${
-                isDarkMode ? "#2c2e35" : "#e9f5d8"
-              }; color: ${
+                  isDarkMode ? "#2c2e35" : "#e9f5d8"
+                  }; color: ${
                   isDarkMode ? "#fff" : "#004122"
-                }; padding: 3px 10px; border-radius: 50px; display: flex; align-items: center; font-size: 0.85rem;">
+                  }; padding: 3px 10px; border-radius: 50px; display: flex; align-items: center; font-size: 0.85rem;">
                 <span>${tech.name}</span>
                 <button type="button" class="remove-technician" data-id="${
                   tech._id
-                }" style="background: none; border: none; color: ${
+                  }" style="background: none; border: none; color: ${
                   isDarkMode ? "#ff6b6b" : "#e74c3c"
-                }; margin-left: 5px; cursor: pointer; display: flex; align-items: center; padding: 0 2px;">
+                  }; margin-left: 5px; cursor: pointer; display: flex; align-items: center; padding: 0 2px;">
                   <i class="fas fa-times-circle"></i>
                 </button>
               </div>
@@ -486,22 +470,17 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
         },
       });
 
-      return result;
+      return formValues;
     };
 
-    const result = await mostrarModal();
+    const formValues = await mostrarModal();
 
     // Solo proceder con la asignación si el usuario confirmó el modal
-    if (!result || !result.isConfirmed) {
-      console.log(
-        "Modal cancelado o cerrado sin confirmación. No se realizará asignación."
-      );
+    if (!formValues || !formValues.isConfirmed) {
+      console.log("Modal cancelado o cerrado sin confirmación. No se realizará asignación.");
       return; // Salir de la función para no ejecutar nada más
     }
-
-    // Obtener los valores del formulario
-    const formValues = result.value;
-
+    
     // Si llegamos aquí, el usuario confirmó el modal
     console.log("Modal confirmado, procediendo con la asignación de servicio");
     const { fecha, horaInicio, duracion, tecnicosSeleccionados } = formValues;
@@ -595,7 +574,7 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
 
     // Verificar si todas las asignaciones fueron exitosas
     const todasExitosas = resultados.every((res) => res === true);
-
+    
     // Mensaje personalizado según la cantidad de técnicos
     let mensajeExito;
     if (cantidadTecnicos === 1) {
@@ -632,65 +611,66 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
       style={{
         backgroundColor: isDarkMode ? "#2c2e35" : "#ffffff",
         borderColor: "#c5f198",
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
-        transform: "none",
-        display: "flex",
-        flexDirection: "column",
       }}
     >
-      <div className="contenido-servicio">
-        <div className="d-flex justify-content-between align-items-start">
-          <h5 style={{ flex: 1 }}>
-            <i className="fas fa-tag icon-primary"></i>{" "}
-            {formatServiceName(servicio.serviceType || servicio.nombre)}
-          </h5>
+      <div className="servicio-header" style={{ color: "#004122" }}>
+        <div className="servicio-nombre">
+          {formatServiceName(servicio.serviceType)}
         </div>
-        <p className="mb-1">
-          <i className="fas fa-user icon-primary"></i> {servicio.clientName}
-        </p>
-        <p className="mb-1">
-          {" "}
-          <i className="fas fa-calendar-alt icon-primary"></i>{" "}
-          {servicio.preferredDate
-            ? new Date(servicio.preferredDate).toLocaleDateString()
-            : "No especificada"}
-        </p>
-        <p className="mb-0 descripcion-truncada">
-          <i className="fas fa-info-circle icon-primary"></i>{" "}
-          {servicio.descripcion || servicio.description || "Sin descripción"}
-        </p>
+        <div
+          className="servicio-estado pendiente"
+          style={{
+            backgroundColor: isDarkMode ? "#eab308" : "#FDD835",
+            color: "#333",
+          }}
+        >
+          Pendiente
+        </div>
       </div>
-      <div className="botones-container">
-        <button
-          className="ver-detalles"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleClick();
-          }}
-          title="Ver detalles"
-        >
-          <i className="fas fa-info-circle"></i>
-        </button>
-        <button
-          className="asignar-servicio"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleAsignar();
-          }}
-          title="Asignar servicio"
-        >
-          <i className="fas fa-calendar-plus"></i>
-        </button>
-        <button
-          className="eliminar-servicio"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEliminar();
-          }}
-          title="Eliminar servicio"
-        >
-          <i className="fas fa-times"></i>
-        </button>
+      <div
+        className="servicio-detalles"
+        style={{ color: isDarkMode ? "#e0e0e0" : "#555" }}
+      >
+        <div className="cliente-info">
+          <i className="fas fa-user"></i> {servicio.clientName}
+        </div>
+        <div className="direccion-info">
+          <i className="fas fa-map-marker-alt"></i> {servicio.address}
+        </div>
+      </div>
+      <div className="servicio-acciones">
+        <div className="acciones-grupo">
+          <button
+            className="asignar-servicio"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAsignar();
+            }}
+            title="Asignar servicio"
+          >
+            <i className="fas fa-calendar-plus"></i>
+          </button>
+          <button
+            className="ver-detalles"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClick();
+            }}
+            title="Ver detalles"
+          >
+            <i className="fas fa-info-circle"></i>
+          </button>
+          <button
+            className="eliminar-servicio"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEliminar();
+            }}
+            title="Eliminar servicio"
+          >
+            <i className="fas fa-times"></i>
+          </button>
+        </div>
       </div>
     </div>
   );

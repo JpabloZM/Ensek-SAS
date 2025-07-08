@@ -293,7 +293,10 @@ export const updateService = async (req, res) => {
       });
     }
 
-    // Handle technician assignment
+    // Preparar objeto de actualización
+    const updateData = { ...req.body };
+
+    // Manejar asignación de técnico principal (legado)
     if (req.body.technician) {
       // Validate technician ID format
       if (!mongoose.Types.ObjectId.isValid(req.body.technician)) {
@@ -316,11 +319,49 @@ export const updateService = async (req, res) => {
         });
       }
 
-      req.body.technician = new mongoose.Types.ObjectId(technicianUser._id);
+      updateData.technician = new mongoose.Types.ObjectId(technicianUser._id);
     }
+
+    // Manejar múltiples técnicos
+    if (req.body.technicians && Array.isArray(req.body.technicians)) {
+      // Validar cada ID de técnico
+      const validatedTechnicians = [];
+
+      for (const techId of req.body.technicians) {
+        if (!mongoose.Types.ObjectId.isValid(techId)) {
+          return res.status(400).json({
+            message: "ID de técnico inválido en el array",
+            details: `El ID ${techId} no es un ObjectId válido de MongoDB`,
+          });
+        }
+
+        const techUser = await User.findOne({
+          _id: techId,
+          role: "technician",
+        });
+
+        if (techUser) {
+          validatedTechnicians.push(new mongoose.Types.ObjectId(techUser._id));
+        } else {
+          console.warn(
+            `Técnico con ID ${techId} no encontrado o no es técnico`
+          );
+        }
+      }
+
+      // Actualizar con los técnicos validados
+      updateData.technicians = validatedTechnicians;
+
+      // Si no hay un técnico principal asignado pero hay técnicos en la lista,
+      // asignar el primero como principal para compatibilidad
+      if (!updateData.technician && validatedTechnicians.length > 0) {
+        updateData.technician = validatedTechnicians[0];
+      }
+    }
+
     const service = await ServiceModel.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       {
         new: true,
         runValidators: true,
@@ -445,6 +486,25 @@ export const convertServiceRequestToService = async (req, res) => {
       });
     }
 
+    // Manejar técnicos múltiples desde la solicitud
+    let technicians = [];
+    if (req.body.technicians && Array.isArray(req.body.technicians)) {
+      technicians = req.body.technicians.map(
+        (id) => new mongoose.Types.ObjectId(id)
+      );
+    }
+
+    // Si hay un técnico principal especificado, asegurarse de que también esté en el array
+    if (req.body.technician) {
+      const techId = new mongoose.Types.ObjectId(req.body.technician);
+      if (!technicians.some((id) => id.toString() === techId.toString())) {
+        technicians.push(techId);
+      }
+    } else if (technicians.length > 0) {
+      // Si no hay técnico principal pero hay técnicos en el array, usar el primero como principal
+      req.body.technician = technicians[0];
+    }
+
     // Create a new service from the service request data
     const newService = new ServiceModel({
       name: serviceRequest.name,
@@ -457,6 +517,7 @@ export const convertServiceRequestToService = async (req, res) => {
       preferredDate: serviceRequest.preferredDate,
       status: "confirmed",
       technician: req.body.technician || null,
+      technicians: technicians.length > 0 ? technicians : [],
     });
 
     // Save the new service

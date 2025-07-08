@@ -48,6 +48,20 @@
   flex-shrink: 0;
 }
 
+/* Contenedor principal de la tarjeta con flexbox */
+.servicio-card .d-flex {
+  display: flex;
+  width: 100%;
+  position: relative;
+}
+
+/* Contenido del servicio ocupa el espacio disponible */
+.servicio-card .contenido-servicio {
+  flex: 1;
+  padding-right: 0;
+  margin-bottom: 5px;
+}
+
 /* Estados de tarjetas */
 .servicio-card.estado-confirmado::before {
   background-color: #87c947;
@@ -70,13 +84,14 @@
 }
 
 /* ===== Botones del ServicioCard ===== */
-.servicio-card .botones-container {
+/* Estos estilos están siendo sobreescritos por card-buttons.css */
+/* .servicio-card .botones-container {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   width: 92%;
   margin: 0.5rem auto;
-}
+} */
 
 /* Estilos base para los botones */
 .servicio-card .btn {
