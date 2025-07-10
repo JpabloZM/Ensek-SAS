@@ -32,6 +32,10 @@ const serviceSchema = new mongoose.Schema(
       type: String,
       required: [true, "El tipo de servicio es requerido"],
       enum: [
+        "Control de Plagas",
+        "Fumigación",
+        "Desinfección",
+        "Otro",
         "pest-control",
         "gardening",
         "residential-fumigation",

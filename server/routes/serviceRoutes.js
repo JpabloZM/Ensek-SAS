@@ -28,7 +28,7 @@ router.use((req, res, next) => {
 });
 
 // Rutas públicas
-router.post("/", serviceController.createServiceRequest); // Changed to save to ServiceRequest
+router.post("/", serviceController.createService); // Use createService for direct service creation
 router.post("/request", serviceController.createServiceRequest);
 
 // Rutas protegidas

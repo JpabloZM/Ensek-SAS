@@ -97,109 +97,101 @@ export const useServices = () => {
     getAllServices(false);
   }, [getAllServices]);
 
-  const createService = useCallback(async (serviceData) => {
-    try {
-      setLoading(true);
-      setError(null);
-      console.log("Enviando datos para crear servicio:", serviceData);
+  const createService = useCallback(
+    async (serviceData) => {
+      try {
+        setLoading(true);
+        setError(null);
+        console.log("Enviando datos para crear servicio:", serviceData);
 
-      // Validar que los campos requeridos estén presentes
-      const requiredFields = [
-        "name",
-        "email",
-        "phone",
-        "document",
-        "address",
-        "serviceType",
-        "preferredDate",
-      ];
-      const missingFields = requiredFields.filter(
-        (field) => !serviceData[field]
-      );
-
-      if (missingFields.length > 0) {
-        throw new Error(
-          `Faltan campos requeridos: ${missingFields.join(", ")}`
+        // Validar que los campos requeridos estén presentes
+        const requiredFields = [
+          "name",
+          "email",
+          "phone",
+          "document",
+          "address",
+          "serviceType",
+          "preferredDate",
+        ];
+        const missingFields = requiredFields.filter(
+          (field) => !serviceData[field]
         );
+
+        if (missingFields.length > 0) {
+          throw new Error(
+            `Faltan campos requeridos: ${missingFields.join(", ")}`
+          );
+        }
+
+        const newService = await serviceService.saveService(serviceData);
+        console.log("Servicio creado con éxito:", newService);
+
+        // Force a fresh reload of services to ensure consistency
+        await getAllServices(true);
+
+        return newService;
+      } catch (err) {
+        console.error("Error al crear servicio:", err);
+        setError(err.message || "Error al crear servicio");
+        throw err;
+      } finally {
+        setLoading(false);
       }
+    },
+    [getAllServices]
+  );
 
-      const newService = await serviceService.saveService(serviceData);
-      console.log("Servicio creado con éxito:", newService);
+  const updateService = useCallback(
+    async (id, serviceData) => {
+      try {
+        if (!id) throw new Error("ID de servicio no válido");
+        setLoading(true);
+        setError(null);
 
-      // Update services state and cache
-      const updatedServices = [...services, newService];
-      setServices(updatedServices);
+        console.log(`Updating service with ID: ${id}`, serviceData);
+        const updatedService = await serviceService.updateService(
+          id,
+          serviceData
+        );
 
-      // Update localStorage cache
-      localStorage.setItem("cachedServices", JSON.stringify(updatedServices));
+        // Force a fresh reload of services to ensure consistency
+        await getAllServices(true);
 
-      return newService;
-    } catch (err) {
-      console.error("Error al crear servicio:", err);
-      setError(err.message || "Error al crear servicio");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        return updatedService;
+      } catch (err) {
+        console.error("Error al actualizar servicio:", err);
+        setError(err.message || "Error al actualizar servicio");
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [getAllServices]
+  );
 
-  const updateService = useCallback(async (id, serviceData) => {
-    try {
-      if (!id) throw new Error("ID de servicio no válido");
-      setLoading(true);
-      setError(null);
+  const deleteService = useCallback(
+    async (id) => {
+      try {
+        if (!id) throw new Error("ID de servicio no válido");
+        setLoading(true);
+        setError(null);
 
-      console.log(`Updating service with ID: ${id}`, serviceData);
-      const updatedService = await serviceService.updateService(
-        id,
-        serviceData
-      );
+        console.log(`Deleting service with ID: ${id}`);
+        await serviceService.deleteService(id);
 
-      // Update services state
-      const updatedServices = services.map((service) =>
-        service._id === id ? updatedService : service
-      );
-
-      setServices(updatedServices);
-
-      // Update localStorage cache
-      localStorage.setItem("cachedServices", JSON.stringify(updatedServices));
-      console.log("Services updated and cached:", updatedServices);
-
-      return updatedService;
-    } catch (err) {
-      console.error("Error al actualizar servicio:", err);
-      setError(err.message || "Error al actualizar servicio");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const deleteService = useCallback(async (id) => {
-    try {
-      if (!id) throw new Error("ID de servicio no válido");
-      setLoading(true);
-      setError(null);
-
-      console.log(`Deleting service with ID: ${id}`);
-      await serviceService.deleteService(id);
-
-      // Update services state
-      const updatedServices = services.filter((service) => service._id !== id);
-      setServices(updatedServices);
-
-      // Update localStorage cache
-      localStorage.setItem("cachedServices", JSON.stringify(updatedServices));
-      console.log("Services after deletion and cached:", updatedServices);
-    } catch (err) {
-      console.error("Error al eliminar servicio:", err);
-      setError(err.message || "Error al eliminar servicio");
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        // Force a fresh reload of services to ensure consistency
+        await getAllServices(true);
+      } catch (err) {
+        console.error("Error al eliminar servicio:", err);
+        setError(err.message || "Error al eliminar servicio");
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [getAllServices]
+  );
 
   return {
     services,

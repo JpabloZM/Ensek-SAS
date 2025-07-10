@@ -28,6 +28,14 @@ const getAuthConfig = () => {
   };
 };
 
+// Clear cache and reset request tracking
+const clearCache = () => {
+  localStorage.removeItem("cachedServices");
+  lastRequestTime = 0;
+  pendingRequest = null;
+  console.log("Cache cleared and request tracking reset");
+};
+
 // Get all services with improved caching
 const getServices = async () => {
   try {
@@ -111,26 +119,56 @@ const refreshServicesInBackground = async () => {
 // Create a new service
 const saveService = async (service) => {
   try {
+    console.log("=== SAVE SERVICE - INICIO ===");
     console.log("Enviando datos al servidor:", service);
-    const config = getAuthConfig();
-    const response = await axios.post(API_URL, service, config);
-    const savedService = response.data.service; // Obtener el servicio de response.data.service
+    console.log("URL de la API:", API_URL);
 
-    console.log("Respuesta del servidor:", response.data);
+    // Intentar primero con autenticación
+    let config = getAuthConfig();
+    console.log("Configuración de autenticación:", config);
 
-    // Update cache with new service
-    const cachedServices = localStorage.getItem("cachedServices");
-    if (cachedServices) {
-      const services = JSON.parse(cachedServices);
-      services.push(savedService);
-      localStorage.setItem("cachedServices", JSON.stringify(services));
+    console.log("Realizando POST request con autenticación...");
+    let response;
+
+    try {
+      response = await axios.post(API_URL, service, config);
+    } catch (authError) {
+      console.log("Error con autenticación, intentando sin autenticación...");
+      console.log(
+        "Error de auth:",
+        authError.response?.status,
+        authError.response?.data
+      );
+
+      // Si falla con autenticación, intentar sin ella
+      response = await axios.post(API_URL, service, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
     }
 
+    console.log("Respuesta completa del servidor:", response);
+    console.log("Datos de la respuesta:", response.data);
+
+    const savedService = response.data.service; // Obtener el servicio de response.data.service
+    console.log("Servicio guardado extraído:", savedService);
+
+    // Clear cache to force fresh data on next request
+    clearCache();
+    console.log("Cache limpiado");
+
+    console.log("=== SAVE SERVICE - ÉXITO ===");
     return savedService;
   } catch (error) {
-    console.error("Error al crear servicio:", error);
+    console.error("=== SAVE SERVICE - ERROR ===");
+    console.error("Error completo:", error);
+    console.error("Tipo de error:", error.constructor.name);
+    console.error("Mensaje de error:", error.message);
     console.error("Response data:", error.response?.data);
     console.error("Response status:", error.response?.status);
+    console.error("Response headers:", error.response?.headers);
+    console.error("Request config:", error.config);
 
     // Mensaje de error más detallado
     const errorMessage =
@@ -138,6 +176,9 @@ const saveService = async (service) => {
       error.response?.data?.error ||
       error.message ||
       "Error al crear el servicio";
+
+    console.error("Mensaje de error final:", errorMessage);
+    console.error("=== SAVE SERVICE - FIN ERROR ===");
 
     throw new Error(errorMessage);
   }
@@ -222,16 +263,8 @@ const updateService = async (id, updates) => {
       getAuthConfig()
     );
 
-    // Update cache
-    const cachedServices = localStorage.getItem("cachedServices");
-    if (cachedServices) {
-      const services = JSON.parse(cachedServices);
-      const index = services.findIndex((s) => s._id === id);
-      if (index !== -1) {
-        services[index] = response.data;
-        localStorage.setItem("cachedServices", JSON.stringify(services));
-      }
-    }
+    // Clear cache to force fresh data on next request
+    clearCache();
 
     return response.data;
   } catch (error) {
@@ -260,11 +293,7 @@ const deleteService = async (serviceId) => {
     const response = await axios.delete(`${API_URL}/${cleanId}`, config);
 
     // Clear cache to force a fresh load
-    localStorage.removeItem("cachedServices");
-
-    // Reset the request tracking variables
-    lastRequestTime = 0;
-    pendingRequest = null;
+    clearCache();
 
     console.log("Delete service response:", response.data);
     return response.data;
@@ -389,4 +418,5 @@ export const serviceService = {
   assignTechnician,
   getServiceRequests,
   convertServiceRequestToService,
+  clearCache,
 };

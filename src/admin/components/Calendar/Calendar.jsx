@@ -548,7 +548,7 @@ const Calendar = ({ darkMode = false }) => {
         email: nuevoServicio.clientEmail,
         phone: nuevoServicio.clientPhone,
         address: nuevoServicio.address || "No especificada",
-        serviceType: nuevoServicio.serviceType || "other", // Usar serviceType directamente
+        serviceType: nuevoServicio.serviceType || "Control de Plagas", // Valor por defecto más común
         description: nuevoServicio.descripcion || "",
         preferredDate: nuevoServicio.preferredDate || currentDate,
         // Asegurarse de que document siempre tenga un valor válido
@@ -559,8 +559,27 @@ const Calendar = ({ darkMode = false }) => {
       console.log("Creando nuevo servicio con datos:", serviceData);
 
       // Create service in database
+      console.log("=== CALENDAR - ANTES DE CREAR SERVICIO ===");
+      console.log("serviceData a enviar:", serviceData);
+
       const createdService = await serviceService.saveService(serviceData);
-      console.log("Servicio creado:", createdService);
+      console.log("=== CALENDAR - DESPUÉS DE CREAR SERVICIO ===");
+      console.log("createdService:", createdService);
+      console.log("Tipo de createdService:", typeof createdService);
+      console.log("¿Es undefined?", createdService === undefined);
+      console.log("¿Es null?", createdService === null);
+
+      // Verificar que el servicio se creó correctamente
+      if (!createdService) {
+        throw new Error(
+          "No se pudo crear el servicio. La respuesta del servidor fue vacía."
+        );
+      }
+
+      if (!createdService._id) {
+        console.error("Servicio creado sin ID:", createdService);
+        throw new Error("El servicio se creó pero no tiene ID válido.");
+      }
 
       // Map MongoDB document to local service format with all fields populated
       const localService = {

@@ -49,9 +49,18 @@ const FormServices = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+
+    console.log("=== INICIO CREACIÓN DE SERVICIO ===");
+    console.log("Datos del formulario:", formData);
+    console.log("Usuario actual:", user);
+
     try {
+      // Verificar autenticación
+      const userString = localStorage.getItem("user");
+      console.log("Datos de usuario en localStorage:", userString);
+
       // Guardar el servicio usando localStorage
-      await serviceService.saveService({
+      const serviceData = {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
@@ -61,7 +70,12 @@ const FormServices = () => {
         description: formData.description || "Sin descripción",
         preferredDate: formData.preferredDate,
         technician: null, // Ensure technician is set to null on creation
-      });
+      };
+
+      console.log("Datos a enviar al servidor:", serviceData);
+
+      const result = await serviceService.saveService(serviceData);
+      console.log("Resultado de la creación:", result);
 
       // Mostrar alerta de éxito
       await Swal.fire({
@@ -86,10 +100,14 @@ const FormServices = () => {
       // Redireccionar a la página de servicios del cliente
       navigate("/app/servicios");
     } catch (error) {
-      // Mostrar alerta de error
+      console.error("Error completo:", error);
+
+      // Mostrar alerta de error más detallada
       Swal.fire({
         title: "¡Ups!",
-        text: "Hubo un error al enviar tu solicitud. Por favor, intenta nuevamente.",
+        text:
+          error.message ||
+          "Hubo un error al enviar tu solicitud. Por favor, intenta nuevamente.",
         icon: "error",
         confirmButtonText: "Entendido",
         confirmButtonColor: "#00a884",

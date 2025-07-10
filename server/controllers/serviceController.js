@@ -203,23 +203,20 @@ export const getServices = async (req, res) => {
 // @access  Public
 export const createService = async (req, res) => {
   try {
-    console.log(
-      "Creating service (redirected to service request) with data:",
-      req.body
-    );
-
-    // We'll now create this as a service request instead of a direct service
-    // This change allows all initial service entries to go to the serviceRequests table
+    console.log("=== CREATE SERVICE - INICIO ===");
+    console.log("Request body:", req.body);
 
     const {
       name,
       email,
       phone,
-      document, // We'll store this but it's not used in ServiceRequest
+      document,
       address,
       serviceType,
       description,
       preferredDate,
+      technician,
+      technicians,
     } = req.body;
 
     // Validate required fields
@@ -234,6 +231,7 @@ export const createService = async (req, res) => {
     const missingFields = requiredFields.filter((field) => !req.body[field]);
 
     if (missingFields.length > 0) {
+      console.log("Missing fields:", missingFields);
       return res.status(400).json({
         success: false,
         message: "Faltan campos requeridos",
@@ -241,38 +239,63 @@ export const createService = async (req, res) => {
       });
     }
 
-    // Create service request instead of direct service
-    const serviceRequest = await ServiceRequest.create({
-      user: req.user ? req.user._id : null,
+    // Create service data
+    const serviceData = {
       name,
       email,
       phone,
+      document: document || "pending",
       address,
       serviceType,
-      description,
+      description: description || "",
       preferredDate: new Date(preferredDate),
       status: "pending",
-      notes: document ? `Documento: ${document}` : "",
-    });
+      technician: technician || null,
+      technicians: technicians || [],
+    };
 
-    if (serviceRequest) {
-      res.status(201).json({
+    console.log("Service data to create:", serviceData);
+
+    // Create the service directly
+    console.log("Creating service with ServiceModel...");
+    const service = await ServiceModel.create(serviceData);
+    console.log("Service created successfully:", service);
+
+    if (service) {
+      const response = {
         success: true,
-        // Return with a service property for backward compatibility
-        service: {
-          ...serviceRequest.toJSON(),
-          _id: serviceRequest._id,
-          id: serviceRequest._id,
-        },
-      });
+        service: service,
+      };
+      console.log("Sending response:", response);
+      console.log("=== CREATE SERVICE - ÉXITO ===");
+      res.status(201).json(response);
     } else {
+      console.log("Service creation returned null/undefined");
       res.status(400).json({
         success: false,
         message: "Invalid service data",
       });
     }
   } catch (error) {
-    console.error("Error creating service:", error);
+    console.error("=== CREATE SERVICE - ERROR ===");
+    console.error("Error type:", error.constructor.name);
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+
+    // Check if it's a validation error
+    if (error.name === "ValidationError") {
+      console.error("Validation error details:", error.errors);
+      return res.status(400).json({
+        success: false,
+        message: "Error de validación",
+        error: error.message,
+        details: Object.keys(error.errors).map((key) => ({
+          field: key,
+          message: error.errors[key].message,
+        })),
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: "Error al crear el servicio",
