@@ -610,7 +610,7 @@ const Calendar = ({ darkMode = false }) => {
       return createdService;
     } catch (error) {
       console.error("Error al crear servicio:", error);
-      Swal.fire({
+      mostrarAlerta({
         icon: "error",
         title: "Error",
         text: "No se pudo crear el servicio. Por favor, intente nuevamente.",
@@ -1025,14 +1025,26 @@ const Calendar = ({ darkMode = false }) => {
           const telefono = document.getElementById("telefonoTecnico").value;
 
           if (!nombre || !email || !telefono) {
-            Swal.showValidationMessage("Por favor complete todos los campos");
+            mostrarAlerta({
+              icon: "error",
+              title: "Error",
+              text: "Por favor complete todos los campos",
+              confirmButtonColor: "#87c947",
+              background: "#f8ffec",
+              color: "#004122",
+            });
             return false;
           }
 
           if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-            Swal.showValidationMessage(
-              "Por favor ingrese un correo electrónico válido"
-            );
+            mostrarAlerta({
+              icon: "error",
+              title: "Error",
+              text: "Por favor ingrese un correo electrónico válido",
+              confirmButtonColor: "#87c947",
+              background: "#f8ffec",
+              color: "#004122",
+            });
             return false;
           }
 
@@ -1613,7 +1625,6 @@ const Calendar = ({ darkMode = false }) => {
           </div>
           <div class="detalle-value">${tecnico?.title}</div>
         </div>
-        
         <div class="detalle-row">
           <div class="detalle-label">
             <i class="fas fa-clock"></i>
@@ -1624,7 +1635,6 @@ const Calendar = ({ darkMode = false }) => {
             <div>Fin: ${fechaFin.toLocaleTimeString()}</div>
           </div>
         </div>
-        
         <div class="detalle-row">
           <div class="detalle-label">
             <i class="fas fa-align-left"></i>
@@ -1635,12 +1645,12 @@ const Calendar = ({ darkMode = false }) => {
           </div>
         </div>
       </div>
-    `,
+      `,
       showCancelButton: true,
-      confirmButtonText: '<i class="fas fa-edit"></i> Editar',
+      confirmButtonText: '<i class="fas fa-calendar-plus"></i> Asignar',
       cancelButtonText: '<i class="fas fa-trash"></i> Eliminar',
       confirmButtonColor: "#87c947",
-      cancelButtonColor: "#fff",
+      cancelButtonColor: "#e74c3c",
       customClass: {
         popup: "detalles-servicio",
         actions: "detalles-actions",
@@ -1648,73 +1658,98 @@ const Calendar = ({ darkMode = false }) => {
         cancelButton: "detalles-cancel",
       },
       didOpen: () => {
-        // Asegurarse de que los botones tengan los estilos correctos
-        const confirmButton = Swal.getConfirmButton();
-        const cancelButton = Swal.getCancelButton();
-
-        if (confirmButton) {
-          confirmButton.style.flex = "1";
-        }
-        if (cancelButton) {
-          cancelButton.style.flex = "1";
+        // Insertar el botón Editar en el centro
+        const swalActions = document.querySelector(".swal2-actions");
+        if (swalActions) {
+          const btnEditar = document.createElement("button");
+          btnEditar.id = "btn-editar-evento";
+          btnEditar.className = "swal2-styled swal2-edit-btn";
+          btnEditar.style.background = "#6c757d";
+          btnEditar.style.color = "#fff";
+          btnEditar.style.fontWeight = "bold";
+          btnEditar.innerHTML = '<i class="fas fa-edit"></i> Editar';
+          btnEditar.onclick = (e) => {
+            e.stopPropagation();
+            Swal.close();
+            handleEditarServicio(evento);
+          };
+          // Insertar después del botón de confirmar (Asignar) y antes del de cancelar (Eliminar)
+          const btnConfirm = swalActions.querySelector(".swal2-confirm");
+          const btnCancel = swalActions.querySelector(".swal2-cancel");
+          if (btnConfirm && btnCancel) {
+            swalActions.insertBefore(btnEditar, btnCancel);
+          } else {
+            swalActions.appendChild(btnEditar);
+          }
         }
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        handleEditarServicio(evento);
+        // Asignar servicio (puedes implementar la lógica aquí si lo deseas)
+        // Por ahora solo muestra un mensaje
+        mostrarAlerta({
+          icon: "info",
+          title: "Funcionalidad por implementar",
+          text: "Aquí puedes implementar la lógica para asignar el servicio desde el calendario.",
+        });
       } else if (result.dismiss === Swal.DismissReason.cancel) {
         handleEliminarServicioCalendario(evento);
       }
     });
   };
 
-  const handleEditarServicio = async (evento) => {
-    const tecnico = tecnicos.find((t) => t.id === evento.getResources()[0]?.id);
-    const fechaInicio = new Date(evento.start);
-    const fechaFin = new Date(evento.end);
+  const handleEditarServicio = async (servicioId, datosActualizados) => {
+    // Si se pasa un evento del calendario (objeto con propiedades de FullCalendar)
+    if (servicioId && typeof servicioId === "object" && servicioId.start) {
+      const evento = servicioId;
+      const tecnico = tecnicos.find(
+        (t) => t.id === evento.getResources()[0]?.id
+      );
+      const fechaInicio = new Date(evento.start);
+      const fechaFin = new Date(evento.end);
 
-    const estadosServicio = {
-      confirmado: {
-        nombre: "Confirmado",
-        color: "#87c947",
-        icon: "fa-check",
-        gradient: "linear-gradient(135deg, #87c947, #66b417)",
-      },
-      cancelado: {
-        nombre: "Cancelado",
-        color: "#e74c3c",
-        icon: "fa-times",
-        gradient: "linear-gradient(135deg, #e74c3c, #c0392b)",
-      },
-      pendiente: {
-        nombre: "Pendiente",
-        color: "#ffd54f",
-        icon: "fa-clock",
-        gradient: "linear-gradient(135deg, #ffd54f, #f1c40f)",
-      },
-      facturado: {
-        nombre: "Facturado",
-        color: "#7f8c8d",
-        icon: "fa-file-invoice-dollar",
-        gradient: "linear-gradient(135deg, #95a5a6, #7f8c8d)",
-      },
-      almuerzo: {
-        nombre: "Hora de Almuerzo",
-        color: "#3498db",
-        icon: "fa-utensils",
-        gradient: "linear-gradient(135deg, #3498db, #2980b9)",
-      },
-      especial: {
-        nombre: "Situación Especial",
-        color: "#9b59b6",
-        icon: "fa-exclamation-circle",
-        gradient: "linear-gradient(135deg,rgb(185, 63, 159), #8e44ad)",
-      },
-    };
+      const estadosServicio = {
+        confirmado: {
+          nombre: "Confirmado",
+          color: "#87c947",
+          icon: "fa-check",
+          gradient: "linear-gradient(135deg, #87c947, #66b417)",
+        },
+        cancelado: {
+          nombre: "Cancelado",
+          color: "#e74c3c",
+          icon: "fa-times",
+          gradient: "linear-gradient(135deg, #e74c3c, #c0392b)",
+        },
+        pendiente: {
+          nombre: "Pendiente",
+          color: "#ffd54f",
+          icon: "fa-clock",
+          gradient: "linear-gradient(135deg, #ffd54f, #f1c40f)",
+        },
+        facturado: {
+          nombre: "Facturado",
+          color: "#7f8c8d",
+          icon: "fa-file-invoice-dollar",
+          gradient: "linear-gradient(135deg, #95a5a6, #7f8c8d)",
+        },
+        almuerzo: {
+          nombre: "Hora de Almuerzo",
+          color: "#3498db",
+          icon: "fa-utensils",
+          gradient: "linear-gradient(135deg, #3498db, #2980b9)",
+        },
+        especial: {
+          nombre: "Situación Especial",
+          color: "#9b59b6",
+          icon: "fa-exclamation-circle",
+          gradient: "linear-gradient(135deg,rgb(185, 63, 159), #8e44ad)",
+        },
+      };
 
-    const { value: formValues } = await mostrarAlerta({
-      title: "Editar Servicio",
-      html: `
+      const { value: formValues } = await mostrarAlerta({
+        title: "Editar Servicio",
+        html: `
       <form id="servicioForm" class="text-left">
         <div class="mb-3">
           <input type="text" id="nombreServicio" class="form-control" placeholder="Nombre del servicio" required style="border-color: #c5f198;" value="${
@@ -1762,132 +1797,192 @@ const Calendar = ({ darkMode = false }) => {
         </div>
       </form>
     `,
-      showCancelButton: true,
-      confirmButtonText: '<i class="fas fa-save"></i> Guardar',
-      cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
-      confirmButtonColor: "#87c947",
-      cancelButtonColor: "#e74c3c",
-      background: "#ffffff",
-      color: "#004122",
-      customClass: {
-        popup: "form-asignar-servicio",
-      },
-      didOpen: () => {
-        const btns = Swal.getPopup().querySelectorAll(".estado-btn");
-        btns.forEach((btn) => {
-          const estado = btn.dataset.estado;
-          const color = estadosServicio[estado].color;
-          const colorHover = color
-            .replace(")", ", 0.8)")
-            .replace("rgb", "rgba");
-
-          btn.addEventListener("mouseover", () => {
-            btn.style.backgroundColor = colorHover;
-            btn.style.transform = "translateY(-1px)";
-            btn.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
-          });
-
-          btn.addEventListener("mouseout", () => {
-            btn.style.backgroundColor = color;
-            btn.style.transform = "translateY(0)";
-            btn.style.boxShadow = "none";
-          });
-
-          btn.addEventListener("click", () => {
-            btns.forEach((b) => (b.style.opacity = "0.6"));
-            btn.style.opacity = "1";
-            btn.classList.add("active");
-            document.getElementById("estadoServicio").value = estado;
-          });
-        });
-      },
-      preConfirm: () => {
-        const nombre = document.getElementById("nombreServicio").value;
-        const descripcion = document.getElementById(
-          "descripcionServicio"
-        ).value;
-        const estado = document.getElementById("estadoServicio").value;
-
-        if (!nombre) {
-          mostrarAlerta({
-            icon: "error",
-            title: "Error",
-            text: "Por favor ingrese el nombre del servicio",
-            confirmButtonColor: "#87c947",
-            background: "#f8ffec",
-            color: "#004122",
-          });
-          return false;
-        }
-
-        if (!estado) {
-          mostrarAlerta({
-            icon: "error",
-            title: "Error",
-            text: "Por favor seleccione un estado para el servicio",
-            confirmButtonColor: "#87c947",
-            background: "#f8ffec",
-            color: "#004122",
-          });
-          return false;
-        }
-
-        return {
-          nombre,
-          descripcion,
-          estado,
-          color: estadosServicio[estado].color,
-        };
-      },
-    });
-
-    if (formValues) {
-      // Actualizar el evento en FullCalendar
-      evento.setProp("title", formValues.nombre);
-      evento.setExtendedProp("descripcion", formValues.descripcion);
-      evento.setExtendedProp("estado", formValues.estado);
-      evento.setProp("backgroundColor", formValues.color);
-      evento.setProp("borderColor", formValues.color);
-      evento.setProp("textColor", "white");
-
-      // Eliminar clases existentes de estados y agregar la nueva
-      const clasesActuales = evento.classNames || [];
-      const clasesEstados = clasesActuales.filter(
-        (clase) => !clase.startsWith("estado-")
-      );
-      clasesEstados.push(`estado-${formValues.estado}`);
-      evento.setProp("classNames", clasesEstados);
-
-      // Actualizar el evento en el estado
-      const eventosActualizados = eventos.map((ev) =>
-        ev.id === evento.id
-          ? {
-              ...ev,
-              title: formValues.nombre,
-              extendedProps: {
-                ...ev.extendedProps,
-                descripcion: formValues.descripcion,
-                estado: formValues.estado,
-              },
-              backgroundColor: formValues.color,
-              borderColor: formValues.color,
-              className: `estado-${formValues.estado}`, // Usar className en lugar de classNames
-            }
-          : ev
-      );
-
-      setEventos(eventosActualizados);
-      localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
-
-      mostrarAlerta({
-        icon: "success",
-        title: "Servicio Actualizado",
-        text: "El servicio ha sido actualizado correctamente",
-        timer: 1500,
-        showConfirmButton: false,
-        background: "#f8ffec",
+        showCancelButton: true,
+        confirmButtonText: '<i class="fas fa-save"></i> Guardar',
+        cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+        confirmButtonColor: "#87c947",
+        cancelButtonColor: "#e74c3c",
+        background: "#ffffff",
         color: "#004122",
+        customClass: {
+          popup: "form-asignar-servicio",
+        },
+        didOpen: () => {
+          const btns = Swal.getPopup().querySelectorAll(".estado-btn");
+          btns.forEach((btn) => {
+            const estado = btn.dataset.estado;
+            const color = estadosServicio[estado].color;
+            const colorHover = color
+              .replace(")", ", 0.8)")
+              .replace("rgb", "rgba");
+
+            btn.addEventListener("mouseover", () => {
+              btn.style.backgroundColor = colorHover;
+              btn.style.transform = "translateY(-1px)";
+              btn.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+            });
+
+            btn.addEventListener("mouseout", () => {
+              btn.style.backgroundColor = color;
+              btn.style.transform = "translateY(0)";
+              btn.style.boxShadow = "none";
+            });
+
+            btn.addEventListener("click", () => {
+              btns.forEach((b) => (b.style.opacity = "0.6"));
+              btn.style.opacity = "1";
+              btn.classList.add("active");
+              document.getElementById("estadoServicio").value = estado;
+            });
+          });
+        },
+        preConfirm: () => {
+          const nombre = document.getElementById("nombreServicio").value;
+          const descripcion = document.getElementById(
+            "descripcionServicio"
+          ).value;
+          const estado = document.getElementById("estadoServicio").value;
+
+          if (!nombre) {
+            mostrarAlerta({
+              icon: "error",
+              title: "Error",
+              text: "Por favor ingrese el nombre del servicio",
+              confirmButtonColor: "#87c947",
+              background: "#f8ffec",
+              color: "#004122",
+            });
+            return false;
+          }
+
+          if (!estado) {
+            mostrarAlerta({
+              icon: "error",
+              title: "Error",
+              text: "Por favor seleccione un estado para el servicio",
+              confirmButtonColor: "#87c947",
+              background: "#f8ffec",
+              color: "#004122",
+            });
+            return false;
+          }
+
+          return {
+            nombre,
+            descripcion,
+            estado,
+            color: estadosServicio[estado].color,
+          };
+        },
       });
+
+      if (formValues) {
+        // Actualizar el evento en FullCalendar
+        evento.setProp("title", formValues.nombre);
+        evento.setExtendedProp("descripcion", formValues.descripcion);
+        evento.setExtendedProp("estado", formValues.estado);
+        evento.setProp("backgroundColor", formValues.color);
+        evento.setProp("borderColor", formValues.color);
+        evento.setProp("textColor", "white");
+
+        // Eliminar clases existentes de estados y agregar la nueva
+        const clasesActuales = evento.classNames || [];
+        const clasesEstados = clasesActuales.filter(
+          (clase) => !clase.startsWith("estado-")
+        );
+        clasesEstados.push(`estado-${formValues.estado}`);
+        evento.setProp("classNames", clasesEstados);
+
+        // Actualizar el evento en el estado
+        const eventosActualizados = eventos.map((ev) =>
+          ev.id === evento.id
+            ? {
+                ...ev,
+                title: formValues.nombre,
+                extendedProps: {
+                  ...ev.extendedProps,
+                  descripcion: formValues.descripcion,
+                  estado: formValues.estado,
+                },
+                backgroundColor: formValues.color,
+                borderColor: formValues.color,
+                className: `estado-${formValues.estado}`, // Usar className en lugar de classNames
+              }
+            : ev
+        );
+
+        setEventos(eventosActualizados);
+        localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
+
+        mostrarAlerta({
+          icon: "success",
+          title: "Servicio Actualizado",
+          text: "El servicio ha sido actualizado correctamente",
+          timer: 1500,
+          showConfirmButton: false,
+          background: "#f8ffec",
+          color: "#004122",
+        });
+      }
+    }
+    // Si se pasa un ID de servicio (para servicios de la barra lateral)
+    else if (servicioId && datosActualizados) {
+      try {
+        console.log("Editando servicio de la barra lateral:", {
+          servicioId,
+          datosActualizados,
+        });
+        // Actualizar el servicio en el backend
+        const servicioActualizado = await serviceService.updateService(
+          servicioId,
+          datosActualizados
+        );
+        // Actualizar el estado local
+        setServiciosPendientes((prevServicios) =>
+          prevServicios.map((servicio) =>
+            servicio.id === servicioId || servicio._id === servicioId
+              ? { ...servicio, ...datosActualizados }
+              : servicio
+          )
+        );
+        // También actualizar en el calendario si existe
+        setEventos((prevEventos) =>
+          prevEventos.map((evento) =>
+            evento.id === servicioId || evento._id === servicioId
+              ? {
+                  ...evento,
+                  title:
+                    datosActualizados.nombre ||
+                    datosActualizados.serviceType ||
+                    evento.title,
+                  extendedProps: {
+                    ...evento.extendedProps,
+                    descripcion:
+                      datosActualizados.descripcion ||
+                      evento.extendedProps?.descripcion,
+                    clientName:
+                      datosActualizados.clientName ||
+                      evento.extendedProps?.clientName,
+                    clientEmail:
+                      datosActualizados.clientEmail ||
+                      evento.extendedProps?.clientEmail,
+                    clientPhone:
+                      datosActualizados.clientPhone ||
+                      evento.extendedProps?.clientPhone,
+                    address:
+                      datosActualizados.address ||
+                      evento.extendedProps?.address,
+                  },
+                }
+              : evento
+          )
+        );
+        console.log("Servicio actualizado exitosamente:", servicioActualizado);
+        return servicioActualizado;
+      } catch (error) {
+        console.error("Error al actualizar servicio:", error);
+        throw error;
+      }
     }
   };
 
@@ -2222,7 +2317,7 @@ const Calendar = ({ darkMode = false }) => {
       return true;
     } catch (error) {
       console.error("Error al asignar servicio:", error);
-      Swal.fire({
+      mostrarAlerta({
         icon: "error",
         title: "Error",
         text: "No se pudo asignar el servicio. Por favor, intente nuevamente.",
@@ -2535,7 +2630,7 @@ const Calendar = ({ darkMode = false }) => {
   };
 
   const handleServicioClick = (servicio) => {
-    Swal.fire({
+    mostrarAlerta({
       title: servicio.title,
       html: `
       <div class="text-left">
@@ -2561,13 +2656,49 @@ const Calendar = ({ darkMode = false }) => {
       didOpen: () => {
         // Añadir manejadores de eventos a los botones
         document.getElementById("btnAsignar").addEventListener("click", () => {
-          Swal.close();
-          handleAsignarServicio(servicio);
+          mostrarAlerta({
+            title: "Asignar Servicio",
+            text: "¿Estás seguro de que deseas asignar este servicio al calendario?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sí, asignar",
+            cancelButtonText: "Cancelar",
+            confirmButtonColor: "#87c947",
+            cancelButtonColor: "#e74c3c",
+            background: "#f8ffec",
+            color: "#004122",
+            customClass: {
+              confirmButton: "btn-confirm",
+              cancelButton: "btn-cancel",
+              popup: "dark-theme",
+            },
+            preConfirm: () => {
+              return handleAsignarServicio(servicio);
+            },
+          });
         });
 
         document.getElementById("btnEliminar").addEventListener("click", () => {
-          Swal.close();
-          handleEliminarServicio(servicio.id);
+          mostrarAlerta({
+            title: "Eliminar Servicio",
+            text: "¿Estás seguro de que deseas eliminar este servicio?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sí, eliminar",
+            cancelButtonText: "Cancelar",
+            confirmButtonColor: "#e74c3c",
+            cancelButtonColor: "#87c947",
+            background: "#f8ffec",
+            color: "#004122",
+            customClass: {
+              confirmButton: "btn-confirm",
+              cancelButton: "btn-cancel",
+              popup: "dark-theme",
+            },
+            preConfirm: () => {
+              return handleEliminarServicio(servicio.id);
+            },
+          });
         });
       },
     });
@@ -2737,6 +2868,7 @@ const Calendar = ({ darkMode = false }) => {
         onAgregarServicio={handleAgregarServicio}
         onEliminarServicio={handleEliminarServicio}
         onAsignarServicio={handleAsignarServicio}
+        onEditarServicio={handleEditarServicio}
       />
       <div className="main-content">
         <CalendarHeader onAgregarTecnico={handleAgregarTecnico} />

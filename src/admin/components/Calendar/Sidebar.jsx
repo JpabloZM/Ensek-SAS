@@ -7,6 +7,7 @@ const Sidebar = ({
   onAgregarServicio,
   onEliminarServicio,
   onAsignarServicio,
+  onEditarServicio,
 }) => {
   const { mostrarAlerta } = useAlertas();
   const handleAgregarServicio = async () => {
@@ -195,6 +196,7 @@ const Sidebar = ({
               servicio={servicio}
               onEliminar={() => onEliminarServicio(servicio.id)}
               onAsignarServicio={onAsignarServicio}
+              onEditar={onEditarServicio}
               // Forzar que el componente se renderice con clase correcta
               className="servicio-card"
             />

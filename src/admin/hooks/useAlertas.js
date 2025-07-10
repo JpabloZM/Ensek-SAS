@@ -96,6 +96,7 @@ export const useAlertas = () => {
       const config = title;
       return await Swal.fire({
         ...config,
+        showDenyButton: false,
         customClass: {
           ...defaultClasses,
           ...(config.customClass || {}),
@@ -109,6 +110,7 @@ export const useAlertas = () => {
       title,
       text,
       icon,
+      showDenyButton: false,
       customClass: defaultClasses,
       timer: 3000,
       timerProgressBar: true,

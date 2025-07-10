@@ -34,7 +34,12 @@ const serviciosEnEspanol = {
   "commercial-fumigation": "Fumigación Comercial",
 };
 
-const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
+const ServicioCard = ({
+  servicio,
+  onEliminar,
+  onAsignarServicio,
+  onEditar,
+}) => {
   const { mostrarAlerta } = useAlertas();
   const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -78,6 +83,178 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
     );
   };
 
+  const handleEditar = async () => {
+    // Mostrar modal de edición
+    const { value: formValues } = await mostrarAlerta({
+      title: "Editar Servicio",
+      html: `
+        <form id="editarServicioForm">
+          <div class="input-group">
+            <label>Tipo de servicio</label>
+            <select id="nombre" class="form-field" required>
+              <option value="">Seleccionar tipo de servicio...</option>
+              <option value="Control de Plagas" ${
+                servicio.serviceType === "Control de Plagas" ? "selected" : ""
+              }>Control de Plagas</option>
+              <option value="Fumigación" ${
+                servicio.serviceType === "Fumigación" ? "selected" : ""
+              }>Fumigación</option>
+              <option value="Desinfección" ${
+                servicio.serviceType === "Desinfección" ? "selected" : ""
+              }>Desinfección</option>
+              <option value="Otro" ${
+                servicio.serviceType === "Otro" ? "selected" : ""
+              }>Otro</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Cliente</label>
+            <input type="text" id="clientName" class="form-field" placeholder="Nombre del cliente" value="${
+              servicio.clientName || ""
+            }" required>
+          </div>
+          <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="clientEmail" class="form-field" placeholder="correo@ejemplo.com" value="${
+              servicio.clientEmail || ""
+            }" required>
+          </div>
+          <div class="input-group">
+            <label>Teléfono</label>
+            <input type="tel" id="clientPhone" class="form-field" placeholder="Teléfono de contacto" value="${
+              servicio.clientPhone || ""
+            }" required>
+          </div>
+          <div class="input-group">
+            <label>Dirección</label>
+            <input type="text" id="address" class="form-field" placeholder="Dirección del servicio" value="${
+              servicio.address || ""
+            }" required>
+          </div>
+          <div class="input-group">
+            <label>Descripción</label>
+            <textarea id="descripcion" class="form-field" placeholder="Descripción detallada del servicio" rows="2" required>${
+              servicio.descripcion || servicio.description || ""
+            }</textarea>
+          </div>
+        </form>
+        <style>
+          #editarServicioForm {
+            display: grid;
+            gap: 10px;
+            padding: 15px;
+          }
+          .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+          }
+          .input-group label {
+            color: #87c947;
+            font-weight: 500;
+          }
+          .form-field {
+            padding: 8px;
+            border: 1px solid #87c947;
+            border-radius: 4px;
+            background: white;
+            width: 100%;
+            box-sizing: border-box;            
+            min-width: 370px;
+            max-width: 370px;
+          }
+          .swal2-popup {
+            width: 500px !important;
+          }
+          .swal2-title {
+            font-size: 1.5rem !important;
+            margin-bottom: 1rem !important;
+          }
+        </style>
+      `,
+      showCancelButton: true,
+      confirmButtonText: "Guardar Cambios",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#87c947",
+      cancelButtonColor: "#e74c3c",
+      background: "#ffffff",
+      color: "#004122",
+      customClass: {
+        popup: "swal2-popup-custom",
+        title: "swal2-title-custom",
+        confirmButton: "swal2-confirm-custom",
+        cancelButton: "swal2-cancel-custom",
+      },
+      preConfirm: () => {
+        const nombre = document.getElementById("nombre").value;
+        const clientName = document.getElementById("clientName").value;
+        const clientEmail = document.getElementById("clientEmail").value;
+        const clientPhone = document.getElementById("clientPhone").value;
+        const address = document.getElementById("address").value;
+        const descripcion = document.getElementById("descripcion").value;
+
+        if (
+          !nombre ||
+          !clientName ||
+          !clientEmail ||
+          !clientPhone ||
+          !address ||
+          !descripcion
+        ) {
+          mostrarAlerta({
+            icon: "error",
+            title: "Error",
+            text: "Por favor complete todos los campos",
+            confirmButtonColor: "#87c947",
+            background: "#f8ffec",
+            color: "#004122",
+          });
+          return false;
+        }
+
+        // Preparar datos del formulario
+        return {
+          nombre: nombre,
+          serviceType: nombre,
+          clientName,
+          clientEmail,
+          clientPhone,
+          address,
+          descripcion,
+          document: servicio.document || "1234567890",
+        };
+      },
+    });
+
+    if (formValues) {
+      try {
+        // Llamar a la función de editar pasada como prop
+        if (onEditar) {
+          await onEditar(servicio.id || servicio._id, formValues);
+          mostrarAlerta({
+            icon: "success",
+            title: "Servicio Actualizado",
+            text: "El servicio ha sido actualizado correctamente",
+            timer: 1500,
+            showConfirmButton: false,
+            background: "#f8ffec",
+            color: "#004122",
+          });
+        }
+      } catch (error) {
+        console.error("Error al editar servicio:", error);
+        mostrarAlerta({
+          icon: "error",
+          title: "Error",
+          text: "No se pudo actualizar el servicio. Por favor, intente nuevamente.",
+          confirmButtonColor: "#87c947",
+          background: "#f8ffec",
+          color: "#004122",
+        });
+      }
+    }
+  };
+
   const handleClick = () => {
     // Mostrar detalles completos del servicio
     mostrarAlerta({
@@ -115,12 +292,9 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
         </div>
       `,
       showCancelButton: true,
-      showDenyButton: true,
       confirmButtonColor: "#87c947",
       cancelButtonColor: "#e74c3c",
-      denyButtonColor: "#6c757d" /* Cambiado a color gris */,
       confirmButtonText: '<i class="fas fa-calendar-plus"></i> Asignar',
-      denyButtonText: '<i class="fas fa-edit"></i> Editar',
       cancelButtonText: '<i class="fas fa-trash"></i> Eliminar',
       customClass: {
         popup: "servicio-info-modal",
@@ -129,7 +303,6 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
         actions: "servicio-info-actions",
         footer: "servicio-info-footer",
         confirmButton: "btn-confirm-servicio",
-        denyButton: "btn-deny-servicio",
         cancelButton: "btn-cancel-servicio",
       },
       backdrop: `
@@ -141,6 +314,28 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
       hideClass: {
         popup: "animate__animated animate__fadeOut",
       },
+      didOpen: () => {
+        // Reubicar el botón Editar junto a los botones principales
+        const swalActions = document.querySelector(".swal2-actions");
+        if (swalActions) {
+          const btnEditar = document.createElement("button");
+          btnEditar.id = "btn-editar-servicio";
+          btnEditar.className = "swal2-styled swal2-edit-btn";
+          btnEditar.style.background = "#6c757d";
+          btnEditar.style.color = "#fff";
+          btnEditar.style.fontWeight = "bold";
+          btnEditar.style.order = "0";
+          btnEditar.innerHTML = '<i class="fas fa-edit"></i> Editar';
+          btnEditar.onclick = (e) => {
+            e.stopPropagation();
+            Swal.close();
+            handleEditar();
+          };
+          // Insertar como primer botón
+          swalActions.insertBefore(btnEditar, swalActions.firstChild);
+        }
+      },
+      showDenyButton: false,
     }).then((result) => {
       if (result.isConfirmed) {
         // Asignar servicio
@@ -148,9 +343,6 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
       } else if (result.isDismissed && result.dismiss === "cancel") {
         // Eliminar servicio
         onEliminar();
-      } else if (result.isDenied) {
-        // Editar servicio - por implementar
-        console.log("Editar servicio - funcionalidad por implementar");
       }
     });
   };
