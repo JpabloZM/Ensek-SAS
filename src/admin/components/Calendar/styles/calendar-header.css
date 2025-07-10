@@ -24,6 +24,7 @@
   font-weight: 500;
   font-size: 16px;
   white-space: nowrap;
+  transition: all 0.2s ease;
 }
 
 /* Estilo específico para el botón de Exportar Calendario para que coincida con la imagen */
@@ -44,4 +45,12 @@
 .btn-export-calendar i {
   margin-right: 8px;
   font-size: 18px;
+}
+
+/* Estilos unificados para hover de botones */
+.calendar-header button:hover {
+  background-color: #95d955 !important;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2) !important;
+  transform: translateY(-2px) !important;
+  cursor: pointer;
 }

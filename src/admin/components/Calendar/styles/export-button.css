@@ -69,6 +69,8 @@ body.dark-theme #exportCalendar:hover {
 .calendar-header .btn-export-calendar:hover {
   background-color: #95d955;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
 }
 
 .calendar-header .btn-export-calendar i {

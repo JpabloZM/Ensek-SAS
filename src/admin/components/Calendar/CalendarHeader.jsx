@@ -151,6 +151,7 @@ const CalendarHeader = ({ onAgregarTecnico }) => {
             minWidth: "190px",
             textAlign: "center",
             whiteSpace: "nowrap",
+            transition: "all 0.2s ease",
           }}
         >
           <i
@@ -178,6 +179,7 @@ const CalendarHeader = ({ onAgregarTecnico }) => {
             minWidth: "190px",
             whiteSpace: "nowrap",
             textAlign: "center",
+            transition: "all 0.2s ease",
           }}
         >
           <i

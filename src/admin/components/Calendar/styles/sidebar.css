@@ -376,11 +376,17 @@
   margin-right: 0.5rem;
 }
 
-.servicio-card .botones-container {
+/* Commented out to use the styles from card-buttons.css */
+/* .servicio-card .botones-container {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  margin: 10px 0;
+  padding: 0;
+} */
 
 .servicio-card .btn-link {
   font-size: 1.2rem;

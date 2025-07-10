@@ -9,11 +9,10 @@
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  gap: 15px;
+  gap: 20px;
   width: 100%;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(135, 201, 71, 0.2);
+  margin: 10px 0;
+  padding: 0;
 }
 
 /* Estilos unificados para todos los botones */
@@ -114,4 +113,54 @@ body.dark-theme .servicios-container .servicio-card .eliminar-servicio:hover {
 .dark-theme .servicio-card .asignar-servicio,
 .dark-theme .servicio-card .eliminar-servicio {
   color: #87c947 !important;
+}
+
+/* Estilos para los botones circulares en la parte inferior de la tarjeta */
+.servicio-card .btn-info-circle,
+.servicio-card .btn-calendar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #2c2e35;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.servicio-card .btn-info-circle:hover,
+.servicio-card .btn-calendar-circle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.servicio-card .btn-info-circle i,
+.servicio-card .btn-calendar-circle i {
+  color: white;
+  font-size: 18px;
+}
+
+/* Estilos para modo claro */
+body:not(.dark-theme) .servicio-card .btn-info-circle,
+body:not(.dark-theme) .servicio-card .btn-calendar-circle {
+  background-color: #2c2e35;
+}
+
+/* Estilos para modo oscuro */
+body.dark-theme .servicio-card .btn-info-circle,
+body.dark-theme .servicio-card .btn-calendar-circle {
+  background-color: #2c2e35;
+}
+
+/* Horizontal separator above buttons */
+.servicio-card hr {
+  margin: 10px 0;
+  border-top: 1px solid rgba(135, 201, 71, 0.2);
+  width: 100%;
+  align-self: center;
 }

@@ -790,6 +790,7 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
         transform: "none",
         display: "flex",
         flexDirection: "column",
+        justifyContent: "space-between",
       }}
     >
       <div className="contenido-servicio">
@@ -814,9 +815,17 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
           {servicio.descripcion || servicio.description || "Sin descripción"}
         </p>
       </div>
+      <hr
+        style={{
+          margin: "10px 0",
+          borderTop: "1px solid rgba(135, 201, 71, 0.2)",
+          width: "100%",
+          alignSelf: "center",
+        }}
+      />
       <div className="botones-container">
         <button
-          className="ver-detalles"
+          className="btn-info-circle"
           onClick={(e) => {
             e.stopPropagation();
             handleClick();
@@ -826,24 +835,14 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
           <i className="fas fa-info-circle"></i>
         </button>
         <button
-          className="asignar-servicio"
+          className="btn-calendar-circle"
           onClick={(e) => {
             e.stopPropagation();
             handleAsignar();
           }}
           title="Asignar servicio"
         >
-          <i className="fas fa-calendar-plus"></i>
-        </button>
-        <button
-          className="eliminar-servicio"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEliminar();
-          }}
-          title="Eliminar servicio"
-        >
-          <i className="fas fa-times"></i>
+          <i className="fas fa-calendar-alt"></i>
         </button>
       </div>
     </div>
