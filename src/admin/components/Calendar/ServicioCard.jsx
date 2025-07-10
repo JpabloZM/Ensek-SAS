@@ -14,6 +14,10 @@ import "./styles/modal-footer.css"; // Importamos estilos para que el footer ten
 import "./styles/card-buttons.css"; // Importamos estilos específicos para los botones de la tarjeta
 import "./styles/add-technician-button.css"; // Importamos estilos específicos para el botón de agregar técnico
 import "./styles/export-button.css"; // Importamos estilos específicos para el botón de exportar
+import "./styles/servicio-info-modal.css"; // Estilos específicos para el modal de información de servicio
+import "./styles/modal-animations.css"; // Animaciones para modales
+import "./styles/clean-modal-buttons.css"; // Elimina el fondo gris de los botones
+import "./styles/equal-button-width.css"; // Asegura que los botones tengan el mismo ancho
 import "./styles/force-dark-modal.css"; // Este debe ser el último CSS importado para asegurar que tenga mayor prioridad
 
 const { getTechnicians: fetchTechnicians } = userService;
@@ -81,29 +85,29 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
       html: `
         <div class="detalles-servicio">
           <div class="detalles-row">
-            <div class="detalles-label">Cliente:</div>
+            <div class="detalles-label">Cliente</div>
             <div class="detalles-value">${servicio.clientName}</div>
           </div>
           <div class="detalles-row">
-            <div class="detalles-label">Email:</div>
+            <div class="detalles-label">Email</div>
             <div class="detalles-value">${
               servicio.clientEmail || "No disponible"
             }</div>
           </div>
           <div class="detalles-row">
-            <div class="detalles-label">Teléfono:</div>
+            <div class="detalles-label">Teléfono</div>
             <div class="detalles-value">${
               servicio.clientPhone || "No disponible"
             }</div>
           </div>
           <div class="detalles-row">
-            <div class="detalles-label">Dirección:</div>
+            <div class="detalles-label">Dirección</div>
             <div class="detalles-value">${
               servicio.address || "No disponible"
             }</div>
           </div>
           <div class="detalles-row">
-            <div class="detalles-label">Descripción:</div>
+            <div class="detalles-label">Descripción</div>
             <div class="detalles-value">${
               servicio.descripcion || servicio.description || "Sin descripción"
             }</div>
@@ -114,10 +118,29 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
       showDenyButton: true,
       confirmButtonColor: "#87c947",
       cancelButtonColor: "#e74c3c",
-      denyButtonColor: "#3085d6",
+      denyButtonColor: "#6c757d" /* Cambiado a color gris */,
       confirmButtonText: '<i class="fas fa-calendar-plus"></i> Asignar',
       denyButtonText: '<i class="fas fa-edit"></i> Editar',
       cancelButtonText: '<i class="fas fa-trash"></i> Eliminar',
+      customClass: {
+        popup: "servicio-info-modal",
+        title: "servicio-info-title",
+        htmlContainer: "servicio-info-container",
+        actions: "servicio-info-actions",
+        footer: "servicio-info-footer",
+        confirmButton: "btn-confirm-servicio",
+        denyButton: "btn-deny-servicio",
+        cancelButton: "btn-cancel-servicio",
+      },
+      backdrop: `
+        rgba(0,0,0,0.4)
+      `,
+      showClass: {
+        popup: "animate__animated animate__fadeIn",
+      },
+      hideClass: {
+        popup: "animate__animated animate__fadeOut",
+      },
     }).then((result) => {
       if (result.isConfirmed) {
         // Asignar servicio

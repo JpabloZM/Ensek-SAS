@@ -1,0 +1,46 @@
+/* Estilos específicos para eliminar el fondo gris de los botones */
+
+/* Eliminar el fondo gris del footer y actions en los modales de SweetAlert2 */
+.swal2-container .swal2-popup .swal2-footer,
+.swal2-container .swal2-popup .swal2-actions {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin-top: 1.5rem !important;
+}
+
+/* Ocultar el pseudo-elemento que podría estar creando un fondo */
+.swal2-container .swal2-popup .swal2-actions:before,
+.swal2-container .swal2-popup .swal2-actions:after {
+  display: none !important;
+}
+
+/* Asegurarse de que cada botón tiene el estilo correcto sin fondos adicionales */
+.swal2-container .swal2-popup .swal2-styled {
+  margin: 0 !important;
+  box-shadow: none !important;
+  width: 33.33% !important; /* Todos los botones ocupan exactamente 1/3 del espacio disponible */
+  flex-basis: 0 !important;
+  flex-grow: 1 !important;
+}
+
+/* Espacio entre botones */
+.swal2-container .swal2-popup .swal2-styled.swal2-confirm,
+.swal2-container .swal2-popup .swal2-styled.swal2-deny {
+  margin-right: 10px !important;
+}
+
+/* Eliminar bordes y sombras en modo oscuro */
+.dark-theme .swal2-container .swal2-popup .swal2-footer,
+.dark-theme .swal2-container .swal2-popup .swal2-actions {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+/* Asegurar que no hay esquina redondeada con fondo diferente */
+.swal2-container .swal2-popup {
+  border-bottom-left-radius: 12px !important;
+  border-bottom-right-radius: 12px !important;
+  overflow: hidden !important;
+}

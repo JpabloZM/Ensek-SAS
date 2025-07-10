@@ -1,0 +1,54 @@
+/* Estilos para el indicador de hora actual */
+
+/* Línea horizontal del indicador de hora actual */
+.fc .fc-timegrid-now-indicator-line {
+  border-color: #87c947; /* Color verde de la aplicación */
+  border-width: 1px;
+  z-index: 10;
+}
+
+/* Círculo en los extremos del indicador */
+.fc .fc-timegrid-now-indicator-arrow {
+  border-color: #87c947; /* Color verde de la aplicación */
+  border-width: 1px;
+  border-radius: 50%;
+  background-color: #87c947;
+  height: 6px; /* Tamaño más pequeño */
+  width: 6px; /* Tamaño más pequeño */
+}
+
+/* Modo oscuro */
+.dark-theme .fc .fc-timegrid-now-indicator-line {
+  border-color: #87c947; /* Mantenemos el mismo verde para consistencia */
+  border-width: 1px;
+  z-index: 10;
+}
+
+.dark-theme .fc .fc-timegrid-now-indicator-arrow {
+  border-color: #87c947; /* Mantenemos el mismo verde para consistencia */
+  background-color: #87c947;
+  height: 6px; /* Tamaño más pequeño */
+  width: 6px; /* Tamaño más pequeño */
+}
+
+/* Aumentar la visibilidad del indicador */
+.fc .fc-timegrid-now-indicator-container {
+  z-index: 10 !important;
+}
+
+/* Efecto pulsante para el indicador de hora actual */
+@keyframes pulseNowIndicator {
+  0% {
+    box-shadow: 0 0 0 0 rgba(135, 201, 71, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(135, 201, 71, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(135, 201, 71, 0);
+  }
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+  animation: pulseNowIndicator 2s infinite;
+}

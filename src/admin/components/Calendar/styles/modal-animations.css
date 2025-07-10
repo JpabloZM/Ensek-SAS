@@ -1,0 +1,49 @@
+/* Animaciones para el modal de servicios */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+.animate__animated {
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+}
+
+.animate__fadeIn {
+  animation-name: fadeIn;
+}
+
+.animate__fadeOut {
+  animation-name: fadeOut;
+}
+
+/* Clases para los componentes específicos del modal */
+.servicio-info-title {
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.servicio-info-container {
+  padding: 0 !important;
+}
+
+.servicio-info-actions {
+  margin-top: 25px !important;
+}

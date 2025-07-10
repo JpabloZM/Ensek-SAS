@@ -21,6 +21,7 @@ import "./styles/service-card-override.css"; // Asegurar que estos estilos se ap
 import "./styles/add-technician-form.css"; // Estilos específicos para el formulario de agregar técnico
 import "./styles/edit-technician-form.css"; // Estilos específicos para el formulario de editar técnico
 import "./styles/dark-mode-form-fields.css"; // Estilos para campos de formulario en modo oscuro
+import "./styles/now-indicator.css"; // Estilos para el indicador de hora actual
 
 const Calendar = ({ darkMode = false }) => {
   const { services, loading, error, updateService, getAllServices } =
@@ -44,6 +45,34 @@ const Calendar = ({ darkMode = false }) => {
       return calendarRef.current.getApi();
     }
     return null;
+  };
+
+  // Función para desplazarse a la hora actual
+  const scrollToCurrentTime = () => {
+    const calendarApi = getCalendarApi();
+    if (calendarApi && calendarApi.view.type === "resourceTimeGrid") {
+      // Asegurar que primero se renderice el calendario
+      setTimeout(() => {
+        // Encontrar el elemento del indicador de hora actual
+        const nowIndicator = document.querySelector(
+          ".fc-timegrid-now-indicator-line"
+        );
+        if (nowIndicator) {
+          // Desplazarse a la posición del indicador (con un offset para centrarlo)
+          const scrollContainer = document.querySelector(
+            ".fc-scroller-liquid-absolute"
+          );
+          if (scrollContainer) {
+            const containerRect = scrollContainer.getBoundingClientRect();
+            const indicatorRect = nowIndicator.getBoundingClientRect();
+            const offset =
+              indicatorRect.top - containerRect.top - containerRect.height / 2;
+
+            scrollContainer.scrollTop += offset;
+          }
+        }
+      }, 100);
+    }
   };
 
   // Efecto para la carga inicial
@@ -2720,6 +2749,7 @@ const Calendar = ({ darkMode = false }) => {
                 slotMaxTime: "24:00:00",
                 editable: true,
                 allDaySlot: false,
+                nowIndicator: true,
               },
               dayGridMonth: {
                 type: "dayGrid",
@@ -2778,6 +2808,12 @@ const Calendar = ({ darkMode = false }) => {
             droppable={true}
             eventOverlap={true}
             eventConstraint={null}
+            datesSet={(arg) => {
+              // Cuando cambia la vista o las fechas mostradas
+              if (arg.view.type === "resourceTimeGridDay") {
+                scrollToCurrentTime();
+              }
+            }}
             businessHours={false}
             snapDuration={"00:15:00"}
             slotDuration={"00:30:00"}

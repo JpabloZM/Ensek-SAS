@@ -5,6 +5,7 @@
 @import "./styles/forms.css";
 @import "./styles/general.css";
 @import "./styles/dark-mode.css";
+@import "./styles/now-indicator.css";
 
 /* Assigned events styling */
 .fc-event-assigned {

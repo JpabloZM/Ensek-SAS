@@ -1,0 +1,60 @@
+/* Estilos para asegurar que los botones tengan exactamente el mismo ancho */
+
+/* Contenedor de acciones */
+.swal2-actions {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+}
+
+/* Forzar que los tres botones tengan el mismo ancho exacto */
+.swal2-confirm,
+.swal2-deny,
+.swal2-cancel {
+  flex: 1 1 0 !important; /* Clave para distribuir el espacio equitativamente */
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+}
+
+/* Ocultar overflow de texto y usar ellipsis si es necesario */
+.swal2-confirm span,
+.swal2-deny span,
+.swal2-cancel span {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Centrar contenido del botón */
+.swal2-confirm,
+.swal2-deny,
+.swal2-cancel {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Estilos específicos para el modal de información del servicio */
+.servicio-info-modal .swal2-actions {
+  padding: 0 !important;
+  margin: 20px 0 0 0 !important;
+}
+
+/* Mantener consistencia en las separaciones */
+.servicio-info-modal .swal2-confirm,
+.servicio-info-modal .swal2-deny {
+  margin-right: 0 !important; /* Eliminamos el margen anterior, ya usamos gap en el contenedor */
+}
+
+/* Forzar el color gris para el botón editar */
+.servicio-info-modal .swal2-deny,
+.btn-deny-servicio {
+  background-color: #6c757d !important;
+}
+
+.servicio-info-modal .swal2-deny:hover,
+.btn-deny-servicio:hover {
+  background-color: #5a6268 !important;
+}
