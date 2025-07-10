@@ -12,6 +12,8 @@ import "./styles/swal-buttons.css"; // Importamos estilos específicos para los 
 import "./styles/assign-modal-buttons.css"; // Importamos estilos específicos para los botones del modal de asignación
 import "./styles/modal-footer.css"; // Importamos estilos para que el footer tenga el mismo color del formulario
 import "./styles/card-buttons.css"; // Importamos estilos específicos para los botones de la tarjeta
+import "./styles/add-technician-button.css"; // Importamos estilos específicos para el botón de agregar técnico
+import "./styles/export-button.css"; // Importamos estilos específicos para el botón de exportar
 import "./styles/force-dark-modal.css"; // Este debe ser el último CSS importado para asegurar que tenga mayor prioridad
 
 const { getTechnicians: fetchTechnicians } = userService;
@@ -167,6 +169,9 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
     const currentHour = now.getHours().toString().padStart(2, "0");
     const currentMinutes = now.getMinutes().toString().padStart(2, "0");
 
+    // La función exportCalendarData se ha movido al evento didOpen del modal
+    // para tener mejor acceso al contexto y al state
+
     const technicianOptions = technicians
       .filter(
         (tech) =>
@@ -204,14 +209,21 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
         </div>
         
         <div class="form-group technician-select-group">
-          <div class="select-container">
+          <div class="technician-select-wrapper">
             <select id="tecnicoSelect" class="form-control">
               <option value="">Seleccionar técnico...</option>
               ${technicianOptions}
             </select>
+            <button type="button" id="addTechnician" class="add-technician-btn" title="Agregar técnico">
+              <i class="fas fa-plus"></i>
+            </button>
           </div>
-          <button type="button" id="addTechnician" class="add-technician-btn">
-            <i class="fas fa-plus"></i> Añadir Técnico
+        </div>
+
+        <div class="form-group" style="margin-top: 15px; margin-bottom: 5px;">
+          <button type="button" id="exportCalendar" title="Exportar calendario" style="background: #87c947; color: white; border: 2px solid #004122; width: 100%; padding: 8px 15px; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); font-weight: bold;">
+            <i class="fas fa-file-export" style="margin-right: 8px; font-size: 16px;"></i>
+            Exportar Calendario
           </button>
         </div>
       </div>
@@ -256,32 +268,36 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
           <form id="asignarForm" style="margin-top: 0.5rem;">
             <div class="mb-2">
               <label class="form-label mb-1" style="color: #87c947; font-weight: 500; font-size: 0.9rem;">Técnico</label>
-              <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <select id="tecnicoSelect" class="form-control" style="background-color: ${
-                  isDarkMode ? "#2c2e35" : "#fff"
-                }; color: ${isDarkMode ? "#fff" : "#333"}; border-color: ${
-          isDarkMode ? "#444" : "#ced4da"
-        }; padding: 0.4rem 0.75rem; font-size: 0.9rem; flex-grow: 1;">
-                  <option value="">Seleccionar técnico...</option>
-                  ${technicians
-                    .filter(
-                      (tech) =>
-                        !localSelectedTechnicians.some(
-                          (t) => t._id === tech._id
-                        )
-                    )
-                    .map(
-                      (tech) =>
-                        `<option value="${tech._id}">${
-                          tech.name || tech.username
-                        }</option>`
-                    )
-                    .join("")}
-                </select>
-                <button id="addTechnician" type="button" style="background-color: #87c947; color: white; border: none; border-radius: 4px; padding: 0 1rem; display: flex; align-items: center; justify-content: center;">
-                  <i class="fas fa-plus" style="margin-right: 0.25rem;"></i> Añadir
-                </button>
-              </div>
+              <div class="technician-selection-container">
+                <div class="technician-select-wrapper">
+                  <select id="tecnicoSelect" class="form-control">
+                    <option value="">Seleccionar técnico...</option>
+                    ${technicians
+                      .filter(
+                        (tech) =>
+                          !localSelectedTechnicians.some(
+                            (t) => t._id === tech._id
+                          )
+                      )
+                      .map(
+                        (tech) =>
+                          `<option value="${tech._id}">${
+                            tech.name || tech.username
+                          }</option>`
+                      )
+                      .join("")}
+                  </select>
+                  <button id="addTechnician" type="button" title="Agregar técnico" style="background: transparent; border: none; color: #87c947; margin-left: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <i class="fas fa-plus"></i>
+                  </button>
+                </div>
+                
+                <div style="margin-top: 15px; margin-bottom: 15px; width: 100%; text-align: center;">
+                  <button id="exportCalendar" type="button" title="Exportar calendario" style="background: #87c947; color: white; border: 2px solid #004122; width: 100%; padding: 10px 15px; border-radius: 5px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.3); font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <i class="fas fa-file-export" style="margin-right: 8px; font-size: 18px;"></i>
+                    Exportar Calendario
+                  </button>
+                </div>
               <div id="selectedTechnicians" style="margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 6px;">
                 ${localSelectedTechnicians
                   .map(
@@ -365,7 +381,7 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
               .map(
                 (tech) => `
               <div class="selected-tech" style="background-color: ${
-                isDarkMode ? "#2c2e35" : "#e9f5d8"
+                isDarkMode ? "#3a3f48" : "#e9f5d8"
               }; color: ${
                   isDarkMode ? "#fff" : "#004122"
                 }; padding: 3px 10px; border-radius: 50px; display: flex; align-items: center; font-size: 0.85rem;">
@@ -445,6 +461,144 @@ const ServicioCard = ({ servicio, onEliminar, onAsignarServicio }) => {
                 // Actualizar la UI inmediatamente
                 updateTechniciansList();
               }
+            });
+          }
+
+          // Manejar el evento de exportar calendario
+          const exportCalendarButton =
+            document.getElementById("exportCalendar");
+          if (exportCalendarButton) {
+            exportCalendarButton.addEventListener("click", () => {
+              const selectedDate = document.getElementById("fecha").value;
+              const formatType = Swal.fire({
+                title: "Exportar Calendario",
+                html: `
+                  <div class="export-options">
+                    <p>Seleccione el formato de exportación para la fecha: <strong>${selectedDate}</strong></p>
+                    <div class="export-format-buttons" style="display: flex; justify-content: center; margin-top: 20px; gap: 15px;">
+                      <button id="exportPDF" class="swal2-confirm swal2-styled" style="background-color: #87c947; padding: 12px 25px; border: 2px solid #004122; border-radius: 6px; font-size: 16px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                        <i class="fas fa-file-pdf" style="margin-right: 10px; font-size: 18px;"></i>PDF
+                      </button>
+                      <button id="exportCSV" class="swal2-confirm swal2-styled" style="background-color: #87c947; padding: 12px 25px; border: 2px solid #004122; border-radius: 6px; font-size: 16px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                        <i class="fas fa-file-csv" style="margin-right: 10px; font-size: 18px;"></i>CSV
+                      </button>
+                    </div>
+                  </div>
+                `,
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: "Cancelar",
+                focusCancel: false,
+                didOpen: () => {
+                  // Función para exportar calendario - definida aquí para tener acceso a localSelectedTechnicians y mostrarAlerta
+                  const handleExport = (format) => {
+                    const date = document.getElementById("fecha").value;
+
+                    // Mostrar spinner mientras se procesa
+                    Swal.fire({
+                      title: "Generando exportación...",
+                      html: "Por favor espere mientras preparamos su archivo.",
+                      allowOutsideClick: false,
+                      didOpen: () => {
+                        Swal.showLoading();
+                      },
+                    });
+
+                    // Llamar al endpoint de exportación
+                    const techParams = localSelectedTechnicians
+                      .map((t) => `&techId=${t._id}`)
+                      .join("");
+                    console.log(
+                      `Exportando calendario para fecha ${date}, formato ${format}, técnicos: ${
+                        techParams || "todos"
+                      }`
+                    );
+                    fetch(
+                      `/api/exports?date=${date}&format=${format}${techParams}`,
+                      {
+                        method: "GET",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                          )}`,
+                        },
+                      }
+                    )
+                      .then((response) => {
+                        if (format === "pdf") {
+                          return response.blob();
+                        } else {
+                          return response.text();
+                        }
+                      })
+                      .then((data) => {
+                        // Cerrar el spinner
+                        Swal.close();
+
+                        // Crear un objeto URL para el blob (para PDF)
+                        if (format === "pdf") {
+                          const url = URL.createObjectURL(data);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `calendario_${date}.pdf`;
+                          document.body.appendChild(a);
+                          a.click();
+                          URL.revokeObjectURL(url);
+                          a.remove();
+
+                          mostrarAlerta({
+                            icon: "success",
+                            title: "Exportación PDF completada",
+                            timer: 2000,
+                            showConfirmButton: false,
+                          });
+                        } else {
+                          // Para CSV
+                          const url = window.URL.createObjectURL(
+                            new Blob([data], { type: "text/csv" })
+                          );
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `calendario_${date}.csv`;
+                          document.body.appendChild(a);
+                          a.click();
+                          URL.revokeObjectURL(url);
+                          a.remove();
+
+                          mostrarAlerta({
+                            icon: "success",
+                            title: "Exportación CSV completada",
+                            timer: 2000,
+                            showConfirmButton: false,
+                          });
+                        }
+                      })
+                      .catch((error) => {
+                        console.error("Error al exportar:", error);
+                        Swal.fire({
+                          icon: "error",
+                          title: "Error de exportación",
+                          text: "No se pudo generar el archivo de exportación. Por favor intente nuevamente.",
+                        });
+                      });
+                  };
+
+                  // Agregar eventos a los botones de formato
+                  document
+                    .getElementById("exportPDF")
+                    .addEventListener("click", () => {
+                      handleExport("pdf");
+                      Swal.close();
+                    });
+                  document
+                    .getElementById("exportCSV")
+                    .addEventListener("click", () => {
+                      handleExport("csv");
+                      Swal.close();
+                    });
+                },
+              });
             });
           }
 

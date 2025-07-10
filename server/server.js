@@ -10,6 +10,7 @@ import authRoutes from "./routes/authRoutes.js";
 import inventoryRoutes from "./routes/inventoryRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import serviceRoutes from "./routes/serviceRoutes.js";
+import exportRoutes from "./routes/exportRoutes.js";
 
 // Configuración de variables de entorno
 dotenv.config();
@@ -41,6 +42,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/services", serviceRoutes);
+app.use("/api/exports", exportRoutes);
 
 // Conectar a la base de datos
 connectDB().then(async (conn) => {

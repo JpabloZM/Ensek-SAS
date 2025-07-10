@@ -80,3 +80,86 @@ body.dark-theme .swal2-popup .custom-cancel-btn:hover {
     width: 100% !important;
   }
 }
+
+/* Estilos para el botón de añadir técnico y su contenedor */
+/* Estos estilos están ahora en add-technician-button.css */
+/* #addTechnician {
+  background-color: transparent !important;
+  color: #87c947 !important;
+  border: none !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-left: 8px !important;
+  transition: transform 0.2s ease !important;
+} */
+
+#addTechnician:hover {
+  transform: scale(1.1) !important;
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3) !important;
+}
+
+#addTechnician:active {
+  transform: scale(0.95) !important;
+}
+
+#addTechnician i {
+  font-size: 14px !important;
+}
+
+/* Ensure the select is properly styled */
+#tecnicoSelect {
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+  width: 100% !important;
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+}
+
+/* Fix the height of the container to accommodate the button properly */
+.technician-selection-container {
+  min-height: 50px !important;
+}
+
+/* Estos estilos están ahora en add-technician-button.css */
+/* .select-container,
+.technician-select-wrapper,
+.technician-selection-container {
+  position: relative !important;
+  padding: 10px !important;
+  border-radius: 5px !important;
+  margin-bottom: 15px !important;
+}
+
+body.dark-theme .select-container,
+body.dark-theme .technician-select-wrapper,
+body.dark-theme .technician-selection-container {
+  background-color: #2c2e35 !important;
+}
+
+body:not(.dark-theme) .select-container,
+body:not(.dark-theme) .technician-select-wrapper,
+body:not(.dark-theme) .technician-selection-container {
+  background-color: #f2f2f2 !important;
+} */
+
+/* Estilos para los técnicos seleccionados */
+.selected-tech {
+  background-color: #3a3f48 !important;
+  color: white !important;
+  padding: 3px 10px !important;
+  border-radius: 50px !important;
+  display: flex !important;
+  align-items: center !important;
+  font-size: 0.85rem !important;
+  margin-right: 5px !important;
+  margin-bottom: 5px !important;
+}
+
+body:not(.dark-theme) .selected-tech {
+  background-color: #e9f5d8 !important;
+  color: #004122 !important;
+}

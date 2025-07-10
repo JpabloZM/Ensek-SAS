@@ -1,0 +1,88 @@
+/* 
+ * Estilos específicos para el botón de exportar
+ * Este archivo contiene los estilos para que el botón de exportar sea más visible
+ */
+
+/* Estilos específicos para el botón de exportar */
+#exportCalendar {
+  position: relative;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  background-color: #87c947; /* Verde brillante como color principal */
+  color: white !important;
+  font-weight: bold;
+  border: 2px solid #004122;
+  border-radius: 4px;
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  font-size: 14px;
+}
+
+/* Efecto hover especial para el botón de exportar */
+#exportCalendar:hover {
+  transform: translateY(-2px);
+  background-color: #a3e055;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Iconos dentro del botón exportar */
+#exportCalendar i {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+/* Versión dark mode */
+body.dark-theme #exportCalendar {
+  background-color: #87c947;
+  border: 2px solid #004122;
+  color: white !important;
+}
+
+body.dark-theme #exportCalendar:hover {
+  background-color: #a3e055;
+}
+
+/* Estilos específicos para el botón de exportar en la cabecera */
+.calendar-header .btn-export-calendar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #87c947;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  padding: 8px 15px;
+  font-size: 14px;
+  height: 38px;
+  width: 190px;
+  margin-right: 10px;
+  transition: all 0.2s ease;
+}
+
+.calendar-header .btn-export-calendar:hover {
+  background-color: #95d955;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.calendar-header .btn-export-calendar i {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+/* Versión light mode */
+body:not(.dark-theme) #exportCalendar {
+  background-color: #87c947;
+  border: 2px solid #004122;
+  color: white !important;
+}
+
+body:not(.dark-theme) #exportCalendar:hover {
+  background-color: #a3e055;
+}

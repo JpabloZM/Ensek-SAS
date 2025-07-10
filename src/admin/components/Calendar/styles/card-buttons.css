@@ -31,7 +31,7 @@
   justify-content: center;
   aspect-ratio: 1/1;
   cursor: pointer;
-  
+
   /* Estilo simple y unificado para todos los botones */
   color: #004122;
   background-color: transparent;
@@ -79,7 +79,7 @@
 
 /* Selectores más específicos para garantizar prioridad */
 body.dark-theme .sidebar .servicio-card .ver-detalles,
-body.dark-theme .sidebar .servicio-card .asignar-servicio, 
+body.dark-theme .sidebar .servicio-card .asignar-servicio,
 body.dark-theme .sidebar .servicio-card .eliminar-servicio,
 body.dark-theme .servicios-container .servicio-card .ver-detalles,
 body.dark-theme .servicios-container .servicio-card .asignar-servicio,

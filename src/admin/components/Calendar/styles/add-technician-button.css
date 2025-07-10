@@ -1,0 +1,191 @@
+/* 
+ * Estilos específicos para el botón de agregar técnico
+ * Este archivo contiene los estilos para el botón de agregar técnico
+ * en el modal de asignación de servicios y en la cabecera del calendario
+ */
+
+/* Contenedor principal del selector de técnicos */
+.technician-selection-container {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+/* Estilo del contenedor del select */
+.technician-select-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: #2c2e35;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+body.dark-theme .technician-select-wrapper {
+  background-color: #2c2e35;
+}
+
+body:not(.dark-theme) .technician-select-wrapper {
+  background-color: #f2f2f2;
+}
+
+/* Estilo para el select */
+#tecnicoSelect {
+  flex-grow: 1;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  background-color: #fff;
+}
+
+body.dark-theme #tecnicoSelect {
+  background-color: #212529;
+  color: #fff;
+  border-color: #444;
+}
+
+/* Estilos comunes para los botones de acción */
+#addTechnician,
+#exportCalendar,
+.add-technician-btn,
+.export-calendar-btn {
+  background-color: transparent;
+  color: #87c947;
+  border: none;
+  padding: 0;
+  margin-left: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#addTechnician:hover,
+#exportCalendar:hover,
+.add-technician-btn:hover,
+.export-calendar-btn:hover {
+  background-color: rgba(135, 201, 71, 0.2);
+  color: #a3e055;
+}
+
+body.dark-theme #addTechnician,
+body.dark-theme #exportCalendar,
+body.dark-theme .add-technician-btn,
+body.dark-theme .export-calendar-btn {
+  color: #87c947;
+}
+
+body.dark-theme #addTechnician:hover,
+body.dark-theme #exportCalendar:hover,
+body.dark-theme .add-technician-btn:hover,
+body.dark-theme .export-calendar-btn:hover {
+  background-color: rgba(135, 201, 71, 0.2);
+  color: #a3e055;
+}
+
+body:not(.dark-theme) #addTechnician,
+body:not(.dark-theme) #exportCalendar,
+body:not(.dark-theme) .add-technician-btn,
+body:not(.dark-theme) .export-calendar-btn {
+  color: #004122;
+}
+
+body:not(.dark-theme) #addTechnician:hover,
+body:not(.dark-theme) #exportCalendar:hover,
+body:not(.dark-theme) .add-technician-btn:hover,
+body:not(.dark-theme) .export-calendar-btn:hover {
+  background-color: rgba(0, 65, 34, 0.1);
+  color: #004122;
+}
+
+/* Tamaño del ícono */
+#addTechnician i,
+#exportCalendar i,
+.add-technician-btn i,
+.export-calendar-btn i {
+  font-size: 1.1rem;
+}
+
+/* Contenedor de técnicos seleccionados */
+#selectedTechnicians {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Estilo para las etiquetas de técnicos seleccionados */
+.selected-tech {
+  background-color: #3a3f48;
+  color: white;
+  padding: 3px 10px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+body:not(.dark-theme) .selected-tech {
+  background-color: #e9f5d8;
+  color: #004122;
+}
+
+/* Botón para eliminar técnicos seleccionados */
+.remove-technician {
+  background: none;
+  border: none;
+  color: #ff6b6b;
+  margin-left: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0 2px;
+}
+
+body:not(.dark-theme) .remove-technician {
+  color: #e74c3c;
+}
+
+/* Estilos específicos para la alineación de los botones en la cabecera del calendario */
+.calendar-header .buttons-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.calendar-header .btn.btn-primary {
+  background-color: #87c947;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  padding: 8px 15px;
+  font-size: 14px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-header .btn.btn-primary:hover {
+  background-color: #95d955;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.calendar-header .btn.btn-primary i {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+/* Estilos específicos para que los botones estén alineados */
+.calendar-header .btn-export-calendar,
+.calendar-header .btn.btn-primary {
+  height: 38px;
+  margin-top: 0;
+  margin-bottom: 0;
+}

@@ -1,0 +1,47 @@
+/* Estilos para la cabecera del calendario */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Aseguramos que los botones estén alineados */
+.calendar-header .buttons-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Estilos generales para los botones en la cabecera */
+.calendar-header button {
+  height: 45px;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+/* Estilo específico para el botón de Exportar Calendario para que coincida con la imagen */
+.btn-export-calendar {
+  background-color: #87c947 !important;
+  color: white !important;
+  border: none !important;
+  height: 45px !important;
+  padding: 12px 20px !important;
+  font-weight: 500 !important;
+  font-size: 16px !important;
+  border-radius: 6px !important;
+  width: auto !important;
+  min-width: 190px !important;
+  white-space: nowrap !important;
+}
+
+.btn-export-calendar i {
+  margin-right: 8px;
+  font-size: 18px;
+}
