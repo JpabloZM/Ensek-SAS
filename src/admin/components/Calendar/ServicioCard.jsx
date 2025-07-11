@@ -894,23 +894,34 @@ const ServicioCard = ({
     });
 
     for (const tecnico of tecnicos) {
-      // Create calendar event
+      // Create calendar event with explicit date from the modal input
       const fechaInicio = new Date(`${fecha}T${horaInicio}`);
       const fechaFin = new Date(
         fechaInicio.getTime() + parseInt(duracion) * 60000
       );
 
+      console.log("Fechas creadas para el servicio:", {
+        fechaString: `${fecha}T${horaInicio}`,
+        fechaInicio: fechaInicio.toISOString(),
+        fechaFin: fechaFin.toISOString(),
+      });
+
       const eventoCalendario = {
         id: servicio._id || servicio.id, // Usar el ID real del servicio
-        title: `${servicio.nombre} - ${servicio.clientName}`,
+        title: `${servicio.nombre || servicio.serviceType} - ${
+          servicio.clientName
+        }`,
         start: fechaInicio.toISOString(),
         end: fechaFin.toISOString(),
         resourceId: tecnico._id,
         backgroundColor: "#87c947",
         borderColor: "#87c947",
-        className: "estado-confirmado", // Agregar la clase para el estilo
+        className: "estado-confirmado calendar-event-interactive", // Agregar clases para estilo e interactividad
         textColor: "white",
         display: "block",
+        editable: true, // Permitir edición
+        durationEditable: true, // Permitir cambio de duración
+        startEditable: true, // Permitir cambio de hora de inicio
         extendedProps: {
           estado: "confirmado",
           status: "confirmed",
@@ -925,6 +936,10 @@ const ServicioCard = ({
           direccion: servicio.address,
           address: servicio.address,
           serviceId: servicio._id || servicio.id,
+          // Agregar las fechas explícitamente para asegurarnos que se conservan
+          scheduledStart: fechaInicio.toISOString(),
+          scheduledEnd: fechaFin.toISOString(),
+          fecha: fecha, // Preservar la fecha original seleccionada
         },
       };
 

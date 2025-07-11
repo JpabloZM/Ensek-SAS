@@ -238,12 +238,14 @@ const updateService = async (id, updates) => {
           address: existingService.address,
           serviceType: existingService.serviceType || existingService.nombre,
           description: existingService.descripcion,
-          preferredDate: updates.scheduledStart || new Date().toISOString(),
+          preferredDate: updates.scheduledStart || new Date().toISOString(), // Actualizar fecha preferida
           status: updates.status || "confirmed",
           technician: technicianValue,
           technicians: techniciansArray,
-          scheduledStart: updates.scheduledStart,
-          scheduledEnd: updates.scheduledEnd,
+          scheduledStart: updates.scheduledStart || new Date().toISOString(), // Asegurar que se establezca
+          scheduledEnd:
+            updates.scheduledEnd ||
+            new Date(new Date().getTime() + 60 * 60 * 1000).toISOString(), // Asegurar que se establezca
         };
 
         console.log("Creating new service with data:", newService);
@@ -361,13 +363,17 @@ const getServiceRequests = async () => {
 const convertServiceRequestToService = async (
   requestId,
   technicianId,
-  technicianIds = []
+  technicianIds = [],
+  scheduledStart,
+  scheduledEnd
 ) => {
   try {
     console.log("Convirtiendo solicitud de servicio a servicio:", {
       requestId,
       technicianId,
       technicianIds,
+      scheduledStart, // Log the provided dates
+      scheduledEnd,
     });
 
     const config = getAuthConfig();
@@ -376,6 +382,15 @@ const convertServiceRequestToService = async (
     const payload = {
       technician: technicianId, // Técnico principal para compatibilidad
       document: "1234567890", // Default document
+      scheduledStart: scheduledStart, // Usar SOLO la fecha proporcionada, sin fallback
+      scheduledEnd:
+        scheduledEnd ||
+        (scheduledStart
+          ? new Date(
+              new Date(scheduledStart).getTime() + 60 * 60 * 1000
+            ).toISOString()
+          : undefined),
+      preferredDate: scheduledStart, // Actualizar también la fecha preferida con la fecha exacta
     };
 
     // Agregar los técnicos múltiples si se proporcionan
@@ -383,6 +398,8 @@ const convertServiceRequestToService = async (
       payload.technicians = technicianIds;
       console.log("Enviando múltiples técnicos al backend:", technicianIds);
     }
+
+    console.log("Payload final para convertir servicio:", payload);
 
     const response = await axios.put(
       `${API_URL}/requests/${requestId}/convert`,

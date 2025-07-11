@@ -100,15 +100,60 @@ const Calendar = ({ darkMode = false }) => {
 
     fetchTechnicians();
   }, []); // Solo cargar técnicos una vez al montar
+
+  // Función para mapear el estado del servicio al correspondiente estado en español
+  const mapStatusToEstado = (status) => {
+    switch (status) {
+      case "confirmed":
+        return "confirmado";
+      case "pending":
+        return "pendiente";
+      case "cancelled":
+        return "cancelado";
+      case "completed":
+        return "completado";
+      case "billed":
+        return "facturado";
+      case "special":
+        return "especial";
+      case "lunch":
+        return "almuerzo";
+      default:
+        return "pendiente";
+    }
+  };
+
+  // Función para obtener el color según el estado del servicio
+  const getServiceColor = (status) => {
+    switch (status) {
+      case "confirmed":
+        return "#87c947"; // Verde
+      case "pending":
+        return "#ffd54f"; // Amarillo
+      case "cancelled":
+        return "#e74c3c"; // Rojo
+      case "completed":
+        return "#3498db"; // Azul
+      case "billed":
+        return "#7f8c8d"; // Gris
+      case "special":
+        return "#9b59b6"; // Morado
+      case "lunch":
+        return "#3498db"; // Azul para almuerzo
+      default:
+        return "#ffd54f"; // Por defecto amarillo
+    }
+  };
+
   // Function to process services data
   const processServices = useCallback((servicesData) => {
     console.log("Processing services data:", servicesData);
     // Actualizar servicios locales
     setLocalServices(servicesData);
 
-    // Procesar servicios pendientes
+    // Procesar servicios pendientes - solo incluir los que NO tienen técnico asignado
     const pendingServices = servicesData
-      .filter((service) => service.status === "pending")
+      .filter((service) => service.status === "pending" && !service.technician)
       .map((service) => ({
         _id: service._id,
         id: service._id,
@@ -132,16 +177,9 @@ const Calendar = ({ darkMode = false }) => {
     // Actualizar eventos del calendario
     const calendarEvents = servicesData
       .filter((service) => {
-        // Include confirmed services that have technician assigned
-        if (service.status === "confirmed" && service.technician) {
-          return true;
-        }
-        // Include pending services that need to be displayed on the calendar
-        if (service.status === "pending") {
-          return true;
-        }
-        // Include completed services
-        if (service.status === "completed") {
+        // Incluir en el calendario todos los servicios con técnico asignado
+        // independientemente de su estado (incluidos los pendientes)
+        if (service.technician) {
           return true;
         }
         return false;
@@ -160,11 +198,10 @@ const Calendar = ({ darkMode = false }) => {
             ).toISOString(),
           // Set resourceId only for confirmed services
           ...(service.technician && { resourceId: service.technician }),
-          backgroundColor:
-            service.status === "confirmed" ? "#87c947" : "#ffd54f",
-          borderColor: service.status === "confirmed" ? "#87c947" : "#ffd54f",
+          backgroundColor: getServiceColor(service.status),
+          borderColor: getServiceColor(service.status),
           extendedProps: {
-            estado: service.status === "confirmed" ? "confirmado" : "pendiente",
+            estado: mapStatusToEstado(service.status),
             status: service.status,
             descripcion: service.description,
             description: service.description,
@@ -553,7 +590,23 @@ const Calendar = ({ darkMode = false }) => {
         preferredDate: nuevoServicio.preferredDate || currentDate,
         // Asegurarse de que document siempre tenga un valor válido
         document: nuevoServicio.document || "1234567890",
-        status: "pending",
+        // Usar el estado explícito si viene del calendario, o usar el mapeo
+        status:
+          nuevoServicio.status ||
+          (nuevoServicio.isFromCalendar
+            ? nuevoServicio.estado === "pendiente"
+              ? "pending"
+              : nuevoServicio.estado === "cancelado"
+              ? "cancelled"
+              : nuevoServicio.estado === "facturado"
+              ? "billed"
+              : nuevoServicio.estado === "especial"
+              ? "special"
+              : nuevoServicio.estado === "almuerzo"
+              ? "lunch"
+              : "confirmed"
+            : "pending"),
+        technician: nuevoServicio.technicianId || null, // Asignar técnico si viene del calendario
       };
 
       console.log("Creando nuevo servicio con datos:", serviceData);
@@ -587,19 +640,24 @@ const Calendar = ({ darkMode = false }) => {
         nombre: createdService.serviceType,
         descripcion: createdService.description,
         duracion: 60, // Default duration in minutes
-        color: "#ffd54f", // Color for pending state
-        estado: "pendiente",
+        color: getServiceColor(createdService.status), // Color basado en estado
+        estado: mapStatusToEstado(createdService.status),
         clientName: createdService.name,
         clientEmail: createdService.email,
         clientPhone: createdService.phone,
         address: createdService.address,
         preferredDate: createdService.preferredDate || currentDate,
         _id: createdService._id,
+        technician: createdService.technician || null, // Incluir técnico si existe
       };
 
-      // Add to local state
-      const serviciosActualizados = [...serviciosPendientes, localService];
-      setServiciosPendientes(serviciosActualizados);
+      // Solo agregamos a los servicios pendientes si no tiene técnico asignado
+      // Esto asegura que los servicios creados desde el calendario (que tienen técnico)
+      // no aparezcan en la barra lateral
+      if (!createdService.technician) {
+        const serviciosActualizados = [...serviciosPendientes, localService];
+        setServiciosPendientes(serviciosActualizados);
+      }
 
       // También actualizamos los servicios para que se refleje inmediatamente
       setLocalServices((prev) => [...prev, createdService]);
@@ -1546,6 +1604,14 @@ const Calendar = ({ darkMode = false }) => {
 
       // Primero crear el servicio en la base de datos
       try {
+        // Mapear estado seleccionado a su equivalente en inglés para el backend
+        let statusForBackend = "confirmed"; // Por defecto confirmado
+        if (formValues.estado === "pendiente") statusForBackend = "pending";
+        if (formValues.estado === "cancelado") statusForBackend = "cancelled";
+        if (formValues.estado === "facturado") statusForBackend = "billed";
+        if (formValues.estado === "especial") statusForBackend = "special";
+        if (formValues.estado === "almuerzo") statusForBackend = "lunch";
+
         // Crear un nuevo objeto con los datos del servicio
         const nuevoServicio = {
           clientName: formValues.clientName,
@@ -1556,6 +1622,10 @@ const Calendar = ({ darkMode = false }) => {
           descripcion: formValues.descripcion,
           document: "1234567890", // Valor por defecto
           preferredDate: selectInfo.start.toISOString(),
+          isFromCalendar: true, // Indicar que viene del calendario para asignarlo directamente
+          technicianId: selectInfo.resource.id, // Incluir el ID del técnico seleccionado
+          estado: formValues.estado, // Estado en español para UI
+          status: statusForBackend, // Estado en inglés para el backend
         };
 
         // Guardar el servicio en la base de datos
@@ -1578,8 +1648,12 @@ const Calendar = ({ darkMode = false }) => {
             serviceType: formValues.serviceType,
             serviceId: createdService ? createdService._id : null,
           },
-          backgroundColor: formValues.color,
-          borderColor: formValues.color,
+          backgroundColor: createdService
+            ? getServiceColor(createdService.status)
+            : formValues.color,
+          borderColor: createdService
+            ? getServiceColor(createdService.status)
+            : formValues.color,
           textColor: "white",
           className: `estado-${formValues.estado}`,
           display: "block",
@@ -1596,6 +1670,15 @@ const Calendar = ({ darkMode = false }) => {
         });
 
         calendarApi.addEvent(nuevoEvento);
+
+        // Mostrar una alerta de éxito
+        mostrarAlerta({
+          icon: "success",
+          title: "Servicio creado",
+          text: `El servicio ha sido creado y asignado a ${tecnico.title}`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
       } catch (error) {
         console.error("Error al crear el servicio:", error);
         mostrarAlerta({
@@ -2028,6 +2111,15 @@ const Calendar = ({ darkMode = false }) => {
         technicianIds,
       });
 
+      // Log explícitamente las fechas que estamos recibiendo
+      console.log("Fechas recibidas:", {
+        start: eventoCalendario.start,
+        end: eventoCalendario.end,
+        startDate: new Date(eventoCalendario.start),
+        endDate: new Date(eventoCalendario.end),
+        extendedProps: eventoCalendario.extendedProps,
+      });
+
       // Ensure we're using the MongoDB ID
       const realServiceId =
         typeof servicioId === "string" && servicioId.startsWith("evento-")
@@ -2050,16 +2142,29 @@ const Calendar = ({ darkMode = false }) => {
         end: eventoCalendario.end,
       });
 
+      // Utilizar fechas específicas del evento - priorizar las de extendedProps si existen
+      const scheduledStart =
+        eventoCalendario.extendedProps?.scheduledStart ||
+        eventoCalendario.start;
+      const scheduledEnd =
+        eventoCalendario.extendedProps?.scheduledEnd || eventoCalendario.end;
+
       // First convert the service request to a service if needed
       // This will create a new service record in the services collection
       let updatedService;
       try {
-        console.log("Converting service request to service...");
+        console.log("Converting service request to service...", {
+          startDate: scheduledStart,
+          endDate: scheduledEnd,
+        });
+
         const conversionResult =
           await serviceService.convertServiceRequestToService(
             realServiceId,
             eventoCalendario.resourceId,
-            technicianIds // Pasar el array de técnicos
+            technicianIds, // Pasar el array de técnicos
+            scheduledStart, // Usar la fecha exacta del extendedProps o del evento
+            scheduledEnd // Usar la fecha exacta del extendedProps o del evento
           );
 
         updatedService = conversionResult.service;
@@ -2075,14 +2180,16 @@ const Calendar = ({ darkMode = false }) => {
           status: "confirmed",
           technician: eventoCalendario.resourceId, // Técnico principal
           technicians: technicianIds, // Array de todos los técnicos
-          scheduledStart: eventoCalendario.start,
-          scheduledEnd: eventoCalendario.end,
+          scheduledStart: scheduledStart,
+          scheduledEnd: scheduledEnd,
+          preferredDate: scheduledStart, // Actualizar también la fecha preferida con la fecha exacta
         });
       }
 
       console.log("Service successfully updated:", updatedService);
 
       // Create a properly formatted calendar event with required properties
+      // Usar siempre las fechas exactas que fueron seleccionadas en el modal
       const formattedEvent = {
         id: updatedService._id,
         title: `${
@@ -2092,16 +2199,8 @@ const Calendar = ({ darkMode = false }) => {
           eventoCalendario.extendedProps?.clientName ||
           "Cliente"
         }`,
-        start:
-          updatedService.scheduledStart ||
-          eventoCalendario.start ||
-          updatedService.preferredDate,
-        end:
-          updatedService.scheduledEnd ||
-          eventoCalendario.end ||
-          new Date(
-            new Date(updatedService.preferredDate).getTime() + 60 * 60 * 1000
-          ).toISOString(),
+        start: scheduledStart, // Usar las fechas exactas del evento o extendedProps
+        end: scheduledEnd,
         resourceId: eventoCalendario.resourceId, // Usar el técnico específico para este evento
         backgroundColor: "#87c947",
         borderColor: "#87c947",
@@ -2135,6 +2234,9 @@ const Calendar = ({ darkMode = false }) => {
             updatedService.address || eventoCalendario.extendedProps?.address,
           technicians: technicianIds, // Guardar los IDs de todos los técnicos en las props extendidas
           serviceId: updatedService._id || realServiceId,
+          scheduledStart: scheduledStart, // Guardar también las fechas exactas en extendedProps
+          scheduledEnd: scheduledEnd,
+          fecha: eventoCalendario.extendedProps?.fecha, // Guardar la fecha original del modal
         },
       };
 

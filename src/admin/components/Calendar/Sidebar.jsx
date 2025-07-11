@@ -184,7 +184,7 @@ const Sidebar = ({
   return (
     <div className="col-md-3 sidebar">
       <div className="p-4">
-        <h4>Solicitudes Pendientes</h4>
+        <h4>Servicios Pendientes</h4>
         <button onClick={handleAgregarServicio} className="btn btn-primary">
           <i className="fas fa-plus-circle me-2"></i>
           Agregar Servicio
