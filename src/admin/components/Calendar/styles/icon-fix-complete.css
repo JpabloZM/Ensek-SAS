@@ -1,0 +1,79 @@
+/* Solución completa para el problema de los iconos en botones */
+
+/* Estilos base para botones con iconos */
+.button-with-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Reseteo completo para todos los iconos */
+.swal2-actions button i,
+.swal2-actions button span i,
+.swal2-confirm i,
+.swal2-cancel i,
+.button-with-icon i,
+.swal2-styled i,
+.swal2-content i,
+button i {
+  background: none !important;
+  background-color: transparent !important;
+  color: inherit !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Arreglo específico para el botón Asignar */
+.swal2-confirm.swal2-styled {
+  background-image: none !important;
+  position: relative !important;
+}
+
+/* Solución al problema de capa superpuesta */
+.swal2-confirm.swal2-styled::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: inherit;
+  z-index: -1;
+}
+
+/* Estilos generales para los botones */
+.swal2-styled {
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+  position: relative !important;
+}
+
+/* Asegurar que el contenido está sobre el fondo */
+.swal2-styled > * {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Reseteo para todos los span dentro de los botones */
+.swal2-styled span {
+  background: transparent !important;
+}
+
+/* Fix para el botón personalizado ASIGNAR */
+button.swal2-confirm i,
+button.swal2-confirm span,
+button.swal2-cancel i,
+button.swal2-cancel span {
+  background-color: transparent !important;
+  background: transparent !important;
+  color: inherit !important;
+}

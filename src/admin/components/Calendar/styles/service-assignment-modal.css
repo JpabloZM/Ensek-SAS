@@ -1,0 +1,196 @@
+/* Estilos mejorados para el modal de asignación de servicios */
+
+/* Estilos para el modal */
+.swal2-popup-custom {
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark mode adjustment */
+.dark-theme .swal2-popup-custom {
+  background-color: #1c1e24;
+  color: #fff;
+}
+
+/* Estilos para los botones */
+.swal2-confirm-custom {
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 24px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.swal2-confirm-custom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(135, 201, 71, 0.4) !important;
+}
+
+.swal2-cancel-custom {
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 24px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.swal2-cancel-custom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(108, 117, 125, 0.3) !important;
+}
+
+/* Estilos para arreglar los iconos en los botones */
+.swal2-styled i,
+.swal2-confirm i, 
+.swal2-cancel i,
+button i {
+  background: transparent !important;
+  color: inherit !important;
+  margin-right: 6px;
+  font-size: 0.9em;
+}
+
+/* Estilos especiales para los botones con iconos */
+.button-with-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.button-with-icon i {
+  background: transparent !important;
+  margin-right: 6px !important;
+}
+
+/* Estilos para el contenedor de técnicos seleccionados */
+#selectedTechnicians .selected-tech {
+  transition: all 0.2s ease;
+}
+
+#selectedTechnicians .selected-tech:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para los inputs */
+.form-control:focus {
+  box-shadow: 0 0 0 3px rgba(135, 201, 71, 0.25) !important;
+  border-color: #87c947 !important;
+  outline: none !important;
+}
+
+/* Botón de agregar técnico con hover effect */
+#addTechnician:hover {
+  background-color: #87c947 !important;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(135, 201, 71, 0.3);
+}
+
+/* Estilos para mensajes de validación */
+.swal2-validation-message {
+  background-color: rgba(255, 107, 107, 0.08) !important;
+  border-radius: 6px !important;
+  padding: 10px !important;
+  margin-top: 12px !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Estilos para el mensaje de validación en modo oscuro */
+.dark-theme .swal2-validation-message {
+  background-color: rgba(255, 107, 107, 0.15) !important;
+  color: #ff6b6b !important;
+}
+
+/* Animaciones suaves */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.selected-tech {
+  animation: fadeInUp 0.3s ease forwards;
+}
+
+/* Transición suave para los inputs */
+input, select {
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Fondo del título más destacado */
+.swal2-title {
+  font-size: 1.4rem !important;
+  font-weight: 600 !important;
+  color: #004122 !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid rgba(135, 201, 71, 0.3) !important;
+  margin-bottom: 16px !important;
+}
+
+/* Fondo del título en modo oscuro */
+.dark-theme .swal2-title {
+  color: #87c947 !important;
+  border-bottom: 1px solid rgba(135, 201, 71, 0.2) !important;
+}
+
+/* Estilos para el contenedor HTML dentro de SweetAlert2 */
+.swal2-html-container-custom {
+  max-height: 70vh !important;
+  overflow-y: auto !important;
+  padding: 0 5px !important;
+}
+
+/* Scrollbar styling */
+.swal2-html-container-custom::-webkit-scrollbar {
+  width: 8px;
+}
+
+.swal2-html-container-custom::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.05); 
+  border-radius: 10px;
+}
+
+.swal2-html-container-custom::-webkit-scrollbar-thumb {
+  background: rgba(135, 201, 71, 0.5);
+  border-radius: 10px;
+}
+
+.swal2-html-container-custom::-webkit-scrollbar-thumb:hover {
+  background: rgba(135, 201, 71, 0.7);
+}
+
+/* Estilo para el encabezado con icono */
+.swal2-title i {
+  margin-right: 8px;
+}
+
+/* Estilo mejorado para el área de técnicos seleccionados */
+#selectedTechnicians::-webkit-scrollbar {
+  width: 6px;
+}
+
+#selectedTechnicians::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.03);
+  border-radius: 10px;
+}
+
+#selectedTechnicians::-webkit-scrollbar-thumb {
+  background: rgba(135, 201, 71, 0.4);
+  border-radius: 10px;
+}
+
+#selectedTechnicians::-webkit-scrollbar-thumb:hover {
+  background: rgba(135, 201, 71, 0.6);
+}

@@ -1,0 +1,46 @@
+/* Estilos directos para corregir el problema de iconos */
+
+.swal2-actions button i {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+.button-with-icon {
+  position: relative;
+}
+
+.button-with-icon i {
+  background: none !important;
+  position: relative;
+  z-index: 2;
+}
+
+.swal2-styled.swal2-confirm,
+.swal2-styled.swal2-cancel {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fix específico para el botón de asignar */
+button.swal2-confirm::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: inherit;
+  z-index: 0;
+}
+
+button.swal2-confirm * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Fix directo al elemento i */
+.swal2-actions i {
+  display: inline !important;
+  background-image: none !important;
+  background-color: transparent !important;
+}

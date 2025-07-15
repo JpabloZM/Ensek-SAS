@@ -1,0 +1,42 @@
+/* Correcciones para los iconos dentro de los botones de SweetAlert2 */
+
+/* Elimina cualquier fondo que pueda tener el ícono */
+.swal2-actions button i,
+.swal2-confirm i,
+.swal2-cancel i,
+.swal2-styled i {
+  background-color: transparent !important;
+  background: none !important;
+}
+
+/* Asegura que los iconos tengan el mismo color que el texto del botón */
+.swal2-confirm i,
+.swal2-cancel i {
+  color: inherit !important;
+}
+
+/* Contenedores flex para los botones con iconos */
+.button-with-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+/* Ajuste para los botones personalizados */
+button[class*="swal2"] i {
+  background: transparent !important;
+}
+
+/* Ajuste específico para botones del modal */
+.swal2-popup .swal2-styled.swal2-confirm,
+.swal2-popup .swal2-styled.swal2-cancel {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Ajuste especial para evitar que los iconos tengan su propio fondo */
+i.fas, i.far, i.fab {
+  background: transparent !important;
+}

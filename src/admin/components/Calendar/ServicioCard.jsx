@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useAlertas } from "../../hooks/useAlertas";
 import Swal from "sweetalert2";
 import { userService } from "../../../client/services/userService";
+import { addButtonFixStyles, addButtonFixScript } from "../../../utils/buttonIconFix";
+import { fixSweetAlertButtons } from "../../../utils/buttonStyleFix";
 import "./styles/services.css";
 import "./styles/detalles.css";
 import "./styles/card-reset.css"; // Importamos el archivo de reset para asegurar los estilos
@@ -18,6 +20,8 @@ import "./styles/servicio-info-modal.css"; // Estilos específicos para el modal
 import "./styles/modal-animations.css"; // Animaciones para modales
 import "./styles/clean-modal-buttons.css"; // Elimina el fondo gris de los botones
 import "./styles/equal-button-width.css"; // Asegura que los botones tengan el mismo ancho
+import "./styles/sweet-alert-button-fix.css"; // Fix para los iconos en los botones
+import "./styles/icon-fix-complete.css"; // Solución completa para iconos en botones
 import "./styles/force-dark-modal.css"; // Este debe ser el último CSS importado para asegurar que tenga mayor prioridad
 
 const { getTechnicians: fetchTechnicians } = userService;
@@ -68,6 +72,13 @@ const ServicioCard = ({
 
   useEffect(() => {
     fetchAvailableTechnicians();
+  }, []);
+
+  // Aplicar arreglo para los iconos en botones
+  useEffect(() => {
+    // Agregar estilos CSS y script para arreglar los iconos en botones
+    addButtonFixStyles();
+    addButtonFixScript();
   }, []);
 
   // Formatear el nombre del servicio
@@ -333,7 +344,7 @@ const ServicioCard = ({
           btnEditar.style.color = "#fff";
           btnEditar.style.fontWeight = "bold";
           btnEditar.style.order = "1"; // Orden del medio
-          btnEditar.innerHTML = '<i class="fas fa-edit"></i> EDITAR';
+          btnEditar.innerHTML = '<span style="display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="fas fa-edit" style="background: transparent !important;"></i> <span>EDITAR</span></span>';
           btnEditar.onclick = (e) => {
             e.stopPropagation();
             Swal.close();
@@ -344,7 +355,7 @@ const ServicioCard = ({
           if (btnConfirm) {
             btnConfirm.style.order = "0";
             btnConfirm.innerHTML =
-              '<i class="fas fa-calendar-plus"></i> ASIGNAR';
+              '<span style="display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="fas fa-calendar-plus" style="background: transparent !important;"></i> <span>ASIGNAR</span></span>';
             swalActions.appendChild(btnConfirm);
           }
 
@@ -352,7 +363,7 @@ const ServicioCard = ({
 
           if (btnCancel) {
             btnCancel.style.order = "2";
-            btnCancel.innerHTML = '<i class="fas fa-trash"></i> ELIMINAR';
+            btnCancel.innerHTML = '<span style="display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="fas fa-trash" style="background: transparent !important;"></i> <span>ELIMINAR</span></span>';
             swalActions.appendChild(btnCancel);
           }
         }
@@ -584,18 +595,93 @@ const ServicioCard = ({
               </div>
             </div>
           </form>
+          <style>
+            /* Estilos inline para corregir iconos en botones */
+            .swal2-actions button i,
+            .swal2-styled i {
+              background: transparent !important;
+              background-color: transparent !important;
+              background-image: none !important;
+              color: inherit !important;
+            }
+            
+            .swal2-confirm,
+            .swal2-cancel {
+              display: inline-flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              gap: 8px !important;
+            }
+            
+            /* Solución para asegurar que los iconos no tengan fondo */
+            .swal2-styled i {
+              background: none !important;
+            }
+          </style>
         `,
-        confirmButtonText: '<i class="fas fa-calendar-check"></i> Asignar',
-        cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+        confirmButtonText: 'Asignar',
+        cancelButtonText: 'Cancelar',
         showCancelButton: true,
         confirmButtonColor: "#87c947",
         cancelButtonColor: isDarkMode ? "#444" : "#e7e7e7",
+        buttonsStyling: true,
         customClass: {
           popup: isDarkMode ? "dark-modal" : "",
+          confirmButton: "button-with-icon",
+          cancelButton: "button-with-icon",
         },
         background: isDarkMode ? "#212529" : "#ffffff",
         color: isDarkMode ? "#ffffff" : "#212529",
         didOpen: () => {
+          // Agregar iconos a los botones usando innerHTML para evitar problemas de renderizado
+          const confirmButton = Swal.getConfirmButton();
+          const cancelButton = Swal.getCancelButton();
+          
+          if (confirmButton) {
+            confirmButton.innerHTML = '';
+            
+            // Crear elementos manualmente para mejor control
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-calendar-check';
+            icon.style.backgroundColor = 'transparent';
+            icon.style.background = 'none';
+            
+            const text = document.createTextNode(' Asignar');
+            
+            confirmButton.appendChild(icon);
+            confirmButton.appendChild(text);
+            
+            // Aplicar estilos directamente
+            confirmButton.style.display = 'inline-flex';
+            confirmButton.style.alignItems = 'center';
+            confirmButton.style.justifyContent = 'center';
+            confirmButton.style.gap = '8px';
+          }
+          
+          if (cancelButton) {
+            cancelButton.innerHTML = '';
+            
+            // Crear elementos manualmente para mejor control
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-times';
+            icon.style.backgroundColor = 'transparent';
+            icon.style.background = 'none';
+            
+            const text = document.createTextNode(' Cancelar');
+            
+            cancelButton.appendChild(icon);
+            cancelButton.appendChild(text);
+            
+            // Aplicar estilos directamente
+            cancelButton.style.display = 'inline-flex';
+            cancelButton.style.alignItems = 'center';
+            cancelButton.style.justifyContent = 'center';
+            cancelButton.style.gap = '8px';
+          }
+          
+          // Aplicar la función de corrección de estilos
+          fixSweetAlertButtons();
+          
           // Actualizar la lista de técnicos seleccionados en la UI
           const updateTechniciansList = () => {
             const selectedTechniciansContainer = document.getElementById(
