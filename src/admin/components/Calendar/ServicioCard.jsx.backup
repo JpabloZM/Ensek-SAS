@@ -691,6 +691,32 @@ const ServicioCard = ({
           }
 
           // El código del botón "Exportar Calendario" ha sido removido por completo
+                          a.href = url;
+                          a.download = `calendario_${date}.csv`;
+                          document.body.appendChild(a);
+                          a.click();
+                          URL.revokeObjectURL(url);
+                          a.remove();
+
+                          mostrarAlerta({
+                            icon: "success",
+                            title: "Exportación CSV completada",
+                            timer: 2000,
+                            showConfirmButton: false,
+                          });
+                        }
+                      })
+                      .catch((error) => {
+                        console.error("Error al exportar:", error);
+                        Swal.fire({
+                          icon: "error",
+                          title: "Error de exportación",
+                          text: "No se pudo generar el archivo de exportación. Por favor intente nuevamente.",
+                        });
+                      });
+                  };
+
+          // El código relacionado con la exportación de calendario ha sido eliminado
 
           // Inicializar la lista al abrir el modal
           updateTechniciansList();

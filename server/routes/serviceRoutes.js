@@ -28,12 +28,13 @@ router.use((req, res, next) => {
 });
 
 // Rutas públicas
-router.post("/", serviceController.createService); // Use createService for direct service creation
-router.post("/request", serviceController.createServiceRequest);
+router.post("/", serviceController.createService); // Ruta principal para crear servicios (ahora usa ServiceRequest)
+router.post("/request", serviceController.createServiceRequest); // Ruta alternativa para compatibilidad
 
 // Rutas protegidas
 router.get("/", protect, serviceController.getServices);
 router.get("/requests", protect, serviceController.getServiceRequests);
+router.get("/check-models", protect, serviceController.checkModels);
 router.get("/:id", protect, serviceController.getServiceById);
 router.put("/:id", protect, serviceController.updateService);
 router.delete("/:id", protect, serviceController.deleteService);
@@ -47,5 +48,43 @@ router.put(
   protect,
   serviceController.convertServiceRequestToService
 );
+
+// Ruta de diagnóstico para verificar el estado de las colecciones
+router.get("/diagnostics", protect, async (req, res) => {
+  try {
+    const serviceModelCount =
+      await serviceController.ServiceModel.countDocuments();
+    const serviceRequestCount =
+      await serviceController.ServiceRequest.countDocuments();
+
+    // Obtener algunos ejemplos de cada colección
+    const serviceModelSamples = await serviceController.ServiceModel.find()
+      .sort({ createdAt: -1 })
+      .limit(5);
+    const serviceRequestSamples = await serviceController.ServiceRequest.find()
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    res.json({
+      success: true,
+      counts: {
+        serviceModel: serviceModelCount,
+        serviceRequest: serviceRequestCount,
+      },
+      samples: {
+        serviceModel: serviceModelSamples,
+        serviceRequest: serviceRequestSamples,
+      },
+      message:
+        "Esta ruta ayuda a diagnosticar en qué colecciones se están guardando los servicios",
+    });
+  } catch (error) {
+    console.error("Error en diagnóstico:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
 
 export default router;

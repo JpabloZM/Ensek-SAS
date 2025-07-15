@@ -690,7 +690,105 @@ const ServicioCard = ({
             });
           }
 
-          // El código del botón "Exportar Calendario" ha sido removido por completo
+          // El código del botón "Exportar Calendario" ha sido removido
+
+                    // Llamar al endpoint de exportación
+                    const techParams = localSelectedTechnicians
+                      .map((t) => `&techId=${t._id}`)
+                      .join("");
+                    console.log(
+                      `Exportando calendario para fecha ${date}, formato ${format}, técnicos: ${
+                        techParams || "todos"
+                      }`
+                    );
+                    fetch(
+                      `/api/exports?date=${date}&format=${format}${techParams}`,
+                      {
+                        method: "GET",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                          )}`,
+                        },
+                      }
+                    )
+                      .then((response) => {
+                        if (format === "pdf") {
+                          return response.blob();
+                        } else {
+                          return response.text();
+                        }
+                      })
+                      .then((data) => {
+                        // Cerrar el spinner
+                        Swal.close();
+
+                        // Crear un objeto URL para el blob (para PDF)
+                        if (format === "pdf") {
+                          const url = URL.createObjectURL(data);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `calendario_${date}.pdf`;
+                          document.body.appendChild(a);
+                          a.click();
+                          URL.revokeObjectURL(url);
+                          a.remove();
+
+                          mostrarAlerta({
+                            icon: "success",
+                            title: "Exportación PDF completada",
+                            timer: 2000,
+                            showConfirmButton: false,
+                          });
+                        } else {
+                          // Para CSV
+                          const url = window.URL.createObjectURL(
+                            new Blob([data], { type: "text/csv" })
+                          );
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `calendario_${date}.csv`;
+                          document.body.appendChild(a);
+                          a.click();
+                          URL.revokeObjectURL(url);
+                          a.remove();
+
+                          mostrarAlerta({
+                            icon: "success",
+                            title: "Exportación CSV completada",
+                            timer: 2000,
+                            showConfirmButton: false,
+                          });
+                        }
+                      })
+                      .catch((error) => {
+                        console.error("Error al exportar:", error);
+                        Swal.fire({
+                          icon: "error",
+                          title: "Error de exportación",
+                          text: "No se pudo generar el archivo de exportación. Por favor intente nuevamente.",
+                        });
+                      });
+                  };
+
+                  // Agregar eventos a los botones de formato
+                  document
+                    .getElementById("exportPDF")
+                    .addEventListener("click", () => {
+                      handleExport("pdf");
+                      Swal.close();
+                    });
+                  document
+                    .getElementById("exportCSV")
+                    .addEventListener("click", () => {
+                      handleExport("csv");
+                      Swal.close();
+                    });
+                },
+              });
+            });
+          }
 
           // Inicializar la lista al abrir el modal
           updateTechniciansList();
