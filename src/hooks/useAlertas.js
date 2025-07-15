@@ -6,6 +6,15 @@ const swalConfig = {
   cancelButtonColor: "#95a5a6",
   background: "#f0fff4",
   showDenyButton: false, // Desactivar siempre el botón "NO"
+  allowOutsideClick: true, // Permite cerrar la alerta al hacer clic fuera
+  allowEscapeKey: true, // Permite cerrar la alerta con la tecla Escape
+  // Animaciones más rápidas para una respuesta más inmediata
+  showClass: {
+    popup: "animate__animated animate__fadeIn animate__faster", // Animación más rápida al aparecer
+  },
+  hideClass: {
+    popup: "animate__animated animate__fadeOut animate__faster", // Animación más rápida al desaparecer
+  },
 };
 
 export const useAlertas = () => {

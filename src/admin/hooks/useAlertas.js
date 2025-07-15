@@ -61,6 +61,17 @@ export const useAlertas = () => {
       confirmButtonColor: config.confirmButtonColor || "#87c947",
       cancelButtonColor:
         config.cancelButtonColor || (darkMode ? "#444" : "#d33"),
+      allowOutsideClick: true, // Permite cerrar la alerta al hacer clic fuera
+      allowEscapeKey: true, // Permite cerrar la alerta con la tecla Escape
+      // Animaciones más rápidas para una respuesta más inmediata
+      showClass: {
+        popup: "animate__animated animate__fadeIn animate__faster", // Más rápido
+        ...(config.showClass || {}),
+      },
+      hideClass: {
+        popup: "animate__animated animate__fadeOut animate__faster", // Más rápido
+        ...(config.hideClass || {}),
+      },
       didOpen: (popup) => {
         // Llamar al didOpen original si existe
         if (config.didOpen) {

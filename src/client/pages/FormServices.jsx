@@ -86,11 +86,13 @@ const FormServices = () => {
         confirmButtonColor: "#00a884",
         background: "#1a1a1a",
         color: "#ffffff",
+        timer: 1500, // Cerrar automáticamente después de 1.5 segundos
+        timerProgressBar: true, // Mostrar una barra de progreso
         showClass: {
-          popup: "animate__animated animate__fadeInDown",
+          popup: "animate__animated animate__fadeIn animate__faster", // Más rápido
         },
         hideClass: {
-          popup: "animate__animated animate__fadeOutUp",
+          popup: "animate__animated animate__fadeOut animate__faster", // Más rápido
         },
         customClass: {
           confirmButton: "swal-button",
