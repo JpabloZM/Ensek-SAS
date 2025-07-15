@@ -294,8 +294,8 @@ const ServicioCard = ({
       showCancelButton: true,
       confirmButtonColor: "#87c947",
       cancelButtonColor: "#e74c3c",
-      confirmButtonText: '<i class="fas fa-calendar-plus"></i> Asignar',
-      cancelButtonText: '<i class="fas fa-trash"></i> Eliminar',
+      confirmButtonText: '<i class="fas fa-calendar-plus"></i> ASIGNAR',
+      cancelButtonText: '<i class="fas fa-trash"></i> ELIMINAR',
       customClass: {
         popup: "servicio-info-modal",
         title: "servicio-info-title",
@@ -315,24 +315,46 @@ const ServicioCard = ({
         popup: "animate__animated animate__fadeOut",
       },
       didOpen: () => {
-        // Reubicar el botón Editar junto a los botones principales
+        // Reorganizar los botones para tener ASIGNAR, EDITAR, ELIMINAR
         const swalActions = document.querySelector(".swal2-actions");
         if (swalActions) {
+          // Primero, quitamos los botones existentes y guardamos referencias
+          const btnConfirm = swalActions.querySelector(".swal2-confirm"); // ASIGNAR
+          const btnCancel = swalActions.querySelector(".swal2-cancel"); // ELIMINAR
+
+          if (btnConfirm) swalActions.removeChild(btnConfirm);
+          if (btnCancel) swalActions.removeChild(btnCancel);
+
+          // Creamos el botón EDITAR
           const btnEditar = document.createElement("button");
           btnEditar.id = "btn-editar-servicio";
           btnEditar.className = "swal2-styled swal2-edit-btn";
           btnEditar.style.background = "#6c757d";
           btnEditar.style.color = "#fff";
           btnEditar.style.fontWeight = "bold";
-          btnEditar.style.order = "0";
-          btnEditar.innerHTML = '<i class="fas fa-edit"></i> Editar';
+          btnEditar.style.order = "1"; // Orden del medio
+          btnEditar.innerHTML = '<i class="fas fa-edit"></i> EDITAR';
           btnEditar.onclick = (e) => {
             e.stopPropagation();
             Swal.close();
             handleEditar();
           };
-          // Insertar como primer botón
-          swalActions.insertBefore(btnEditar, swalActions.firstChild);
+
+          // Ahora agregamos los botones en el orden deseado: ASIGNAR, EDITAR, ELIMINAR
+          if (btnConfirm) {
+            btnConfirm.style.order = "0";
+            btnConfirm.innerHTML =
+              '<i class="fas fa-calendar-plus"></i> ASIGNAR';
+            swalActions.appendChild(btnConfirm);
+          }
+
+          swalActions.appendChild(btnEditar);
+
+          if (btnCancel) {
+            btnCancel.style.order = "2";
+            btnCancel.innerHTML = '<i class="fas fa-trash"></i> ELIMINAR';
+            swalActions.appendChild(btnCancel);
+          }
         }
       },
       showDenyButton: false,
