@@ -1,0 +1,4 @@
+/* Este archivo CSS oculta el botón "NO" (denyButton) en todas las alertas de SweetAlert2 */
+.swal2-deny {
+  display: none !important;
+}

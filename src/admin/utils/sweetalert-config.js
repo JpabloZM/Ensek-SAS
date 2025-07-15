@@ -6,6 +6,7 @@ const Toast = Swal.mixin({
   toast: true,
   position: "top-end",
   showConfirmButton: false,
+  showDenyButton: false,
   timer: 3000,
   timerProgressBar: true,
 });
@@ -40,12 +41,14 @@ const withDarkMode = (config) => {
 
 // Función para mostrar alerta con verificación de tema
 const showAlert = (config) => {
-  return Swal.fire(withDarkMode(config));
+  const finalConfig = withDarkMode({ ...config, showDenyButton: false });
+  return Swal.fire(finalConfig);
 };
 
 // Función para mostrar toast con verificación de tema
 const showToast = (config) => {
-  return Toast.fire(withDarkMode(config));
+  const finalConfig = withDarkMode({ ...config, showDenyButton: false });
+  return Toast.fire(finalConfig);
 };
 
 export { showAlert, showToast, withDarkMode };

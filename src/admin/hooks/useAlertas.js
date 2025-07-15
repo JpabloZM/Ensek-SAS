@@ -121,6 +121,7 @@ export const useAlertas = () => {
   const mostrarConfirmacion = async (config) => {
     return await Swal.fire({
       ...config,
+      showDenyButton: false, // Asegurar que no se muestre el botón "NO"
       customClass: {
         ...defaultClasses,
         ...(config.customClass || {}),
@@ -134,6 +135,7 @@ export const useAlertas = () => {
       title: titulo,
       html: html,
       icon: tipo,
+      showDenyButton: false, // Asegurar que no se muestre el botón "NO"
       showCancelButton: true,
       confirmButtonText: "Guardar",
       cancelButtonText: "Cancelar",
