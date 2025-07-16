@@ -273,16 +273,18 @@ const Sidebar = ({
       background: "#1e1e2f",
       color: "#ffffff",
       buttonsStyling: true,
-      confirmButtonAriaLabel: 'Guardar servicio',
-      cancelButtonAriaLabel: 'Cancelar',
-      borderRadius: "10px", /* Asegurar que el border-radius se aplique correctamente */
+      confirmButtonAriaLabel: "Guardar servicio",
+      cancelButtonAriaLabel: "Cancelar",
+      borderRadius:
+        "10px" /* Asegurar que el border-radius se aplique correctamente */,
       customClass: {
         popup: "swal2-popup-custom",
         title: "swal2-title-custom",
         confirmButton: "swal2-confirm-button swal2-styled",
         cancelButton: "swal2-cancel-button swal2-styled",
         htmlContainer: "swal2-html-custom",
-        actions: "swal2-actions-custom", /* Clase personalizada para los botones */
+        actions:
+          "swal2-actions-custom" /* Clase personalizada para los botones */,
       },
       showClass: {
         popup: "animate__animated animate__fadeIn animate__faster",
