@@ -140,10 +140,28 @@ const ServicioCard = ({
             }" required>
           </div>
           <div class="input-group">
-            <label>Dirección</label>
-            <input type="text" id="address" class="form-field" placeholder="Dirección del servicio" value="${
-              servicio.address || ""
+            <label>Municipio</label>
+            <input type="text" id="municipality" class="form-field" placeholder="Municipio" value="${
+              servicio.municipality || ""
             }" required>
+          </div>
+          <div class="input-group">
+            <label>Barrio</label>
+            <input type="text" id="neighborhood" class="form-field" placeholder="Barrio o sector" value="${
+              servicio.neighborhood || ""
+            }" required>
+          </div>
+          <div class="input-group">
+            <label>Dirección específica</label>
+            <input type="text" id="streetAddress" class="form-field" placeholder="Calle/Carrera, número, apto/casa" value="${
+              servicio.streetAddress || servicio.address || ""
+            }" required>
+          </div>
+          <div class="input-group">
+            <label>Especificaciones del lugar</label>
+            <textarea id="addressDetails" class="form-field" placeholder="Detalles adicionales del lugar (casa, apartamento, empresa, punto de referencia...)" rows="2">${
+              servicio.addressDetails || ""
+            }</textarea>
           </div>
           <div class="input-group">
             <label>Descripción</label>
@@ -204,15 +222,24 @@ const ServicioCard = ({
         const clientName = document.getElementById("clientName").value;
         const clientEmail = document.getElementById("clientEmail").value;
         const clientPhone = document.getElementById("clientPhone").value;
-        const address = document.getElementById("address").value;
+        const municipality = document.getElementById("municipality").value;
+        const neighborhood = document.getElementById("neighborhood").value;
+        const streetAddress = document.getElementById("streetAddress").value;
+        const addressDetails = document.getElementById("addressDetails").value;
         const descripcion = document.getElementById("descripcion").value;
+
+        // Construir dirección completa
+        const fullAddress =
+          `${municipality}, ${neighborhood}, ${streetAddress}, ${addressDetails}`.trim();
 
         if (
           !nombre ||
           !clientName ||
           !clientEmail ||
           !clientPhone ||
-          !address ||
+          !municipality ||
+          !neighborhood ||
+          !streetAddress ||
           !descripcion
         ) {
           mostrarAlerta({
@@ -233,7 +260,11 @@ const ServicioCard = ({
           clientName,
           clientEmail,
           clientPhone,
-          address,
+          address: fullAddress,
+          municipality,
+          neighborhood,
+          streetAddress,
+          addressDetails,
           descripcion,
           document: servicio.document || "1234567890",
         };
@@ -297,6 +328,46 @@ const ServicioCard = ({
               servicio.address || "No disponible"
             }</div>
           </div>
+          ${
+            servicio.municipality
+              ? `
+          <div class="detalles-row">
+            <div class="detalles-label">Municipio</div>
+            <div class="detalles-value">${servicio.municipality}</div>
+          </div>
+          `
+              : ""
+          }
+          ${
+            servicio.neighborhood
+              ? `
+          <div class="detalles-row">
+            <div class="detalles-label">Barrio</div>
+            <div class="detalles-value">${servicio.neighborhood}</div>
+          </div>
+          `
+              : ""
+          }
+          ${
+            servicio.streetAddress
+              ? `
+          <div class="detalles-row">
+            <div class="detalles-label">Dirección específica</div>
+            <div class="detalles-value">${servicio.streetAddress}</div>
+          </div>
+          `
+              : ""
+          }
+          ${
+            servicio.addressDetails
+              ? `
+          <div class="detalles-row">
+            <div class="detalles-label">Especificaciones del lugar</div>
+            <div class="detalles-value">${servicio.addressDetails}</div>
+          </div>
+          `
+              : ""
+          }
           <div class="detalles-row">
             <div class="detalles-label">Descripción</div>
             <div class="detalles-value">${

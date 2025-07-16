@@ -25,7 +25,10 @@ const FormServices = () => {
     preferredDate: "",
     serviceType: initialServiceType,
     description: "",
+    municipality: "",
+    neighborhood: "",
     address: "",
+    addressDetails: "",
   });
 
   // Pre-fill form with user data when available
@@ -60,12 +63,21 @@ const FormServices = () => {
       console.log("Datos de usuario en localStorage:", userString);
 
       // Guardar el servicio usando localStorage
+      // Construimos una dirección completa con todos los campos
+      const fullAddress =
+        `${formData.municipality}, ${formData.neighborhood}, ${formData.address}, ${formData.addressDetails}`.trim();
+
       const serviceData = {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
         document: formData.document,
-        address: formData.address || "No especificada",
+        // Guardamos tanto la dirección completa como los campos individuales
+        address: fullAddress || "No especificada",
+        municipality: formData.municipality || "",
+        neighborhood: formData.neighborhood || "",
+        streetAddress: formData.address || "",
+        addressDetails: formData.addressDetails || "",
         serviceType: formData.serviceType,
         description: formData.description || "Sin descripción",
         preferredDate: formData.preferredDate,
@@ -192,16 +204,51 @@ const FormServices = () => {
             />
           </div>
           <div className="form-group">
+            <label htmlFor="municipality">Municipio</label>
+            <input
+              type="text"
+              id="municipality"
+              placeholder="Municipio"
+              value={formData.municipality}
+              onChange={handleChange}
+              required
+              autoComplete="address-level2"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="neighborhood">Barrio</label>
+            <input
+              type="text"
+              id="neighborhood"
+              placeholder="Barrio o sector"
+              value={formData.neighborhood}
+              onChange={handleChange}
+              required
+              autoComplete="address-level3"
+            />
+          </div>
+          <div className="form-group">
             <label htmlFor="address">Dirección</label>
             <input
               type="text"
               id="address"
-              placeholder="Tu dirección"
+              placeholder="Calle/Carrera, número"
               value={formData.address}
               onChange={handleChange}
               required
               autoComplete="street-address"
             />
+          </div>
+          <div className="form-group">
+            <label htmlFor="addressDetails">Especificaciones del lugar</label>
+            <textarea
+              id="addressDetails"
+              placeholder="Detalles adicionales del lugar (casa, apartamento, empresa, punto de referencia...)"
+              value={formData.addressDetails}
+              onChange={handleChange}
+              autoComplete="off"
+              rows="2"
+            ></textarea>
           </div>
           <div className="form-group">
             <label htmlFor="preferredDate">Fecha Preferida</label>

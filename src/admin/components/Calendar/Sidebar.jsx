@@ -1,6 +1,7 @@
 import React from "react";
 import ServicioCard from "./ServicioCard";
 import { useAlertas } from "../../hooks/useAlertas";
+import "./Sidebar.css";
 
 const Sidebar = ({
   serviciosPendientes,
@@ -14,99 +15,263 @@ const Sidebar = ({
     const { value: formValues } = await mostrarAlerta({
       title: "Nuevo Servicio",
       html: `
-        <form id="servicioForm">
-          <div class="input-group">
-            <label>Tipo de servicio</label>
-            <select id="nombre" class="form-field" required>
-              <option value="">Seleccionar tipo de servicio...</option>
-              <option value="pest-control">Control de Plagas</option>
-              <option value="gardening">Jardinería</option>
-              <option value="residential-fumigation">Fumigación Residencial</option>
-              <option value="commercial-fumigation">Fumigación Comercial</option>
-            </select>
+        <div id="servicioForm">
+          <div class="form-row">
+            <div class="input-group">
+              <label>Tipo de servicio</label>
+              <select id="nombre" class="form-field" required>
+                <option value="">Seleccionar tipo de servicio...</option>
+                <option value="pest-control">Control de Plagas</option>
+                <option value="gardening">Jardinería</option>
+                <option value="residential-fumigation">Fumigación Residencial</option>
+                <option value="commercial-fumigation">Fumigación Comercial</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Cliente</label>
+              <input type="text" id="clientName" class="form-field" placeholder="Nombre del cliente" required>
+            </div>
           </div>
-          <div class="input-group">
-            <label>Cliente</label>
-            <input type="text" id="clientName" class="form-field" placeholder="Nombre del cliente" required>
+          
+          <div class="form-row">
+            <div class="input-group">
+              <label>Email</label>
+              <input type="email" id="clientEmail" class="form-field" placeholder="correo@ejemplo.com" required>
+            </div>
+            <div class="input-group">
+              <label>Teléfono</label>
+              <input type="tel" id="clientPhone" class="form-field" placeholder="Teléfono de contacto" required>
+            </div>
           </div>
-          <div class="input-group">
-            <label>Email</label>
-            <input type="email" id="clientEmail" class="form-field" placeholder="correo@ejemplo.com" required>
+          
+          <div class="form-row">
+            <div class="input-group">
+              <label>Municipio</label>
+              <input type="text" id="municipality" class="form-field" placeholder="Municipio" required>
+            </div>
+            <div class="input-group">
+              <label>Barrio</label>
+              <input type="text" id="neighborhood" class="form-field" placeholder="Barrio o sector" required>
+            </div>
           </div>
-          <div class="input-group">
-            <label>Teléfono</label>
-            <input type="tel" id="clientPhone" class="form-field" placeholder="Teléfono de contacto" required>
+          
+          <div class="form-row">
+            <div class="input-group">
+              <label>Dirección</label>
+              <input type="text" id="streetAddress" class="form-field" placeholder="Calle/Carrera, número" required>
+            </div>
+            <div class="input-group">
+              <label>Especificaciones</label>
+              <input type="text" id="addressDetails" class="form-field" placeholder="Apto/Casa/Empresa/Referencias">
+            </div>
           </div>
-          <div class="input-group">
-            <label>Dirección</label>
-            <input type="text" id="address" class="form-field" placeholder="Dirección del servicio" required>
+          
+          <div class="form-row description-row">
+            <div class="input-group full-width">
+              <label>Descripción</label>
+              <textarea id="descripcion" class="form-field" placeholder="Descripción detallada del servicio" rows="3" required></textarea>
+            </div>
           </div>
-          <div class="input-group">
-            <label>Descripción</label>
-            <textarea id="descripcion" class="form-field" placeholder="Descripción detallada del servicio" rows="2" required></textarea>
-          </div>
-        </form>
+        </div>
         <style>
           #servicioForm {
-            display: grid;
-            gap: 10px;
-            padding: 15px;
+            padding: 15px 15px 5px 15px; /* Reducido el padding inferior */
+            background-color: #2d3748;
+            border-radius: 10px;
+            width: 600px; /* Aumentado para dar más espacio */
+            max-width: 600px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centrar contenido */
+          }
+          .form-row {
+            display: flex;
+            justify-content: center; /* Centrar elementos */
+            margin-bottom: 20px;
+            width: 100%;
+            gap: 20px; /* Más espacio entre elementos */
+            box-sizing: border-box;
           }
           .input-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            width: 270px; /* Ancho fijo exacto en píxeles - aumentado para coincidir con select */
+            max-width: 270px; /* Limita el ancho máximo */
+            min-width: 270px; /* Garantiza un ancho mínimo */
+            box-sizing: border-box;
+          }
+          .input-group.full-width {
+            width: 100%; /* Usar ancho completo disponible */
+            max-width: 100%;
+            min-width: 100%;
+          }
+          
+          /* Estilos específicos para la fila de descripción */
+          .description-row {
+            padding: 0 10px; /* Añade un poco de padding horizontal */
+            box-sizing: border-box;
+            justify-content: center;
+            width: 100%;
+          }
+          
+          /* Para asegurar que el contenedor del textarea esté centrado */
+          .description-row .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 560px; /* Limita el ancho máximo pero permite expansión */
           }
           .input-group label {
             color: #87c947;
             font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 14px;
           }
           .form-field {
-            padding: 8px;
-            border: 1px solid #87c947;
-            border-radius: 4px;
-            background: white;
+            padding: 10px 12px;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            background-color: #1a202c;
+            color: white;
+            width: 100%; /* Usa el ancho del contenedor */
+            height: 40px;
+            box-sizing: border-box;
+            font-size: 14px;
+            min-height: 40px; /* Garantiza altura mínima consistente */
+            text-align: left; /* Asegura alineación consistente */
+          }
+          .form-field::placeholder {
+            color: #718096;
+          }
+          .form-field:focus {
+            border-color: #87c947;
+            outline: none;
+            box-shadow: 0 0 0 1px #87c947;
+          }
+          textarea.form-field {
+            height: auto;
+            min-height: 80px;
+            resize: vertical;
+            width: 100%; /* Usa el ancho del contenedor */
+            max-width: 100%;
+            padding: 12px; /* Consistente con los otros campos */
+            box-sizing: border-box;
+          }
+          
+          /* Asegurar que los labels de la descripción estén alineados a la izquierda */
+          .description-row .input-group label {
+            align-self: flex-start;
             width: 100%;
-            box-sizing: border-box;            
-            min-width: 370px;
-            max-width: 370px;
+          }
+          select.form-field {
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="6" viewBox="0 0 12 6"><path fill="%2387c947" d="M0 0l6 6 6-6z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 30px;
+            width: 100%; /* Asegurar que ocupe todo el ancho */
+          }
+          
+          /* Asegurar que todos los inputs tienen exactamente el mismo tamaño visual */
+          select.form-field, input.form-field {
+            min-width: 100%;
+            max-width: 100%;
+            width: 100%;
           }
           .swal2-popup {
-            width: 500px !important;
+            width: 660px !important; /* Aumentado para dar más espacio al formulario */
+            padding: 1.5rem;
+            box-sizing: border-box;
+            background-color: #1e1e2f !important;
+            border-radius: 15px !important;
+            max-width: 95vw; /* Limitar en dispositivos pequeños */
           }
           .swal2-title {
-            font-size: 1.5rem !important;
-            margin-bottom: 1rem !important;
+            font-size: 1.8rem !important;
+            margin-bottom: 1.5rem !important;
+            color: white !important;
+          }
+          .swal2-html-container {
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+          }
+          .swal2-actions {
+            margin-top: 1.5rem !important;
+            gap: 1rem !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            width: 100% !important;
+            padding: 0 1rem !important;
+          }
+          .swal2-confirm-button {
+            flex: 1 !important;
+            max-width: 220px !important;
+            padding: 0.75rem 2rem !important;
+            font-weight: 600 !important;
+            letter-spacing: 1px !important;
+            text-transform: uppercase !important;
+            border-radius: 6px !important;
+          }
+          .swal2-cancel-button {
+            flex: 1 !important;
+            max-width: 220px !important;
+            padding: 0.75rem 2rem !important;
+            font-weight: 600 !important;
+            letter-spacing: 1px !important;
+            text-transform: uppercase !important;
+            border-radius: 6px !important;
+            color: #e2e8f0 !important;
           }
         </style>
       `,
       showCancelButton: true,
-      confirmButtonText: "Guardar",
-      cancelButtonText: "Cancelar",
+      confirmButtonText: "GUARDAR",
+      cancelButtonText: "CANCELAR",
       confirmButtonColor: "#87c947",
-      cancelButtonColor: "#e74c3c",
-      background: "#ffffff",
-      color: "#004122",
+      cancelButtonColor: "#475569",
+      background: "#1e1e2f",
+      color: "#ffffff",
+      buttonsStyling: true,
       customClass: {
         popup: "swal2-popup-custom",
         title: "swal2-title-custom",
-        confirmButton: "swal2-confirm-custom",
-        cancelButton: "swal2-cancel-custom",
+        confirmButton: "swal2-confirm-button",
+        cancelButton: "swal2-cancel-button",
+        htmlContainer: "swal2-html-custom",
+      },
+      showClass: {
+        popup: "animate__animated animate__fadeIn animate__faster",
       },
       preConfirm: () => {
+        // Obtener todos los valores del formulario
         const nombre = document.getElementById("nombre").value;
         const clientName = document.getElementById("clientName").value;
         const clientEmail = document.getElementById("clientEmail").value;
         const clientPhone = document.getElementById("clientPhone").value;
-        const address = document.getElementById("address").value;
+        const municipality = document.getElementById("municipality").value;
+        const neighborhood = document.getElementById("neighborhood").value;
+        const streetAddress = document.getElementById("streetAddress").value;
+        const addressDetails =
+          document.getElementById("addressDetails").value || "";
         const descripcion = document.getElementById("descripcion").value;
+
+        // Construir dirección completa
+        const fullAddress =
+          `${municipality}, ${neighborhood}, ${streetAddress}, ${addressDetails}`.trim();
 
         if (
           !nombre ||
           !clientName ||
           !clientEmail ||
           !clientPhone ||
-          !address ||
+          !municipality ||
+          !neighborhood ||
+          !streetAddress ||
           !descripcion
         ) {
           mostrarAlerta({
@@ -133,7 +298,11 @@ const Sidebar = ({
           clientName,
           clientEmail,
           clientPhone,
-          address,
+          address: fullAddress,
+          municipality,
+          neighborhood,
+          streetAddress,
+          addressDetails,
           descripcion,
           // Agregar el documento como campo obligatorio para el backend
           document: "1234567890", // Valor por defecto ya que no se solicita en el formulario
