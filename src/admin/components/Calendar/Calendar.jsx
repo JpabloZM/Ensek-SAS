@@ -1498,14 +1498,18 @@ const Calendar = ({ darkMode = false }) => {
                   <i class="fas fa-user"></i>
                   <span>Técnico: <strong>${tecnico.title}</strong></span>
                 </div>
-                <div class="tech-time-container">
-                  <div class="tech-detail-item">
+                <div class="tech-time-row">
+                  <div class="tech-detail-item time-item">
                     <i class="fas fa-clock"></i>
-                    <span>Inicio: <strong>${fechaInicio.toLocaleTimeString()}</strong></span>
+                    <span>Inicio: <strong>${fechaInicio
+                      .toLocaleTimeString()
+                      .replace(/(:\d{2}):\d{2}$/, "$1")}</strong></span>
                   </div>
-                  <div class="tech-detail-item">
+                  <div class="tech-detail-item time-item time-end">
                     <i class="fas fa-hourglass-end"></i>
-                    <span>Fin: <strong>${fechaFin.toLocaleTimeString()}</strong></span>
+                    <span>Fin: <strong>${fechaFin
+                      .toLocaleTimeString()
+                      .replace(/(:\d{2}):\d{2}$/, "$1")}</strong></span>
                   </div>
                 </div>
               </div>
@@ -1669,6 +1673,8 @@ const Calendar = ({ darkMode = false }) => {
             align-items: center;
             gap: 8px;
             border-bottom: 1px solid #2d3748;
+            border-left: 4px solid #87c947;
+            margin-left: -4px;
           }
           
           .tech-details-content {
@@ -1682,6 +1688,7 @@ const Calendar = ({ darkMode = false }) => {
             color: #a0aec0;
             margin-bottom: 6px;
             font-size: 14px;
+            line-height: 1.4;
           }
           
           .tech-detail-item:last-child {
@@ -1699,19 +1706,32 @@ const Calendar = ({ darkMode = false }) => {
             font-weight: 500;
           }
           
-          .tech-time-container {
+          .tech-time-row {
             display: flex;
-            justify-content: space-between;
-            gap: 20px;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 30px;
             margin-top: 8px;
             padding-top: 8px;
             border-top: 1px solid #2d3748;
           }
           
+          .tech-detail-item.time-item {
+            margin-bottom: 0;
+          }
+          
+          .tech-detail-item.time-end {
+            margin-left: 20px;
+          }
+          
           @media (max-width: 576px) {
-            .tech-time-container {
+            .tech-time-row {
               flex-direction: column;
-              gap: 8px;
+              gap: 6px;
+            }
+            
+            .tech-detail-item.time-item {
+              margin-bottom: 6px;
             }
           }
           
@@ -1753,15 +1773,15 @@ const Calendar = ({ darkMode = false }) => {
       </div>
     `,
       showCancelButton: true,
-      confirmButtonText: 'GUARDAR',
-      cancelButtonText: 'CANCELAR',
+      confirmButtonText: "GUARDAR",
+      cancelButtonText: "CANCELAR",
       confirmButtonColor: "#87c947",
       cancelButtonColor: "#383a46",
       background: "#1e1e2f",
       color: "#ffffff",
       buttonsStyling: true,
-      confirmButtonAriaLabel: 'Guardar servicio',
-      cancelButtonAriaLabel: 'Cancelar',
+      confirmButtonAriaLabel: "Guardar servicio",
+      cancelButtonAriaLabel: "Cancelar",
       borderRadius: "10px",
       customClass: {
         popup: "swal2-popup-custom",
@@ -1773,7 +1793,7 @@ const Calendar = ({ darkMode = false }) => {
       },
       didOpen: () => {
         // Añadir estilos adicionales al modal
-        const style = document.createElement('style');
+        const style = document.createElement("style");
         style.innerHTML = `
           .swal2-popup {
             width: 660px !important;
@@ -1848,7 +1868,7 @@ const Calendar = ({ darkMode = false }) => {
           }
         `;
         document.head.appendChild(style);
-        
+
         // Manejar los botones de estado
         const btns = Swal.getPopup().querySelectorAll(".estado-btn");
         btns.forEach((btn) => {
@@ -1892,12 +1912,14 @@ const Calendar = ({ darkMode = false }) => {
         const municipality = document.getElementById("municipality").value;
         const neighborhood = document.getElementById("neighborhood").value;
         const streetAddress = document.getElementById("streetAddress").value;
-        const addressDetails = document.getElementById("addressDetails").value || "";
+        const addressDetails =
+          document.getElementById("addressDetails").value || "";
         const descripcion = document.getElementById("descripcion").value;
         const estado = document.getElementById("estadoServicio").value;
-        
+
         // Construir dirección completa
-        const address = `${municipality}, ${neighborhood}, ${streetAddress}, ${addressDetails}`.trim();
+        const address =
+          `${municipality}, ${neighborhood}, ${streetAddress}, ${addressDetails}`.trim();
 
         if (
           !nombre ||
@@ -2009,7 +2031,8 @@ const Calendar = ({ darkMode = false }) => {
             municipality: document.getElementById("municipality").value,
             neighborhood: document.getElementById("neighborhood").value,
             streetAddress: document.getElementById("streetAddress").value,
-            addressDetails: document.getElementById("addressDetails").value || "",
+            addressDetails:
+              document.getElementById("addressDetails").value || "",
             serviceType: formValues.serviceType,
             serviceId: createdService ? createdService._id : null,
           },
