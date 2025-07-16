@@ -44,7 +44,7 @@
 
 /* Estilos para arreglar los iconos en los botones */
 .swal2-styled i,
-.swal2-confirm i, 
+.swal2-confirm i,
 .swal2-cancel i,
 button i {
   background: transparent !important;
@@ -125,7 +125,8 @@ button i {
 }
 
 /* Transición suave para los inputs */
-input, select {
+input,
+select {
   transition: all 0.2s ease-in-out !important;
 }
 
@@ -158,7 +159,7 @@ input, select {
 }
 
 .swal2-html-container-custom::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.05); 
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 10px;
 }
 
@@ -182,7 +183,7 @@ input, select {
 }
 
 #selectedTechnicians::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.03);
+  background: rgba(0, 0, 0, 0.03);
   border-radius: 10px;
 }
 

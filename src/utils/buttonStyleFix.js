@@ -6,21 +6,21 @@
  */
 function applyButtonIconFix(button) {
   if (!button) return;
-  
+
   // Aplicar estilos directamente al botón
-  button.style.display = 'inline-flex';
-  button.style.alignItems = 'center';
-  button.style.justifyContent = 'center';
-  button.style.gap = '8px';
-  
+  button.style.display = "inline-flex";
+  button.style.alignItems = "center";
+  button.style.justifyContent = "center";
+  button.style.gap = "8px";
+
   // Encontrar y corregir los iconos
-  const icons = button.querySelectorAll('i');
-  icons.forEach(icon => {
+  const icons = button.querySelectorAll("i");
+  icons.forEach((icon) => {
     // Remover cualquier fondo
-    icon.style.background = 'none !important';
-    icon.style.backgroundColor = 'transparent !important';
+    icon.style.background = "none !important";
+    icon.style.backgroundColor = "transparent !important";
     // Asegurar que el color coincida con el texto
-    icon.style.color = 'inherit';
+    icon.style.color = "inherit";
   });
 }
 
@@ -31,24 +31,24 @@ export function fixSweetAlertButtons() {
   // Obtener los botones del modal actual
   setTimeout(() => {
     // Botones de SweetAlert2
-    const confirmButton = document.querySelector('.swal2-confirm');
-    const cancelButton = document.querySelector('.swal2-cancel');
-    
+    const confirmButton = document.querySelector(".swal2-confirm");
+    const cancelButton = document.querySelector(".swal2-cancel");
+
     // Aplicar el fix a los botones
     applyButtonIconFix(confirmButton);
     applyButtonIconFix(cancelButton);
-    
+
     // Asegurarse de que los iconos tengan el mismo color que el texto
     if (confirmButton) {
-      const icons = confirmButton.querySelectorAll('i');
-      icons.forEach(icon => {
+      const icons = confirmButton.querySelectorAll("i");
+      icons.forEach((icon) => {
         icon.style.color = window.getComputedStyle(confirmButton).color;
       });
     }
-    
+
     if (cancelButton) {
-      const icons = cancelButton.querySelectorAll('i');
-      icons.forEach(icon => {
+      const icons = cancelButton.querySelectorAll("i");
+      icons.forEach((icon) => {
         icon.style.color = window.getComputedStyle(cancelButton).color;
       });
     }
@@ -57,5 +57,5 @@ export function fixSweetAlertButtons() {
 
 export default {
   applyButtonIconFix,
-  fixSweetAlertButtons
+  fixSweetAlertButtons,
 };

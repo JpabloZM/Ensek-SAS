@@ -37,6 +37,8 @@ button[class*="swal2"] i {
 }
 
 /* Ajuste especial para evitar que los iconos tengan su propio fondo */
-i.fas, i.far, i.fab {
+i.fas,
+i.far,
+i.fab {
   background: transparent !important;
 }

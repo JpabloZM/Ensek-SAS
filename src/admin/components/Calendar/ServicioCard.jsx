@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useAlertas } from "../../hooks/useAlertas";
 import Swal from "sweetalert2";
 import { userService } from "../../../client/services/userService";
-import { addButtonFixStyles, addButtonFixScript } from "../../../utils/buttonIconFix";
+import {
+  addButtonFixStyles,
+  addButtonFixScript,
+} from "../../../utils/buttonIconFix";
 import { fixSweetAlertButtons } from "../../../utils/buttonStyleFix";
 import "./styles/services.css";
 import "./styles/detalles.css";
@@ -344,7 +347,8 @@ const ServicioCard = ({
           btnEditar.style.color = "#fff";
           btnEditar.style.fontWeight = "bold";
           btnEditar.style.order = "1"; // Orden del medio
-          btnEditar.innerHTML = '<span style="display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="fas fa-edit" style="background: transparent !important;"></i> <span>EDITAR</span></span>';
+          btnEditar.innerHTML =
+            '<span style="display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="fas fa-edit" style="background: transparent !important;"></i> <span>EDITAR</span></span>';
           btnEditar.onclick = (e) => {
             e.stopPropagation();
             Swal.close();
@@ -363,7 +367,8 @@ const ServicioCard = ({
 
           if (btnCancel) {
             btnCancel.style.order = "2";
-            btnCancel.innerHTML = '<span style="display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="fas fa-trash" style="background: transparent !important;"></i> <span>ELIMINAR</span></span>';
+            btnCancel.innerHTML =
+              '<span style="display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="fas fa-trash" style="background: transparent !important;"></i> <span>ELIMINAR</span></span>';
             swalActions.appendChild(btnCancel);
           }
         }
@@ -619,8 +624,8 @@ const ServicioCard = ({
             }
           </style>
         `,
-        confirmButtonText: 'Asignar',
-        cancelButtonText: 'Cancelar',
+        confirmButtonText: "Asignar",
+        cancelButtonText: "Cancelar",
         showCancelButton: true,
         confirmButtonColor: "#87c947",
         cancelButtonColor: isDarkMode ? "#444" : "#e7e7e7",
@@ -636,52 +641,52 @@ const ServicioCard = ({
           // Agregar iconos a los botones usando innerHTML para evitar problemas de renderizado
           const confirmButton = Swal.getConfirmButton();
           const cancelButton = Swal.getCancelButton();
-          
+
           if (confirmButton) {
-            confirmButton.innerHTML = '';
-            
+            confirmButton.innerHTML = "";
+
             // Crear elementos manualmente para mejor control
-            const icon = document.createElement('i');
-            icon.className = 'fas fa-calendar-check';
-            icon.style.backgroundColor = 'transparent';
-            icon.style.background = 'none';
-            
-            const text = document.createTextNode(' Asignar');
-            
+            const icon = document.createElement("i");
+            icon.className = "fas fa-calendar-check";
+            icon.style.backgroundColor = "transparent";
+            icon.style.background = "none";
+
+            const text = document.createTextNode(" Asignar");
+
             confirmButton.appendChild(icon);
             confirmButton.appendChild(text);
-            
+
             // Aplicar estilos directamente
-            confirmButton.style.display = 'inline-flex';
-            confirmButton.style.alignItems = 'center';
-            confirmButton.style.justifyContent = 'center';
-            confirmButton.style.gap = '8px';
+            confirmButton.style.display = "inline-flex";
+            confirmButton.style.alignItems = "center";
+            confirmButton.style.justifyContent = "center";
+            confirmButton.style.gap = "8px";
           }
-          
+
           if (cancelButton) {
-            cancelButton.innerHTML = '';
-            
+            cancelButton.innerHTML = "";
+
             // Crear elementos manualmente para mejor control
-            const icon = document.createElement('i');
-            icon.className = 'fas fa-times';
-            icon.style.backgroundColor = 'transparent';
-            icon.style.background = 'none';
-            
-            const text = document.createTextNode(' Cancelar');
-            
+            const icon = document.createElement("i");
+            icon.className = "fas fa-times";
+            icon.style.backgroundColor = "transparent";
+            icon.style.background = "none";
+
+            const text = document.createTextNode(" Cancelar");
+
             cancelButton.appendChild(icon);
             cancelButton.appendChild(text);
-            
+
             // Aplicar estilos directamente
-            cancelButton.style.display = 'inline-flex';
-            cancelButton.style.alignItems = 'center';
-            cancelButton.style.justifyContent = 'center';
-            cancelButton.style.gap = '8px';
+            cancelButton.style.display = "inline-flex";
+            cancelButton.style.alignItems = "center";
+            cancelButton.style.justifyContent = "center";
+            cancelButton.style.gap = "8px";
           }
-          
+
           // Aplicar la función de corrección de estilos
           fixSweetAlertButtons();
-          
+
           // Actualizar la lista de técnicos seleccionados en la UI
           const updateTechniciansList = () => {
             const selectedTechniciansContainer = document.getElementById(

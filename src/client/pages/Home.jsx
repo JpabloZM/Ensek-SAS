@@ -32,6 +32,7 @@ const Home = () => {
   const [formState, setFormState] = useState({
     name: "",
     email: "",
+    phone: "",
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,6 +74,7 @@ const Home = () => {
         setFormState({
           name: "",
           email: "",
+          phone: "",
           message: "",
         });
         // Resetear el formulario para asegurar que se limpie completamente
@@ -209,6 +211,18 @@ const Home = () => {
                 placeholder="Correo electrónico"
                 className="form-input"
                 value={formState.email}
+                onChange={handleInputChange}
+                autoComplete="off"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Teléfono"
+                className="form-input"
+                value={formState.phone}
                 onChange={handleInputChange}
                 autoComplete="off"
                 required

@@ -6,13 +6,13 @@
 // Función para agregar estilos CSS para corregir los iconos en botones
 export function addButtonFixStyles() {
   // Si ya existe el estilo, no agregar otro
-  if (document.getElementById('button-icon-fix-styles')) {
+  if (document.getElementById("button-icon-fix-styles")) {
     return;
   }
 
   // Crear elemento style
-  const styleElement = document.createElement('style');
-  styleElement.id = 'button-icon-fix-styles';
+  const styleElement = document.createElement("style");
+  styleElement.id = "button-icon-fix-styles";
   styleElement.innerHTML = `
     /* Estilos directos para corregir problema de iconos en botones */
     .swal2-actions button i,
@@ -70,13 +70,13 @@ export function addButtonFixStyles() {
 // Función para agregar un script que modifique los botones después de que SweetAlert los cree
 export function addButtonFixScript() {
   // Si ya existe el script, no agregar otro
-  if (document.getElementById('button-icon-fix-script')) {
+  if (document.getElementById("button-icon-fix-script")) {
     return;
   }
 
   // Crear elemento script
-  const scriptElement = document.createElement('script');
-  scriptElement.id = 'button-icon-fix-script';
+  const scriptElement = document.createElement("script");
+  scriptElement.id = "button-icon-fix-script";
   scriptElement.innerHTML = `
     // Función para aplicar arreglos a los botones de SweetAlert2
     function fixSweetAlertButtons() {

@@ -37,7 +37,7 @@ button i {
 
 /* Solución al problema de capa superpuesta */
 .swal2-confirm.swal2-styled::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
