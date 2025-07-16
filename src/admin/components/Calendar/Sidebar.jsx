@@ -202,30 +202,66 @@ const Sidebar = ({
           }
           .swal2-actions {
             margin-top: 1.5rem !important;
-            gap: 1rem !important;
+            gap: 20px !important; /* Espacio específico entre botones */
+            display: flex !important;
+            justify-content: center !important; /* Centrar botones */
+            width: 100% !important;
+            padding: 0 !important; /* Eliminado el padding */
+          }
+          
+          /* Clase personalizada para los botones */
+          .swal2-actions-custom {
+            width: 100% !important;
+            max-width: 520px !important;
+            margin: 0 auto !important;
             display: flex !important;
             justify-content: space-between !important;
-            width: 100% !important;
-            padding: 0 1rem !important;
+          }
+          
+          /* Asegurar que todos los elementos del botón tengan border-radius */
+          .swal2-confirm *, .swal2-confirm.swal2-styled, .swal2-confirm.swal2-styled * {
+            border-radius: 10px !important;
           }
           .swal2-confirm-button {
-            flex: 1 !important;
-            max-width: 220px !important;
-            padding: 0.75rem 2rem !important;
+            flex: 1 !important; 
+            width: 230px !important;
+            min-width: 230px !important;
+            max-width: 230px !important;
+            padding: 0.8rem 1rem !important;
             font-weight: 600 !important;
             letter-spacing: 1px !important;
             text-transform: uppercase !important;
-            border-radius: 6px !important;
+            border-radius: 10px !important; /* Border radius ajustado */
+            box-shadow: 0 4px 8px rgba(135, 201, 71, 0.2) !important; /* Sombra sutil */
+          }
+          
+          /* Estilos específicos para garantizar que el border-radius se aplique al botón guardar */
+          .swal2-confirm {
+            border-radius: 10px !important;
+            overflow: hidden !important;
+          }
+          
+          /* Estilos adicionales para asegurar que el borde redondeado se aplique */
+          button.swal2-confirm {
+            border-radius: 10px !important;
+          }
+          
+          /* Override para SweetAlert2 */
+          .swal2-styled.swal2-confirm {
+            border-radius: 10px !important;
           }
           .swal2-cancel-button {
             flex: 1 !important;
-            max-width: 220px !important;
-            padding: 0.75rem 2rem !important;
+            width: 230px !important;
+            min-width: 230px !important;
+            max-width: 230px !important;
+            padding: 0.8rem 1rem !important;
             font-weight: 600 !important;
             letter-spacing: 1px !important;
             text-transform: uppercase !important;
-            border-radius: 6px !important;
+            border-radius: 10px !important; /* Border radius ajustado */
             color: #e2e8f0 !important;
+            background-color: #383a46 !important;
           }
         </style>
       `,
@@ -233,16 +269,20 @@ const Sidebar = ({
       confirmButtonText: "GUARDAR",
       cancelButtonText: "CANCELAR",
       confirmButtonColor: "#87c947",
-      cancelButtonColor: "#475569",
+      cancelButtonColor: "#383a46",
       background: "#1e1e2f",
       color: "#ffffff",
       buttonsStyling: true,
+      confirmButtonAriaLabel: 'Guardar servicio',
+      cancelButtonAriaLabel: 'Cancelar',
+      borderRadius: "10px", /* Asegurar que el border-radius se aplique correctamente */
       customClass: {
         popup: "swal2-popup-custom",
         title: "swal2-title-custom",
-        confirmButton: "swal2-confirm-button",
-        cancelButton: "swal2-cancel-button",
+        confirmButton: "swal2-confirm-button swal2-styled",
+        cancelButton: "swal2-cancel-button swal2-styled",
         htmlContainer: "swal2-html-custom",
+        actions: "swal2-actions-custom", /* Clase personalizada para los botones */
       },
       showClass: {
         popup: "animate__animated animate__fadeIn animate__faster",
