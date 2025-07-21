@@ -123,6 +123,24 @@ const Calendar = ({ darkMode = false }) => {
     }
   };
 
+  // Función para mapear los tipos de servicio del inglés al español
+  const mapServiceTypeToSpanish = (serviceType) => {
+    switch (serviceType) {
+      case "pest-control":
+        return "Control de Plagas";
+      case "gardening":
+        return "Jardinería";
+      case "residential-fumigation":
+        return "Fumigación Residencial";
+      case "commercial-fumigation":
+        return "Fumigación Comercial";
+      case "other":
+        return "Otro";
+      default:
+        return serviceType; // Si no coincide, devolver el valor original
+    }
+  };
+
   // Función para obtener el color según el estado del servicio
   const getServiceColor = (status) => {
     switch (status) {
@@ -157,7 +175,7 @@ const Calendar = ({ darkMode = false }) => {
       .map((service) => ({
         _id: service._id,
         id: service._id,
-        nombre: service.serviceType,
+        nombre: mapServiceTypeToSpanish(service.serviceType),
         descripcion: service.description || "",
         duracion: service.duration || 60,
         color: "#ffd54f",
@@ -188,7 +206,7 @@ const Calendar = ({ darkMode = false }) => {
         // Create a properly formatted calendar event
         const event = {
           id: service._id,
-          title: service.serviceType,
+          title: mapServiceTypeToSpanish(service.serviceType),
           // Use scheduledStart/End for confirmed services, preferredDate for pending
           start: service.scheduledStart || service.preferredDate,
           end:
@@ -637,7 +655,7 @@ const Calendar = ({ darkMode = false }) => {
       // Map MongoDB document to local service format with all fields populated
       const localService = {
         id: createdService._id,
-        nombre: createdService.serviceType,
+        nombre: mapServiceTypeToSpanish(createdService.serviceType),
         descripcion: createdService.description,
         duracion: 60, // Default duration in minutes
         color: getServiceColor(createdService.status), // Color basado en estado
