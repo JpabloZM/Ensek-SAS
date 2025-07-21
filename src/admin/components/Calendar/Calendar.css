@@ -29,9 +29,27 @@
   padding: 2px 4px !important;
 }
 
-/* Ensure events don't overlap too much */
+/* Ensure events don't overlap too much but can be dragged */
 .fc-timegrid-event-harness {
-  z-index: auto !important;
+  z-index: 9 !important;
+}
+
+/* Improve draggable events */
+.fc-event {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  user-select: none !important;
+}
+
+.fc-event-draggable {
+  cursor: move !important;
+  pointer-events: auto !important;
+  user-select: none !important;
+}
+
+.fc-event-main-frame {
+  pointer-events: auto !important;
+  user-select: none !important;
 }
 
 /* Ocultar solo el mensaje de licencia específico */

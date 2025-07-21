@@ -2851,37 +2851,45 @@ const Calendar = ({ darkMode = false }) => {
       return [];
     }
 
-    return rawEvents.filter((event) => {
-      if (!event) {
-        console.warn("Found null or undefined event");
-        return false;
-      }
-
-      // Check for required properties
-      const hasTitle = event.title && typeof event.title === "string";
-      const hasStart =
-        event.start &&
-        (event.start instanceof Date || typeof event.start === "string");
-
-      // If missing required properties, log for debugging
-      if (!hasTitle || !hasStart) {
-        console.warn("Invalid event skipped:", {
-          id: event.id,
-          hasTitle,
-          hasStart,
-          event,
-        });
-        return false;
-      }
-
-      // For events with resourceId (assigned to technicians), make sure it exists
-      if (event.resourceId && typeof event.resourceId !== "string") {
-        console.warn("Invalid resourceId for event:", event);
-        return false;
-      }
-
-      return true;
-    });
+    return rawEvents
+      .filter((event) => {
+        if (!event) {
+          console.warn("Found null or undefined event");
+          return false;
+        }
+        // Check for required properties
+        const hasTitle = event.title && typeof event.title === "string";
+        const hasStart =
+          event.start &&
+          (event.start instanceof Date || typeof event.start === "string");
+        if (!hasTitle || !hasStart) {
+          console.warn("Invalid event skipped:", {
+            id: event.id,
+            hasTitle,
+            hasStart,
+            event,
+          });
+          return false;
+        }
+        // resourceId debe ser string y no null/undefined
+        if (!event.resourceId || typeof event.resourceId !== "string") {
+          console.warn("Invalid or missing resourceId for event:", event);
+          return false;
+        }
+        // id debe ser string único
+        if (!event.id || typeof event.id !== "string") {
+          console.warn("Invalid or missing id for event:", event);
+          return false;
+        }
+        return true;
+      })
+      .map((event, idx) => ({
+        ...event,
+        id: typeof event.id === "string" ? event.id : `evento-${idx}-${Date.now()}`,
+        resourceId: typeof event.resourceId === "string" ? event.resourceId : String(event.resourceId),
+        editable: true,
+        display: event.display || "auto",
+      }));
   };
 
   // Manejador de eventos montados
@@ -2899,6 +2907,15 @@ const Calendar = ({ darkMode = false }) => {
       if (!info.event.display) {
         info.event.setDisplay("auto");
       }
+
+      // Ensure the event is draggable
+      info.el.setAttribute('draggable', 'true');
+      
+      // Fix pointer events to ensure dragging works
+      info.el.style.pointerEvents = 'auto';
+      
+      // Ensure drag cursor is shown
+      info.el.style.cursor = 'move';
 
       // Aplicar clase de estado si no está presente
       const estado =
@@ -2934,6 +2951,9 @@ const Calendar = ({ darkMode = false }) => {
       ) {
         info.el.classList.add("fc-event-assigned");
       }
+      
+      // Ensure the event is registered as draggable by FullCalendar
+      info.el.classList.add("fc-event-draggable");
     } catch (error) {
       console.error("Error al montar evento:", error);
       console.log("Evento problemático:", info.event);
@@ -3426,13 +3446,9 @@ const Calendar = ({ darkMode = false }) => {
                 eventDisplay: "block",
                 displayEventEnd: false,
                 eventContent: (arg) => {
+                  // Solo renderiza el texto, sin divs extra que puedan bloquear eventos
                   return {
-                    html: `
-                    <div class="fc-event-main-frame" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                      <div class="fc-event-time" style="display: inline;">${arg.timeText}</div>
-                      <div class="fc-event-title" style="display: inline; margin-left: 4px;">${arg.event.title}</div>
-                    </div>
-                  `,
+                    html: `<span class="fc-event-time">${arg.timeText}</span> <span class="fc-event-title">${arg.event.title}</span>`
                   };
                 },
               },
@@ -3467,6 +3483,9 @@ const Calendar = ({ darkMode = false }) => {
             droppable={true}
             eventOverlap={true}
             eventConstraint={null}
+            eventResizableFromStart={true}
+            dragRevertDuration={0}
+            dragScroll={true}
             datesSet={(arg) => {
               // Cuando cambia la vista o las fechas mostradas
               if (arg.view.type === "resourceTimeGridDay") {
