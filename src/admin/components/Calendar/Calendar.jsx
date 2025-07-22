@@ -113,14 +113,17 @@ const Calendar = ({ darkMode = false }) => {
   const { services, loading, error, updateService, getAllServices } =
     useServices();
   const [serviciosPendientes, setServiciosPendientes] = useState([]);
-  
+
   // Inicializar eventos desde localStorage si existen
   const [eventos, setEventos] = useState(() => {
     try {
       const savedEvents = localStorage.getItem("eventos");
       if (savedEvents) {
         const parsedEvents = JSON.parse(savedEvents);
-        console.log("📚 Cargando eventos desde localStorage:", parsedEvents.length);
+        console.log(
+          "📚 Cargando eventos desde localStorage:",
+          parsedEvents.length
+        );
         return parsedEvents;
       }
     } catch (error) {
@@ -128,7 +131,7 @@ const Calendar = ({ darkMode = false }) => {
     }
     return [];
   });
-  
+
   const [tecnicos, setTecnicos] = useState([]);
   const [localServices, setLocalServices] = useState([]); // Agregar estado para servicios locales
   const { mostrarAlerta } = useAlertas();
@@ -299,7 +302,7 @@ const Calendar = ({ darkMode = false }) => {
   // Function to process services data
   const processServices = useCallback((servicesData) => {
     console.log("Processing services data:", servicesData);
-    
+
     // Actualizar servicios locales
     setLocalServices(servicesData);
 
@@ -426,31 +429,39 @@ const Calendar = ({ darkMode = false }) => {
       });
 
     console.log("Calendar events:", calendarEvents);
-    
+
     // NUEVO: No sobrescribir eventos existentes si ya están en el calendario con un estado diferente
-    setEventos(prevEventos => {
+    setEventos((prevEventos) => {
       // Crear una copia de los nuevos eventos del backend
       const merged = [...calendarEvents];
-      
+
       // Revisar eventos existentes y preservar sus estados locales
-      prevEventos.forEach(existingEvent => {
-        const backendEventIndex = merged.findIndex(e => e.id === existingEvent.id);
-        
+      prevEventos.forEach((existingEvent) => {
+        const backendEventIndex = merged.findIndex(
+          (e) => e.id === existingEvent.id
+        );
+
         if (backendEventIndex === -1) {
           // El evento existente no está en la nueva lista del backend, mantenerlo
           merged.push(existingEvent);
-          console.log(`📌 Manteniendo evento local no encontrado en backend: ${existingEvent.id}`);
+          console.log(
+            `📌 Manteniendo evento local no encontrado en backend: ${existingEvent.id}`
+          );
         } else {
           const backendEvent = merged[backendEventIndex];
-          
+
           // Si el evento local tiene un estado diferente al del backend, preservar el local
-          if (existingEvent.extendedProps?.estado && 
-              backendEvent.extendedProps?.estado && 
-              existingEvent.extendedProps.estado !== backendEvent.extendedProps.estado) {
-            
-            console.log(`🔄 Preservando estado local para evento ${existingEvent.id}:`, 
-              `local: ${existingEvent.extendedProps.estado} vs backend: ${backendEvent.extendedProps.estado}`);
-            
+          if (
+            existingEvent.extendedProps?.estado &&
+            backendEvent.extendedProps?.estado &&
+            existingEvent.extendedProps.estado !==
+              backendEvent.extendedProps.estado
+          ) {
+            console.log(
+              `🔄 Preservando estado local para evento ${existingEvent.id}:`,
+              `local: ${existingEvent.extendedProps.estado} vs backend: ${backendEvent.extendedProps.estado}`
+            );
+
             // Combinar datos del backend con estado y colores del evento local
             const preservedEvent = {
               ...backendEvent, // Datos actualizados del backend
@@ -462,17 +473,19 @@ const Calendar = ({ darkMode = false }) => {
                 ...backendEvent.extendedProps, // Datos del backend
                 estado: existingEvent.extendedProps.estado, // Estado local preservado
                 // Preservar también otras propiedades visuales
-                ...(existingEvent.extendedProps || {})
-              }
+                ...(existingEvent.extendedProps || {}),
+              },
             };
-            
+
             // Reemplazar el evento del backend con la versión preservada
             merged[backendEventIndex] = preservedEvent;
           }
         }
       });
-      
-      console.log(`📊 Eventos finales después del merge: ${merged.length} eventos`);
+
+      console.log(
+        `📊 Eventos finales después del merge: ${merged.length} eventos`
+      );
       return merged;
     });
   }, []);
@@ -2153,15 +2166,17 @@ const Calendar = ({ darkMode = false }) => {
 
         // Manejar los botones de estado
         const btns = Swal.getPopup().querySelectorAll(".estado-btn");
-        
+
         // Preseleccionar "pendiente" como estado por defecto
-        const pendienteBtn = [...btns].find(btn => btn.dataset.estado === 'pendiente');
+        const pendienteBtn = [...btns].find(
+          (btn) => btn.dataset.estado === "pendiente"
+        );
         if (pendienteBtn) {
           pendienteBtn.style.opacity = "1";
           pendienteBtn.classList.add("active");
           document.getElementById("estadoServicio").value = "pendiente";
         }
-        
+
         btns.forEach((btn) => {
           const estado = btn.dataset.estado;
 
@@ -3228,8 +3243,38 @@ const Calendar = ({ darkMode = false }) => {
     try {
       // Validar que el evento esté bien formado
       if (!info.event || !info.event._def || !info.event._instance) {
-        console.warn("Event not properly formed:", info.event);
+        console.warn("Event not properly formed (skipping temporal event):", {
+          hasEvent: !!info.event,
+          hasDef: !!(info.event && info.event._def),
+          hasInstance: !!(info.event && info.event._instance),
+          eventId: info.event?.id,
+          eventTitle: info.event?.title,
+        });
         return;
+      }
+
+      // Filtrar eventos temporales de selección (sin ID válido o título)
+      if (!info.event.id || !info.event.title || info.event.id === "") {
+        console.warn("Skipping temporal selection event:", {
+          id: info.event.id,
+          title: info.event.title,
+        });
+        return;
+      }
+
+      // Declarar variables de color al inicio para evitar errores de inicialización
+      let currentBackgroundColor = "";
+      let currentBorderColor = "";
+      let currentTextColor = "";
+
+      // Validar que el evento tenga backgroundColor y borderColor antes de intentar accederlos
+      try {
+        currentBackgroundColor = info.event.backgroundColor || "";
+        currentBorderColor = info.event.borderColor || "";
+        currentTextColor = info.event.textColor || "";
+      } catch (colorError) {
+        console.warn("Error accessing color properties:", colorError.message);
+        // Ya están inicializadas con valores por defecto
       }
 
       // Obtener recursos de manera segura
@@ -3244,10 +3289,10 @@ const Calendar = ({ darkMode = false }) => {
         eventoId: info.event.id,
         estadoEnExtendedProps: info.event.extendedProps?.estado,
         statusEnExtendedProps: info.event.extendedProps?.status,
-        backgroundColorActual: info.event.backgroundColor,
-        todoExtendedProps: info.event.extendedProps
+        backgroundColorActual: currentBackgroundColor,
+        todoExtendedProps: info.event.extendedProps,
       });
-      
+
       if (!estado && info.event.extendedProps?.status) {
         // Usar la función mapStatusToEstado para convertir correctamente
         estado = mapStatusToEstado(info.event.extendedProps.status);
@@ -3256,20 +3301,35 @@ const Calendar = ({ darkMode = false }) => {
       if (!estado) {
         // Solo usar "pendiente" como fallback si realmente no hay ningún estado definido
         // Verificar si el evento ya tiene colores asignados (lo que indicaría que tiene un estado válido)
-        if (!info.event.backgroundColor || info.event.backgroundColor === '#3788d8') {
+        if (!currentBackgroundColor || currentBackgroundColor === "#3788d8") {
           estado = "pendiente";
-          console.log("⚠️ Usando pendiente como fallback - sin color o color por defecto");
+          console.log(
+            "⚠️ Usando pendiente como fallback - sin color o color por defecto"
+          );
         } else {
           // Intentar inferir el estado del color de fondo
-          const bgColor = info.event.backgroundColor;
-          switch(bgColor) {
-            case "#87c947": estado = "confirmado"; break;
-            case "#e74c3c": estado = "cancelado"; break;
-            case "#ffd54f": estado = "pendiente"; break;
-            case "#7f8c8d": estado = "facturado"; break;
-            case "#3498db": estado = "almuerzo"; break;
-            case "#9b59b6": estado = "especial"; break;
-            default: estado = "pendiente";
+          const bgColor = currentBackgroundColor;
+          switch (bgColor) {
+            case "#87c947":
+              estado = "confirmado";
+              break;
+            case "#e74c3c":
+              estado = "cancelado";
+              break;
+            case "#ffd54f":
+              estado = "pendiente";
+              break;
+            case "#7f8c8d":
+              estado = "facturado";
+              break;
+            case "#3498db":
+              estado = "almuerzo";
+              break;
+            case "#9b59b6":
+              estado = "especial";
+              break;
+            default:
+              estado = "pendiente";
           }
           console.log("🎨 Estado inferido del color:", bgColor, "=>", estado);
         }
@@ -3283,21 +3343,33 @@ const Calendar = ({ darkMode = false }) => {
         resourceId: resourceIds,
         start: info.event.start,
         estado: estado,
-        backgroundColor: info.event.backgroundColor,
+        backgroundColor: currentBackgroundColor,
       });
 
       // Asegurar que el estado está guardado en extendedProps
       if (!info.event.extendedProps?.estado) {
-        info.event.setExtendedProp("estado", estado);
+        try {
+          info.event.setExtendedProp("estado", estado);
+        } catch (extendedPropError) {
+          console.warn(
+            "Error setting extendedProp:",
+            extendedPropError.message
+          );
+        }
       }
 
-      // Validar que el evento tenga las propiedades necesarias
+      // Validar que el evento tenga las propiedades necesarias antes de manipularlas
       try {
-        if (!info.event.display) {
+        // Solo intentar establecer display si la propiedad existe y es válida
+        if (info.event._def && info.event._instance && !info.event.display) {
           info.event.setDisplay("auto");
         }
       } catch (displayError) {
-        console.warn("Error setting display property:", displayError);
+        console.warn(
+          "Error setting display property (skipping):",
+          displayError.message
+        );
+        // No retornar, continuar con el resto del procesamiento
       }
 
       // Ensure the event is draggable
@@ -3317,16 +3389,20 @@ const Calendar = ({ darkMode = false }) => {
       // Siempre establecer el color de fondo basado en el estado
       const color = getColorByEstado(estado);
       const textColor = estado === "pendiente" ? "#2c3e50" : "white";
-      
-      // Solo sobrescribir las propiedades del evento si es necesario
-      if (info.event.backgroundColor !== color) {
-        info.event.setProp("backgroundColor", color);
-      }
-      if (info.event.borderColor !== color) {
-        info.event.setProp("borderColor", color);
-      }
-      if (info.event.textColor !== textColor) {
-        info.event.setProp("textColor", textColor);
+
+      // Solo sobrescribir las propiedades del evento si es necesario, de forma segura
+      try {
+        if (currentBackgroundColor !== color && info.event.setProp) {
+          info.event.setProp("backgroundColor", color);
+        }
+        if (currentBorderColor !== color && info.event.setProp) {
+          info.event.setProp("borderColor", color);
+        }
+        if (currentTextColor !== textColor && info.event.setProp) {
+          info.event.setProp("textColor", textColor);
+        }
+      } catch (setPropError) {
+        console.warn("Error setting event properties:", setPropError.message);
       }
 
       // FORZAR el color en el DOM directamente para evitar que FullCalendar lo sobrescriba
@@ -3334,21 +3410,21 @@ const Calendar = ({ darkMode = false }) => {
         info.el.style.backgroundColor = color + " !important";
         info.el.style.borderColor = color + " !important";
         info.el.style.color = textColor + " !important";
-        
+
         // También aplicar el color a todos los elementos hijos
-        const eventContent = info.el.querySelector('.fc-event-main');
+        const eventContent = info.el.querySelector(".fc-event-main");
         if (eventContent) {
           eventContent.style.backgroundColor = color + " !important";
           eventContent.style.borderColor = color + " !important";
           eventContent.style.color = textColor + " !important";
         }
 
-        const eventTitle = info.el.querySelector('.fc-event-title');
+        const eventTitle = info.el.querySelector(".fc-event-title");
         if (eventTitle) {
           eventTitle.style.color = textColor + " !important";
         }
 
-        const eventTime = info.el.querySelector('.fc-event-time');
+        const eventTime = info.el.querySelector(".fc-event-time");
         if (eventTime) {
           eventTime.style.color = textColor + " !important";
         }
