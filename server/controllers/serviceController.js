@@ -217,7 +217,7 @@ export const getServices = async (req, res) => {
       description: req.description,
       preferredDate: req.preferredDate,
       scheduledStart: req.scheduledStart, // ¡AGREGAR ESTE CAMPO!
-      scheduledEnd: req.scheduledEnd,     // ¡AGREGAR ESTE CAMPO!
+      scheduledEnd: req.scheduledEnd, // ¡AGREGAR ESTE CAMPO!
       status: req.status,
       technician: req.technician || null,
       technicians: req.technicians || [],

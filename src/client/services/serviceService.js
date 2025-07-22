@@ -122,7 +122,7 @@ const saveService = async (service) => {
     console.log("=== SAVE SERVICE - INICIO ===");
     console.log("Enviando datos al servidor:", service);
     console.log("URL de la API:", API_URL);
-    
+
     // Debug específico de campos de tiempo
     console.log("=== DEBUG CAMPOS TIEMPO EN SAVE SERVICE ===");
     console.log("scheduledStart:", service.scheduledStart);

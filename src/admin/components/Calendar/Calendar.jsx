@@ -113,7 +113,22 @@ const Calendar = ({ darkMode = false }) => {
   const { services, loading, error, updateService, getAllServices } =
     useServices();
   const [serviciosPendientes, setServiciosPendientes] = useState([]);
-  const [eventos, setEventos] = useState([]);
+  
+  // Inicializar eventos desde localStorage si existen
+  const [eventos, setEventos] = useState(() => {
+    try {
+      const savedEvents = localStorage.getItem("eventos");
+      if (savedEvents) {
+        const parsedEvents = JSON.parse(savedEvents);
+        console.log("📚 Cargando eventos desde localStorage:", parsedEvents.length);
+        return parsedEvents;
+      }
+    } catch (error) {
+      console.error("Error cargando eventos desde localStorage:", error);
+    }
+    return [];
+  });
+  
   const [tecnicos, setTecnicos] = useState([]);
   const [localServices, setLocalServices] = useState([]); // Agregar estado para servicios locales
   const { mostrarAlerta } = useAlertas();
@@ -132,6 +147,16 @@ const Calendar = ({ darkMode = false }) => {
     }
     return null;
   };
+
+  // Efecto para sincronizar eventos con localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("eventos", JSON.stringify(eventos));
+      console.log("💾 Eventos sincronizados con localStorage:", eventos.length);
+    } catch (error) {
+      console.error("Error guardando eventos en localStorage:", error);
+    }
+  }, [eventos]);
 
   // Función para desplazarse a la hora actual
   const scrollToCurrentTime = () => {
@@ -209,6 +234,28 @@ const Calendar = ({ darkMode = false }) => {
     }
   };
 
+  // Función para mapear el estado de español a inglés para el backend
+  const mapEstadoToStatus = (estado) => {
+    switch (estado) {
+      case "confirmado":
+        return "confirmed";
+      case "pendiente":
+        return "pending";
+      case "cancelado":
+        return "cancelled";
+      case "completado":
+        return "completed";
+      case "facturado":
+        return "billed";
+      case "especial":
+        return "special";
+      case "almuerzo":
+        return "lunch";
+      default:
+        return "pending";
+    }
+  };
+
   // Función para mapear los tipos de servicio del inglés al español
   const mapServiceTypeToSpanish = (serviceType) => {
     switch (serviceType) {
@@ -252,6 +299,7 @@ const Calendar = ({ darkMode = false }) => {
   // Function to process services data
   const processServices = useCallback((servicesData) => {
     console.log("Processing services data:", servicesData);
+    
     // Actualizar servicios locales
     setLocalServices(servicesData);
 
@@ -265,7 +313,9 @@ const Calendar = ({ darkMode = false }) => {
           const start = new Date(service.scheduledStart);
           const end = new Date(service.scheduledEnd);
           calculatedDuration = Math.round((end - start) / (1000 * 60)); // diferencia en minutos
-          console.log(`Service ${service._id}: scheduledStart=${service.scheduledStart}, scheduledEnd=${service.scheduledEnd}, duration=${calculatedDuration} minutes`);
+          console.log(
+            `Service ${service._id}: scheduledStart=${service.scheduledStart}, scheduledEnd=${service.scheduledEnd}, duration=${calculatedDuration} minutes`
+          );
         }
 
         return {
@@ -304,7 +354,7 @@ const Calendar = ({ darkMode = false }) => {
       .map((service) => {
         // Calcular fechas de inicio y fin correctamente
         let startDate, endDate;
-        
+
         if (service.scheduledStart && service.scheduledEnd) {
           // Si tenemos fechas programadas específicas, usarlas
           startDate = service.scheduledStart;
@@ -313,11 +363,16 @@ const Calendar = ({ darkMode = false }) => {
           // Si solo tenemos fecha preferida, calcular duración basada en scheduledStart/End si existen
           startDate = service.preferredDate;
           if (service.scheduledStart && service.scheduledEnd) {
-            const duration = new Date(service.scheduledEnd) - new Date(service.scheduledStart);
-            endDate = new Date(new Date(service.preferredDate).getTime() + duration).toISOString();
+            const duration =
+              new Date(service.scheduledEnd) - new Date(service.scheduledStart);
+            endDate = new Date(
+              new Date(service.preferredDate).getTime() + duration
+            ).toISOString();
           } else {
             // Fallback a 1 hora si no hay más información
-            endDate = new Date(new Date(service.preferredDate).getTime() + 60 * 60 * 1000).toISOString();
+            endDate = new Date(
+              new Date(service.preferredDate).getTime() + 60 * 60 * 1000
+            ).toISOString();
           }
         } else {
           // Fallback si no hay fechas
@@ -353,23 +408,73 @@ const Calendar = ({ darkMode = false }) => {
             scheduledEnd: service.scheduledEnd,
           },
         };
-        
+
         // Log para debugging
-        const durationMinutes = Math.round((new Date(endDate) - new Date(startDate)) / (1000 * 60));
+        const durationMinutes = Math.round(
+          (new Date(endDate) - new Date(startDate)) / (1000 * 60)
+        );
         console.log(`Created calendar event for service ${service._id}:`, {
           title: event.title,
           start: startDate,
           end: endDate,
           durationMinutes: durationMinutes,
-          scheduledStart: service.scheduledStart,
-          scheduledEnd: service.scheduledEnd
+          estado: event.extendedProps.estado,
+          backgroundColor: event.backgroundColor,
         });
-        
+
         return event;
       });
 
     console.log("Calendar events:", calendarEvents);
-    setEventos(calendarEvents);
+    
+    // NUEVO: No sobrescribir eventos existentes si ya están en el calendario con un estado diferente
+    setEventos(prevEventos => {
+      // Crear una copia de los nuevos eventos del backend
+      const merged = [...calendarEvents];
+      
+      // Revisar eventos existentes y preservar sus estados locales
+      prevEventos.forEach(existingEvent => {
+        const backendEventIndex = merged.findIndex(e => e.id === existingEvent.id);
+        
+        if (backendEventIndex === -1) {
+          // El evento existente no está en la nueva lista del backend, mantenerlo
+          merged.push(existingEvent);
+          console.log(`📌 Manteniendo evento local no encontrado en backend: ${existingEvent.id}`);
+        } else {
+          const backendEvent = merged[backendEventIndex];
+          
+          // Si el evento local tiene un estado diferente al del backend, preservar el local
+          if (existingEvent.extendedProps?.estado && 
+              backendEvent.extendedProps?.estado && 
+              existingEvent.extendedProps.estado !== backendEvent.extendedProps.estado) {
+            
+            console.log(`🔄 Preservando estado local para evento ${existingEvent.id}:`, 
+              `local: ${existingEvent.extendedProps.estado} vs backend: ${backendEvent.extendedProps.estado}`);
+            
+            // Combinar datos del backend con estado y colores del evento local
+            const preservedEvent = {
+              ...backendEvent, // Datos actualizados del backend
+              backgroundColor: existingEvent.backgroundColor,
+              borderColor: existingEvent.borderColor,
+              textColor: existingEvent.textColor,
+              className: existingEvent.className,
+              extendedProps: {
+                ...backendEvent.extendedProps, // Datos del backend
+                estado: existingEvent.extendedProps.estado, // Estado local preservado
+                // Preservar también otras propiedades visuales
+                ...(existingEvent.extendedProps || {})
+              }
+            };
+            
+            // Reemplazar el evento del backend con la versión preservada
+            merged[backendEventIndex] = preservedEvent;
+          }
+        }
+      });
+      
+      console.log(`📊 Eventos finales después del merge: ${merged.length} eventos`);
+      return merged;
+    });
   }, []);
 
   // Efecto para procesar servicios cuando cambian
@@ -735,7 +840,8 @@ const Calendar = ({ darkMode = false }) => {
         phone: nuevoServicio.phone || nuevoServicio.clientPhone,
         address: nuevoServicio.address || "No especificada",
         serviceType: nuevoServicio.serviceType || "Control de Plagas", // Valor por defecto más común
-        description: nuevoServicio.description || nuevoServicio.descripcion || "",
+        description:
+          nuevoServicio.description || nuevoServicio.descripcion || "",
         preferredDate: nuevoServicio.preferredDate || currentDate,
         scheduledStart: nuevoServicio.scheduledStart || null, // IMPORTANTE: Mantener los campos de horario
         scheduledEnd: nuevoServicio.scheduledEnd || null, // IMPORTANTE: Mantener los campos de horario
@@ -745,23 +851,13 @@ const Calendar = ({ darkMode = false }) => {
         status:
           nuevoServicio.status ||
           (nuevoServicio.isFromCalendar
-            ? nuevoServicio.estado === "pendiente"
-              ? "pending"
-              : nuevoServicio.estado === "cancelado"
-              ? "cancelled"
-              : nuevoServicio.estado === "facturado"
-              ? "billed"
-              : nuevoServicio.estado === "especial"
-              ? "special"
-              : nuevoServicio.estado === "almuerzo"
-              ? "lunch"
-              : "confirmed"
+            ? mapEstadoToStatus(nuevoServicio.estado)
             : "pending"),
         technician: nuevoServicio.technicianId || null, // Asignar técnico si viene del calendario
       };
 
       console.log("Creando nuevo servicio con datos:", serviceData);
-      
+
       // Debug: Log específico de los campos de tiempo
       console.log("=== DEBUG HORARIOS EN handleAgregarServicio ===");
       console.log("scheduledStart original:", nuevoServicio.scheduledStart);
@@ -810,7 +906,9 @@ const Calendar = ({ darkMode = false }) => {
             const start = new Date(createdService.scheduledStart);
             const end = new Date(createdService.scheduledEnd);
             const calculatedDuration = Math.round((end - start) / (1000 * 60));
-            console.log(`Duración calculada para servicio ${createdService._id}: ${calculatedDuration} minutos`);
+            console.log(
+              `Duración calculada para servicio ${createdService._id}: ${calculatedDuration} minutos`
+            );
             return calculatedDuration;
           }
           return 60; // Default duration in minutes solo si no hay horarios específicos
@@ -2055,6 +2153,15 @@ const Calendar = ({ darkMode = false }) => {
 
         // Manejar los botones de estado
         const btns = Swal.getPopup().querySelectorAll(".estado-btn");
+        
+        // Preseleccionar "pendiente" como estado por defecto
+        const pendienteBtn = [...btns].find(btn => btn.dataset.estado === 'pendiente');
+        if (pendienteBtn) {
+          pendienteBtn.style.opacity = "1";
+          pendienteBtn.classList.add("active");
+          document.getElementById("estadoServicio").value = "pendiente";
+        }
+        
         btns.forEach((btn) => {
           const estado = btn.dataset.estado;
 
@@ -2182,7 +2289,7 @@ const Calendar = ({ darkMode = false }) => {
         // Crear un nuevo objeto con los datos del servicio
         const nuevoServicio = {
           name: formValues.clientName, // Backend espera 'name', no 'clientName'
-          email: formValues.clientEmail, // Backend espera 'email', no 'clientEmail'  
+          email: formValues.clientEmail, // Backend espera 'email', no 'clientEmail'
           phone: formValues.clientPhone, // Backend espera 'phone', no 'clientPhone'
           address: formValues.address, // Dirección completa
           municipality: formValues.municipality,
@@ -2198,7 +2305,7 @@ const Calendar = ({ darkMode = false }) => {
           isFromCalendar: true, // Indicar que viene del calendario para asignarlo directamente
           technicianId: selectInfo.resource.id, // Incluir el ID del técnico seleccionado
           estado: formValues.estado, // Estado en español para UI
-          status: formValues.estado, // Usar el mismo valor para status
+          status: mapEstadoToStatus(formValues.estado), // Mapear estado a inglés para backend
         };
 
         // Debug: Log detallado de los datos del servicio
@@ -2206,7 +2313,10 @@ const Calendar = ({ darkMode = false }) => {
         console.log("Objeto completo nuevoServicio:", nuevoServicio);
         console.log("scheduledStart:", nuevoServicio.scheduledStart);
         console.log("scheduledEnd:", nuevoServicio.scheduledEnd);
-        console.log("Duración calculada (minutos):", (end - start) / (1000 * 60));
+        console.log(
+          "Duración calculada (minutos):",
+          (end - start) / (1000 * 60)
+        );
         console.log("=== FIN DEBUG SERVICIO ===");
 
         // Guardar el servicio en la base de datos
@@ -2257,13 +2367,26 @@ const Calendar = ({ darkMode = false }) => {
         };
 
         // Debug: Log detallado del evento que se va a crear
-        console.log("=== EVENTO A CREAR EN CALENDARIO ===");
+        console.log("🎯 CREANDO EVENTO EN CALENDARIO:");
+        console.log("Estado seleccionado en modal:", formValues.estado);
+        console.log("Color calculado:", getColorByEstado(formValues.estado));
         console.log("nuevoEvento completo:", nuevoEvento);
+        console.log("extendedProps.estado:", nuevoEvento.extendedProps.estado);
         console.log("start:", nuevoEvento.start);
         console.log("end:", nuevoEvento.end);
-        console.log("Duración en minutos:", (new Date(nuevoEvento.end) - new Date(nuevoEvento.start)) / (1000 * 60));
-        console.log("scheduledStart en extendedProps:", nuevoEvento.extendedProps.scheduledStart);
-        console.log("scheduledEnd en extendedProps:", nuevoEvento.extendedProps.scheduledEnd);
+        console.log(
+          "Duración en minutos:",
+          (new Date(nuevoEvento.end) - new Date(nuevoEvento.start)) /
+            (1000 * 60)
+        );
+        console.log(
+          "scheduledStart en extendedProps:",
+          nuevoEvento.extendedProps.scheduledStart
+        );
+        console.log(
+          "scheduledEnd en extendedProps:",
+          nuevoEvento.extendedProps.scheduledEnd
+        );
         console.log("=== FIN DEBUG EVENTO ===");
 
         setEventos((prevEventos) => {
@@ -2296,7 +2419,9 @@ const Calendar = ({ darkMode = false }) => {
   const handleEventClick = (info) => {
     const evento = info.event;
     // Obtener el resourceId de manera segura
-    const resourceId = evento.resourceId || (evento.getResources && evento.getResources()[0]?.id);
+    const resourceId =
+      evento.resourceId ||
+      (evento.getResources && evento.getResources()[0]?.id);
     const tecnico = tecnicos.find((t) => t.id === resourceId);
     const fechaInicio = new Date(evento.start);
     const fechaFin = new Date(evento.end);
@@ -2390,7 +2515,9 @@ const Calendar = ({ darkMode = false }) => {
     if (servicioId && typeof servicioId === "object" && servicioId.start) {
       const evento = servicioId;
       // Obtener el resourceId de manera segura
-      const resourceId = evento.resourceId || (evento.getResources && evento.getResources()[0]?.id);
+      const resourceId =
+        evento.resourceId ||
+        (evento.getResources && evento.getResources()[0]?.id);
       const tecnico = tecnicos.find((t) => t.id === resourceId);
       const fechaInicio = new Date(evento.start);
       const fechaFin = new Date(evento.end);
@@ -3099,22 +3226,78 @@ const Calendar = ({ darkMode = false }) => {
   // Manejador de eventos montados
   const handleEventDidMount = (info) => {
     try {
+      // Validar que el evento esté bien formado
+      if (!info.event || !info.event._def || !info.event._instance) {
+        console.warn("Event not properly formed:", info.event);
+        return;
+      }
+
       // Obtener recursos de manera segura
-      const eventResources = info.event.getResources ? info.event.getResources() : [];
+      const eventResources = info.event.getResources
+        ? info.event.getResources()
+        : [];
       const resourceIds = eventResources.map((r) => r.id);
+
+      // Aplicar clase de estado y color correctamente
+      let estado = info.event.extendedProps?.estado;
+      console.log("🔍 Detectando estado del evento:", {
+        eventoId: info.event.id,
+        estadoEnExtendedProps: info.event.extendedProps?.estado,
+        statusEnExtendedProps: info.event.extendedProps?.status,
+        backgroundColorActual: info.event.backgroundColor,
+        todoExtendedProps: info.event.extendedProps
+      });
+      
+      if (!estado && info.event.extendedProps?.status) {
+        // Usar la función mapStatusToEstado para convertir correctamente
+        estado = mapStatusToEstado(info.event.extendedProps.status);
+        console.log("🔄 Estado convertido desde status:", estado);
+      }
+      if (!estado) {
+        // Solo usar "pendiente" como fallback si realmente no hay ningún estado definido
+        // Verificar si el evento ya tiene colores asignados (lo que indicaría que tiene un estado válido)
+        if (!info.event.backgroundColor || info.event.backgroundColor === '#3788d8') {
+          estado = "pendiente";
+          console.log("⚠️ Usando pendiente como fallback - sin color o color por defecto");
+        } else {
+          // Intentar inferir el estado del color de fondo
+          const bgColor = info.event.backgroundColor;
+          switch(bgColor) {
+            case "#87c947": estado = "confirmado"; break;
+            case "#e74c3c": estado = "cancelado"; break;
+            case "#ffd54f": estado = "pendiente"; break;
+            case "#7f8c8d": estado = "facturado"; break;
+            case "#3498db": estado = "almuerzo"; break;
+            case "#9b59b6": estado = "especial"; break;
+            default: estado = "pendiente";
+          }
+          console.log("🎨 Estado inferido del color:", bgColor, "=>", estado);
+        }
+      } else {
+        console.log("✅ Estado encontrado directamente:", estado);
+      }
 
       console.log("Event mounted:", {
         id: info.event.id,
         title: info.event.title,
         resourceId: resourceIds,
-        resourceIdFromProp: info.event.resourceId, // También log del resourceId directo
         start: info.event.start,
-        extendedProps: info.event.extendedProps,
+        estado: estado,
+        backgroundColor: info.event.backgroundColor,
       });
 
+      // Asegurar que el estado está guardado en extendedProps
+      if (!info.event.extendedProps?.estado) {
+        info.event.setExtendedProp("estado", estado);
+      }
+
       // Validar que el evento tenga las propiedades necesarias
-      if (!info.event.display) {
-        info.event.setDisplay("auto");
+      try {
+        if (!info.event.display) {
+          info.event.setDisplay("auto");
+        }
+      } catch (displayError) {
+        console.warn("Error setting display property:", displayError);
       }
 
       // Ensure the event is draggable
@@ -3126,18 +3309,6 @@ const Calendar = ({ darkMode = false }) => {
       // Ensure drag cursor is shown
       info.el.style.cursor = "move";
 
-      // Aplicar clase de estado y color correctamente
-      let estado = info.event.extendedProps?.estado;
-      if (!estado && info.event.extendedProps?.status) {
-        estado =
-          info.event.extendedProps.status === "confirmed"
-            ? "confirmado"
-            : info.event.extendedProps.status;
-      }
-      if (!estado) {
-        estado = "pendiente";
-      }
-
       const claseEstado = `estado-${estado}`;
       if (!info.el.classList.contains(claseEstado)) {
         info.el.classList.add(claseEstado);
@@ -3145,9 +3316,43 @@ const Calendar = ({ darkMode = false }) => {
 
       // Siempre establecer el color de fondo basado en el estado
       const color = getColorByEstado(estado);
-      info.event.setProp("backgroundColor", color);
-      info.event.setProp("borderColor", color);
-      info.event.setProp("textColor", "white");
+      const textColor = estado === "pendiente" ? "#2c3e50" : "white";
+      
+      // Solo sobrescribir las propiedades del evento si es necesario
+      if (info.event.backgroundColor !== color) {
+        info.event.setProp("backgroundColor", color);
+      }
+      if (info.event.borderColor !== color) {
+        info.event.setProp("borderColor", color);
+      }
+      if (info.event.textColor !== textColor) {
+        info.event.setProp("textColor", textColor);
+      }
+
+      // FORZAR el color en el DOM directamente para evitar que FullCalendar lo sobrescriba
+      if (info.el) {
+        info.el.style.backgroundColor = color + " !important";
+        info.el.style.borderColor = color + " !important";
+        info.el.style.color = textColor + " !important";
+        
+        // También aplicar el color a todos los elementos hijos
+        const eventContent = info.el.querySelector('.fc-event-main');
+        if (eventContent) {
+          eventContent.style.backgroundColor = color + " !important";
+          eventContent.style.borderColor = color + " !important";
+          eventContent.style.color = textColor + " !important";
+        }
+
+        const eventTitle = info.el.querySelector('.fc-event-title');
+        if (eventTitle) {
+          eventTitle.style.color = textColor + " !important";
+        }
+
+        const eventTime = info.el.querySelector('.fc-event-time');
+        if (eventTime) {
+          eventTime.style.color = textColor + " !important";
+        }
+      }
 
       // Add custom CSS classes for better visibility - usar resourceId del evento
       const hasResource = info.event.resourceId || eventResources.length > 0;
@@ -3465,7 +3670,7 @@ const Calendar = ({ darkMode = false }) => {
   };
 
   useEffect(() => {
-    // Agregar estilos del menú contextual
+    // Agregar estilos del menú contextual y colores forzados de eventos
     const style = document.createElement("style");
     style.textContent = `
       .context-menu {
@@ -3504,6 +3709,74 @@ const Calendar = ({ darkMode = false }) => {
         height: 1px;
         background-color: #e0e0e0;
         margin: 4px 0;
+      }
+
+      /* Estilos forzados para eventos por estado */
+      .fc-event.estado-pendiente,
+      .fc-event.estado-pendiente .fc-event-main,
+      .fc-event.estado-pendiente .fc-event-main-frame {
+        background-color: #ffd54f !important;
+        border-color: #ffd54f !important;
+        color: #2c3e50 !important;
+      }
+
+      .fc-event.estado-confirmado,
+      .fc-event.estado-confirmado .fc-event-main,
+      .fc-event.estado-confirmado .fc-event-main-frame {
+        background-color: #87c947 !important;
+        border-color: #87c947 !important;
+        color: white !important;
+      }
+
+      .fc-event.estado-cancelado,
+      .fc-event.estado-cancelado .fc-event-main,
+      .fc-event.estado-cancelado .fc-event-main-frame {
+        background-color: #e74c3c !important;
+        border-color: #e74c3c !important;
+        color: white !important;
+      }
+
+      .fc-event.estado-facturado,
+      .fc-event.estado-facturado .fc-event-main,
+      .fc-event.estado-facturado .fc-event-main-frame {
+        background-color: #7f8c8d !important;
+        border-color: #7f8c8d !important;
+        color: white !important;
+      }
+
+      .fc-event.estado-almuerzo,
+      .fc-event.estado-almuerzo .fc-event-main,
+      .fc-event.estado-almuerzo .fc-event-main-frame {
+        background-color: #3498db !important;
+        border-color: #3498db !important;
+        color: white !important;
+      }
+
+      .fc-event.estado-especial,
+      .fc-event.estado-especial .fc-event-main,
+      .fc-event.estado-especial .fc-event-main-frame {
+        background-color: #9b59b6 !important;
+        border-color: #9b59b6 !important;
+        color: white !important;
+      }
+
+      /* Forzar colores en el texto de los eventos */
+      .fc-event.estado-pendiente .fc-event-title,
+      .fc-event.estado-pendiente .fc-event-time {
+        color: #2c3e50 !important;
+      }
+
+      .fc-event.estado-confirmado .fc-event-title,
+      .fc-event.estado-confirmado .fc-event-time,
+      .fc-event.estado-cancelado .fc-event-title,
+      .fc-event.estado-cancelado .fc-event-time,
+      .fc-event.estado-facturado .fc-event-title,
+      .fc-event.estado-facturado .fc-event-time,
+      .fc-event.estado-almuerzo .fc-event-title,
+      .fc-event.estado-almuerzo .fc-event-time,
+      .fc-event.estado-especial .fc-event-title,
+      .fc-event.estado-especial .fc-event-time {
+        color: white !important;
       }
     `;
     document.head.appendChild(style);
