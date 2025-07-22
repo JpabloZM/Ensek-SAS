@@ -1,0 +1,795 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { Calendar as FullCalendar } from "@fullcalendar/core";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import listPlugin from "@fullcalendar/list";
+import interactionPlugin from "@fullcalendar/interaction";
+import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
+import resourceTimeGridPlugin from "@fullcalendar/resource-timegrid";
+import allLocales from "@fullcalendar/core/locales-all";
+import adaptivePlugin from "@fullcalendar/adaptive";
+import Swal from "sweetalert2";
+import { mostrarAlerta } from "../../../utils/alertas";
+import { format, addDays, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
+import ServicesList from "../../../components/ServicesList";
+import "./Calendar.css";
+import useServices from "../../../hooks/useServices";
+import useTechnicians from "../../../hooks/useTechnicians";
+import { mapServiceTypeToSpanish, mapStatusToEstado } from "../../../utils/serviceMappers";
+import { userService } from "../../../services/userService";
+import { serviceService } from "../../../services/serviceService";
+
+const Calendar = ({ darkMode = false }) => {
+  // Resto del código de la función Calendar...
+
+  // Aquí están todas las funciones auxiliares
+  const handleAgregarTecnico = async () => {
+    if (formValues) {
+      try {
+        // Crear el técnico en la base de datos
+        const nuevoTecnicoDB = await userService.createTechnician({
+          name: formValues.nombre,
+          email: formValues.email,
+          phone: formValues.telefono,
+          role: "technician",
+        });
+
+        // Actualizar el estado local con el nuevo técnico
+        const tecnicosActuales = tecnicos;
+        const minOrder = Math.min(...tecnicosActuales.map((t) => t.order || 0));
+
+        const nuevoTecnico = {
+          id: nuevoTecnicoDB._id,
+          title: nuevoTecnicoDB.name,
+          email: nuevoTecnicoDB.email,
+          phone: nuevoTecnicoDB.phone,
+          order: minOrder - 1,
+        };
+
+        // Agregar el nuevo técnico al array y actualizar estado
+        setTecnicos([...tecnicosActuales, nuevoTecnico]);
+      } catch (error) {
+        console.error("Error al crear técnico:", error);
+        mostrarAlerta({
+          icon: "error",
+          title: "Error",
+          text: "No se pudo crear el técnico. Por favor, intente nuevamente.",
+          confirmButtonColor: "#87c947",
+        });
+      }
+    }
+  };
+
+  const handleDateSelect = async (selectInfo) => {
+    const tecnico = tecnicos.find((t) => t.id === selectInfo.resource.id);
+    const fechaInicio = new Date(selectInfo.start);
+    const fechaFin = new Date(selectInfo.end);
+    // Formatear hora para los inputs type="time"
+    function formatTimeInput(date) {
+      return date
+        .toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+        .padStart(5, "0");
+    }
+    const horaInicioDefault = formatTimeInput(fechaInicio);
+    const horaFinDefault = formatTimeInput(fechaFin);
+
+    const estadosServicio = {
+      confirmado: {
+        nombre: "Confirmado",
+        color: "#87c947",
+        icon: "fa-check",
+        gradient: "linear-gradient(135deg, #87c947, #66b417)",
+      },
+      cancelado: {
+        nombre: "Cancelado",
+        color: "#e74c3c",
+        icon: "fa-times",
+        gradient: "linear-gradient(135deg, #e74c3c, #c0392b)",
+      },
+      pendiente: {
+        nombre: "Pendiente",
+        color: "#ffd54f",
+        icon: "fa-clock",
+        gradient: "linear-gradient(135deg, #ffd54f, #f1c40f)",
+      },
+      facturado: {
+        nombre: "Facturado",
+        color: "#7f8c8d",
+        icon: "fa-file-invoice-dollar",
+        gradient: "linear-gradient(135deg, #95a5a6, #7f8c8d)",
+      },
+      almuerzo: {
+        nombre: "Hora de Almuerzo",
+        color: "#3498db",
+        icon: "fa-utensils",
+        gradient: "linear-gradient(135deg, #3498db, #2980b9)",
+      },
+      especial: {
+        nombre: "Situación Especial",
+        color: "#9b59b6",
+        icon: "fa-exclamation-circle",
+        gradient: "linear-gradient(135deg, #9b59b6, #8e44ad)",
+      },
+    };
+
+    const { value: formValues } = await mostrarAlerta({
+      title: "Nuevo Servicio",
+      html: `
+      <div id="servicioForm">
+        <div class="form-row">
+          <div class="input-group">
+            <label>Tipo de servicio</label>
+            <select id="nombre" class="form-field" required>
+              <option value="">Seleccionar tipo de servicio...</option>
+              <option value="pest-control">Control de Plagas</option>
+              <option value="gardening">Jardinería</option>
+              <option value="residential-fumigation">Fumigación Residencial</option>
+              <option value="commercial-fumigation">Fumigación Comercial</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Cliente</label>
+            <input type="text" id="clientName" class="form-field" placeholder="Nombre del cliente" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="clientEmail" class="form-field" placeholder="correo@ejemplo.com" required>
+          </div>
+          <div class="input-group">
+            <label>Teléfono</label>
+            <input type="tel" id="clientPhone" class="form-field" placeholder="Teléfono de contacto" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="input-group">
+            <label>Municipio</label>
+            <input type="text" id="municipality" class="form-field" placeholder="Municipio" required>
+          </div>
+          <div class="input-group">
+            <label>Barrio</label>
+            <input type="text" id="neighborhood" class="form-field" placeholder="Barrio o sector" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="input-group">
+            <label>Dirección</label>
+            <input type="text" id="streetAddress" class="form-field" placeholder="Calle/Carrera, número" required>
+          </div>
+          <div class="input-group">
+            <label>Especificaciones</label>
+            <input type="text" id="addressDetails" class="form-field" placeholder="Apto/Casa/Empresa/Referencias">
+          </div>
+        </div>
+        
+        <div class="form-row description-row">
+          <div class="input-group full-width">
+            <label>Descripción</label>
+            <textarea id="descripcion" class="form-field" placeholder="Descripción detallada del servicio" rows="3" required></textarea>
+          </div>
+        </div>
+        
+        <div class="form-row mt-2">
+          <div class="input-group full-width">
+            <label>Estado del servicio</label>
+            <div id="estadosContainer">
+              ${Object.entries(estadosServicio)
+                .map(
+                  ([key, estado]) => `
+                  <button 
+                    type="button" 
+                    class="estado-btn" 
+                    data-estado="${key}" 
+                    style="background: ${estado.gradient};"
+                  >
+                    <i class="fas ${estado.icon}"></i>
+                    ${estado.nombre}
+                  </button>
+                `
+                )
+                .join("")}
+            </div>
+            <input type="hidden" id="estadoServicio" value="">
+          </div>
+        </div>
+        
+        <div class="form-row tech-info">
+          <div class="input-group full-width">
+            <div class="tech-details-card">
+              <div class="tech-header">
+                <i class="fas fa-info-circle"></i>
+                <span>Información de Servicio</span>
+              </div>
+              <div class="tech-details-content">
+                <div class="tech-detail-item">
+                  <i class="fas fa-user"></i>
+                  <span>Técnico: <strong>${tecnico.title}</strong></span>
+                </div>
+                <div class="tech-time-row">
+                  <div class="tech-detail-item time-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Inicio: 
+                      <input type="time" id="horaInicio" class="time-input" value="${horaInicioDefault}" required>
+                    </span>
+                  </div>
+                  <div class="tech-detail-item time-item time-end">
+                    <i class="fas fa-hourglass-end"></i>
+                    <span>Fin: 
+                      <input type="time" id="horaFin" class="time-input" value="${horaFinDefault}" required>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <style>
+          #servicioForm {
+            padding: 15px 15px 5px 15px;
+            background-color: #2d3748;
+            border-radius: 10px;
+            width: 600px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
+          
+          .form-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            width: 100%;
+            gap: 20px;
+            box-sizing: border-box;
+          }
+          
+          .input-group {
+            display: flex;
+            flex-direction: column;
+            width: 270px;
+            max-width: 270px;
+            min-width: 270px;
+            box-sizing: border-box;
+          }
+          
+          .input-group.full-width {
+            width: 100%;
+            max-width: 100%;
+            min-width: 100%;
+          }
+          
+          .input-group label {
+            color: #87c947;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 14px;
+          }
+          
+          .form-field {
+            padding: 10px 12px;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            background-color: #1a202c;
+            color: white;
+            width: 100%;
+            height: 40px;
+            box-sizing: border-box;
+            font-size: 14px;
+            min-height: 40px;
+            text-align: left;
+          }
+          
+          .form-field::placeholder {
+            color: #718096;
+          }
+          
+          .form-field:focus {
+            border-color: #87c947;
+            outline: none;
+            box-shadow: 0 0 0 1px #87c947;
+          }
+          
+          textarea.form-field {
+            height: auto;
+            min-height: 80px;
+            resize: vertical;
+            width: 100%;
+            max-width: 100%;
+            min-width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            display: block;
+            margin: 0 auto;
+          }
+          
+          /* Específicamente para el textarea de descripción */
+          .description-row textarea.form-field {
+            width: 100%;
+            max-width: 560px;
+          }
+          
+          /* Estilos para los botones de estado */
+          #estadosContainer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+          }
+          
+          .estado-btn {
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: none;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.6;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          }
+          
+          .estado-btn i {
+            font-size: 14px;
+          }
+          
+          .estado-btn.active {
+            opacity: 1;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+          }
+          
+          /* Ajustes para el espaciado */
+          #servicioForm .form-row:last-of-type {
+            margin-bottom: 5px;
+          }
+          
+          .tech-info {
+            margin-top: 0;
+            margin-bottom: 10px;
+          }
+          
+          /* Tarjeta con detalles del técnico y horario */
+          .tech-details-card {
+            width: 100%;
+            background-color: #1a202c;
+            border-radius: 8px;
+            border-left: 4px solid #87c947;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            margin-top: 0;
+            margin-bottom: 0;
+          }
+          
+          .tech-header {
+            background-color: #22252f;
+            padding: 10px 15px;
+            color: #87c947;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #2d3748;
+            border-left: 4px solid #87c947;
+            margin-left: -4px;
+          }
+          
+          .tech-details-content {
+            padding: 10px 15px;
+          }
+          
+          .tech-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #a0aec0;
+            margin-bottom: 6px;
+            font-size: 14px;
+            line-height: 1.4;
+          }
+          
+          .tech-detail-item:last-child {
+            margin-bottom: 0;
+          }
+          
+          .tech-detail-item i {
+            color: #87c947;
+            width: 16px;
+            text-align: center;
+          }
+          
+          .tech-detail-item strong {
+            color: #e2e8f0;
+            font-weight: 500;
+          }
+          
+          .tech-time-row {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 30px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #2d3748;
+          }
+          
+          .tech-detail-item.time-item {
+            margin-bottom: 0;
+          }
+          
+          .tech-detail-item.time-end {
+            margin-left: 20px;
+          }
+          
+          /* Estilos para los campos de hora */
+          .time-input {
+            background-color: #2d3748;
+            border: 1px solid #4a5568;
+            border-radius: 4px;
+            color: #e2e8f0;
+            padding: 2px 5px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 5px;
+            width: 85px;
+          }
+          
+          .time-input:focus {
+            border-color: #87c947;
+            outline: none;
+            box-shadow: 0 0 0 1px #87c947;
+          }
+          
+          @media (max-width: 576px) {
+            .tech-time-row {
+              flex-direction: column;
+              gap: 6px;
+            }
+            
+            .tech-detail-item.time-item {
+              margin-bottom: 6px;
+            }
+          }
+          
+          /* Estilos para la fila de descripción */
+          .description-row {
+            padding: 0 15px;
+            box-sizing: border-box;
+            justify-content: center;
+            width: 100%;
+            display: flex;
+            align-items: center;
+          }
+          
+          .description-row .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 560px;
+            margin: 0 auto;
+          }
+          
+          .description-row .input-group label {
+            align-self: flex-start;
+            width: 100%;
+          }
+          
+          .mt-2 {
+            margin-top: 10px;
+          }
+          
+          /* Asegurar que todos los inputs tienen exactamente el mismo tamaño visual */
+          select.form-field, input.form-field {
+            min-width: 100%;
+            max-width: 100%;
+            width: 100%;
+          }
+        </style>
+      </div>
+    `,
+      showCancelButton: true,
+      confirmButtonText: "GUARDAR",
+      cancelButtonText: "CANCELAR",
+      confirmButtonColor: "#87c947",
+      cancelButtonColor: "#383a46",
+      background: "#1e1e2f",
+      color: "#ffffff",
+      buttonsStyling: true,
+      confirmButtonAriaLabel: "Guardar servicio",
+      cancelButtonAriaLabel: "Cancelar",
+      // borderRadius eliminado porque no es válido en SweetAlert2
+      customClass: {
+        popup: "swal2-popup-custom",
+        title: "swal2-title-custom",
+        confirmButton: "swal2-confirm-button swal2-styled",
+        cancelButton: "swal2-cancel-button swal2-styled",
+        htmlContainer: "swal2-html-custom",
+        actions: "swal2-actions-custom",
+      },
+      didOpen: () => {
+        // Añadir estilos adicionales al modal
+        const style = document.createElement("style");
+        style.innerHTML = `
+          .swal2-popup {
+            width: 660px !important;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            background-color: #1e1e2f !important;
+            border-radius: 15px !important;
+            max-width: 95vw;
+          }
+          .swal2-title {
+            font-size: 1.8rem !important;
+            margin-bottom: 1.5rem !important;
+            color: white !important;
+          }
+          .swal2-html-container {
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+          }
+          .swal2-actions {
+            margin-top: 1.5rem !important;
+            gap: 20px !important;
+            display: flex !important;
+            justify-content: center !important;
+            width: 100% !important;
+            padding: 0 !important;
+          }
+          .swal2-actions-custom {
+            width: 100% !important;
+            max-width: 520px !important;
+            margin: 0 auto !important;
+            display: flex !important;
+            justify-content: space-between !important;
+          }
+          .swal2-confirm-button {
+            flex: 1 !important; 
+            width: 230px !important;
+            min-width: 230px !important;
+            max-width: 230px !important;
+            padding: 0.8rem 1rem !important;
+            font-weight: 600 !important;
+            letter-spacing: 1px !important;
+            text-transform: uppercase !important;
+            border-radius: 10px !important;
+            box-shadow: 0 4px 8px rgba(135, 201, 71, 0.2) !important;
+          }
+          .swal2-cancel-button {
+            flex: 1 !important;
+            width: 230px !important;
+            min-width: 230px !important;
+            max-width: 230px !important;
+            padding: 0.8rem 1rem !important;
+            font-weight: 600 !important;
+            letter-spacing: 1px !important;
+            text-transform: uppercase !important;
+            border-radius: 10px !important;
+            color: #e2e8f0 !important;
+            background-color: #383a46 !important;
+          }
+          .swal2-confirm {
+            border-radius: 10px !important;
+            overflow: hidden !important;
+          }
+          button.swal2-confirm {
+            border-radius: 10px !important;
+          }
+          .swal2-styled.swal2-confirm {
+            border-radius: 10px !important;
+          }
+          .swal2-confirm *, .swal2-confirm.swal2-styled, .swal2-confirm.swal2-styled * {
+            border-radius: 10px !important;
+          }
+        `;
+        document.head.appendChild(style);
+
+        // Manejar los botones de estado
+        const btns = Swal.getPopup().querySelectorAll(".estado-btn");
+        btns.forEach((btn) => {
+          const estado = btn.dataset.estado;
+
+          // Agregar evento click
+          btn.addEventListener("click", () => {
+            // Remover estado activo de todos los botones
+            btns.forEach((b) => {
+              b.style.opacity = "0.6";
+              b.classList.remove("active");
+            });
+
+            // Activar el botón seleccionado
+            btn.style.opacity = "1";
+            btn.classList.add("active");
+
+            // Actualizar el valor del input oculto
+            document.getElementById("estadoServicio").value = estado;
+          });
+
+          // Efectos hover
+          btn.addEventListener("mouseover", () => {
+            if (!btn.classList.contains("active")) {
+              btn.style.opacity = "0.8";
+            }
+          });
+
+          btn.addEventListener("mouseout", () => {
+            if (!btn.classList.contains("active")) {
+              btn.style.opacity = "0.6";
+            }
+          });
+        });
+      },
+      preConfirm: () => {
+        const nombre = document.getElementById("nombre").value;
+        const clientName = document.getElementById("clientName").value;
+        const clientEmail = document.getElementById("clientEmail").value;
+        const clientPhone = document.getElementById("clientPhone").value;
+        const municipality = document.getElementById("municipality").value;
+        const neighborhood = document.getElementById("neighborhood").value;
+        const streetAddress = document.getElementById("streetAddress").value;
+        const addressDetails =
+          document.getElementById("addressDetails").value || "";
+        const descripcion = document.getElementById("descripcion").value;
+        const estado = document.getElementById("estadoServicio").value;
+
+        // Construir dirección completa
+        const address =
+          `${municipality}, ${neighborhood}, ${streetAddress}, ${addressDetails}`.trim();
+
+        if (
+          !nombre ||
+          !clientName ||
+          !clientEmail ||
+          !clientPhone ||
+          !municipality ||
+          !neighborhood ||
+          !streetAddress ||
+          !descripcion
+        ) {
+          mostrarAlerta({
+            icon: "error",
+            title: "Error",
+            text: "Por favor complete todos los campos requeridos",
+            confirmButtonColor: "#87c947",
+            background: "#f8ffec",
+            color: "#004122",
+          });
+          return false;
+        }
+
+        if (!estado) {
+          mostrarAlerta({
+            icon: "error",
+            title: "Error",
+            text: "Por favor seleccione un estado para el servicio",
+            confirmButtonColor: "#87c947",
+            background: "#f8ffec",
+            color: "#004122",
+          });
+          return false;
+        }
+
+        const serviceTypes = {
+          "pest-control": "Control de Plagas",
+          gardening: "Jardinería",
+          "residential-fumigation": "Fumigación Residencial",
+          "commercial-fumigation": "Fumigación Comercial",
+        };
+
+        return {
+          nombre: serviceTypes[nombre] || nombre, // Nombre en español para mostrar
+          serviceType: nombre, // Valor original para el backend
+          descripcion,
+          clientName,
+          clientEmail,
+          clientPhone,
+          address,
+          estado,
+          color: estadosServicio[estado].color,
+        };
+      },
+    });
+
+    if (formValues) {
+      try {
+        const calendarApi = selectInfo.view.calendar;
+        calendarApi.unselect();
+
+        // Usar la fecha seleccionada y las horas del formulario para crear el evento
+        const selectedDate = new Date(selectInfo.start);
+        const [hIni, mIni] = document.getElementById("horaInicio").value.split(":");
+        const [hFin, mFin] = document.getElementById("horaFin").value.split(":");
+        const start = new Date(selectedDate);
+        start.setHours(Number(hIni), Number(mIni), 0, 0);
+        const end = new Date(selectedDate);
+        end.setHours(Number(hFin), Number(mFin), 0, 0);
+
+        // Determinar el color de fondo y el color de texto
+        const bgColor = formValues.color;
+        const txtColor = "white";
+
+        // Mapear estado UI a status backend
+        const estadoToStatus = {
+          confirmado: "confirmed",
+          cancelado: "cancelled",
+          pendiente: "pending",
+          facturado: "invoiced",
+          almuerzo: "lunch",
+          especial: "special",
+        };
+        const statusForBackend = estadoToStatus[formValues.estado] || formValues.estado;
+
+        // Crear un nuevo objeto con los datos del servicio
+        const nuevoServicio = {
+          clientName: formValues.clientName,
+          clientEmail: formValues.clientEmail,
+          clientPhone: formValues.clientPhone,
+          address: formValues.address, // Dirección completa
+          municipality: formValues.municipality,
+          neighborhood: formValues.neighborhood,
+          streetAddress: formValues.streetAddress,
+          addressDetails: formValues.addressDetails,
+          serviceType: formValues.serviceType,
+          descripcion: formValues.descripcion,
+          document: "1234567890", // Valor por defecto
+          preferredDate: start.toISOString(),
+          isFromCalendar: true, // Indicar que viene del calendario para asignarlo directamente
+          technicianId: selectInfo.resource.id, // Incluir el ID del técnico seleccionado
+          estado: formValues.estado, // Estado en español para UI
+          status: statusForBackend, // Estado en inglés para el backend
+        };
+
+        // Crear objeto de datos para el servicio
+        const serviceData = {
+          ...nuevoServicio,
+          preferredDate: nuevoServicio.preferredDate || currentDate,
+          document: nuevoServicio.document || "1234567890",
+          status: nuevoServicio.status,
+          technician: nuevoServicio.technicianId || null
+        };
+
+        // Resto de la función handleDateSelect...
+        // (Incluir código para crear el servicio, añadir evento al calendario, etc.)
+
+      } catch (error) {
+        console.error("Error al crear servicio:", error);
+        mostrarAlerta({
+          icon: "error",
+          title: "Error",
+          text: "No se pudo crear el servicio. Por favor, intente nuevamente.",
+          confirmButtonColor: "#87c947",
+        });
+      }
+    }
+  };
+
+  // Aquí van el resto de las funciones y el return del componente...
+
+  return (
+    <div className={`calendar-container ${darkMode ? "dark-theme" : ""}`}>
+      {/* Contenido del calendario */}
+    </div>
+  );
+};
+
+export default Calendar;

@@ -59,6 +59,14 @@ const serviceRequestSchema = new mongoose.Schema(
       type: Date,
       required: [true, "Please provide a preferred date"],
     },
+    scheduledStart: {
+      type: Date,
+      required: false,
+    },
+    scheduledEnd: {
+      type: Date,
+      required: false,
+    },
     status: {
       type: String,
       enum: ["pending", "confirmed", "completed", "cancelled"],

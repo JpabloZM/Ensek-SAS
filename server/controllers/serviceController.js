@@ -216,6 +216,8 @@ export const getServices = async (req, res) => {
       serviceType: req.serviceType,
       description: req.description,
       preferredDate: req.preferredDate,
+      scheduledStart: req.scheduledStart, // ¡AGREGAR ESTE CAMPO!
+      scheduledEnd: req.scheduledEnd,     // ¡AGREGAR ESTE CAMPO!
       status: req.status,
       technician: req.technician || null,
       technicians: req.technicians || [],
@@ -268,6 +270,8 @@ export const createService = async (req, res) => {
       serviceType,
       description,
       preferredDate,
+      scheduledStart,
+      scheduledEnd,
       technician,
       technicians,
     } = req.body;
@@ -302,6 +306,8 @@ export const createService = async (req, res) => {
       serviceType,
       description: description || "",
       preferredDate: new Date(preferredDate),
+      scheduledStart: scheduledStart ? new Date(scheduledStart) : null,
+      scheduledEnd: scheduledEnd ? new Date(scheduledEnd) : null,
       status: "pending",
       technician: technician || null,
       technicians: technicians || [],

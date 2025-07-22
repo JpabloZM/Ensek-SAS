@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/inventory";
+const API_URL = "http://localhost:5001/api/inventory";
 
 const getAuthConfig = () => {
   const user = JSON.parse(localStorage.getItem("user"));

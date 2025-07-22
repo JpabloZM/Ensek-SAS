@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/users";
+const API_URL = "http://localhost:5001/api/users";
 
 // Get auth config with token
 const getAuthConfig = () => {

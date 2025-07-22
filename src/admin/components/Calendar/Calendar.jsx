@@ -24,6 +24,92 @@ import "./styles/dark-mode-form-fields.css"; // Estilos para campos de formulari
 import "./styles/now-indicator.css"; // Estilos para el indicador de hora actual
 
 const Calendar = ({ darkMode = false }) => {
+  // Manejador para el drop externo en el calendario (drag & drop de servicios)
+  const handleExternalDrop = (info) => {
+    // Puedes personalizar la lógica aquí según tu modelo de datos
+    // Por defecto, solo muestra una alerta y recarga eventos
+    mostrarAlerta({
+      icon: "info",
+      title: "Servicio asignado",
+      text: "Se ha asignado un servicio al calendario.",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+    // Aquí podrías agregar el servicio a eventos si tienes la lógica
+    setEventos((prev) => [...prev]); // Forzar refresco visual
+  };
+  // Render personalizado para mostrar nombre, tipo de servicio y hora en cada evento
+  // Función para traducir el tipo de servicio si es necesario
+
+  const renderEventContent = (eventInfo) => {
+    const clientName =
+      eventInfo.event.extendedProps.clientName ||
+      eventInfo.event.extendedProps.cliente ||
+      "";
+    let serviceTypeRaw =
+      eventInfo.event.extendedProps.serviceType ||
+      eventInfo.event.extendedProps.nombre;
+    if (!serviceTypeRaw && eventInfo.event.title) {
+      const parts = eventInfo.event.title.split(" - ");
+      if (
+        parts.length === 2 &&
+        clientName &&
+        parts[1].trim() === clientName.trim()
+      ) {
+        serviceTypeRaw = parts[0];
+      }
+    }
+    const serviceType = serviceTypeRaw
+      ? mapServiceTypeToSpanish(serviceTypeRaw)
+      : "Sin tipo";
+    // Horario inicio y fin
+    let startTime = "";
+    let endTime = "";
+    if (eventInfo.event.start) {
+      const dateObj = new Date(eventInfo.event.start);
+      startTime = dateObj.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    if (eventInfo.event.end) {
+      const dateObj = new Date(eventInfo.event.end);
+      endTime = dateObj.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    // Forzar color de texto blanco
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          padding: "2px 0",
+          color: "white",
+        }}
+      >
+        <span style={{ fontWeight: "bold" }}>{clientName}</span>
+        <span style={{ fontSize: "0.95em" }}>{serviceType}</span>
+        <span style={{ fontSize: "0.9em" }}>
+          {startTime} - {endTime}
+        </span>
+      </div>
+    );
+  };
+  useEffect(() => {
+    // Forzar el indicador de hora detrás de los eventos
+    const style = document.createElement("style");
+    style.innerHTML = `
+      .fc-timegrid-now-indicator-line { z-index: 0 !important; }
+      .fc-event, .fc-timegrid-event { z-index: 2 !important; }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
   const { services, loading, error, updateService, getAllServices } =
     useServices();
   const [serviciosPendientes, setServiciosPendientes] = useState([]);
@@ -172,22 +258,35 @@ const Calendar = ({ darkMode = false }) => {
     // Procesar servicios pendientes - solo incluir los que NO tienen técnico asignado
     const pendingServices = servicesData
       .filter((service) => service.status === "pending" && !service.technician)
-      .map((service) => ({
-        _id: service._id,
-        id: service._id,
-        nombre: mapServiceTypeToSpanish(service.serviceType),
-        descripcion: service.description || "",
-        duracion: service.duration || 60,
-        color: "#ffd54f",
-        estado: service.status || "pendiente",
-        clientName: service.name,
-        clientEmail: service.email,
-        clientPhone: service.phone,
-        address: service.address,
-        preferredDate: service.preferredDate,
-        updatedAt: service.updatedAt,
-        createdAt: service.createdAt,
-      }));
+      .map((service) => {
+        // Calcular duración basada en scheduledStart/End
+        let calculatedDuration = 60; // default 60 minutos
+        if (service.scheduledStart && service.scheduledEnd) {
+          const start = new Date(service.scheduledStart);
+          const end = new Date(service.scheduledEnd);
+          calculatedDuration = Math.round((end - start) / (1000 * 60)); // diferencia en minutos
+          console.log(`Service ${service._id}: scheduledStart=${service.scheduledStart}, scheduledEnd=${service.scheduledEnd}, duration=${calculatedDuration} minutes`);
+        }
+
+        return {
+          _id: service._id,
+          id: service._id,
+          nombre: mapServiceTypeToSpanish(service.serviceType),
+          descripcion: service.description || "",
+          duracion: calculatedDuration,
+          color: "#ffd54f",
+          estado: service.status || "pendiente",
+          clientName: service.name,
+          clientEmail: service.email,
+          clientPhone: service.phone,
+          address: service.address,
+          preferredDate: service.preferredDate,
+          scheduledStart: service.scheduledStart,
+          scheduledEnd: service.scheduledEnd,
+          updatedAt: service.updatedAt,
+          createdAt: service.createdAt,
+        };
+      });
 
     console.log("Pending services:", pendingServices);
     setServiciosPendientes(pendingServices);
@@ -203,17 +302,36 @@ const Calendar = ({ darkMode = false }) => {
         return false;
       })
       .map((service) => {
+        // Calcular fechas de inicio y fin correctamente
+        let startDate, endDate;
+        
+        if (service.scheduledStart && service.scheduledEnd) {
+          // Si tenemos fechas programadas específicas, usarlas
+          startDate = service.scheduledStart;
+          endDate = service.scheduledEnd;
+        } else if (service.preferredDate) {
+          // Si solo tenemos fecha preferida, calcular duración basada en scheduledStart/End si existen
+          startDate = service.preferredDate;
+          if (service.scheduledStart && service.scheduledEnd) {
+            const duration = new Date(service.scheduledEnd) - new Date(service.scheduledStart);
+            endDate = new Date(new Date(service.preferredDate).getTime() + duration).toISOString();
+          } else {
+            // Fallback a 1 hora si no hay más información
+            endDate = new Date(new Date(service.preferredDate).getTime() + 60 * 60 * 1000).toISOString();
+          }
+        } else {
+          // Fallback si no hay fechas
+          const now = new Date();
+          startDate = now.toISOString();
+          endDate = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+        }
+
         // Create a properly formatted calendar event
         const event = {
           id: service._id,
           title: mapServiceTypeToSpanish(service.serviceType),
-          // Use scheduledStart/End for confirmed services, preferredDate for pending
-          start: service.scheduledStart || service.preferredDate,
-          end:
-            service.scheduledEnd ||
-            new Date(
-              new Date(service.preferredDate).getTime() + 60 * 60 * 1000
-            ).toISOString(),
+          start: startDate,
+          end: endDate,
           // Set resourceId only for confirmed services
           ...(service.technician && { resourceId: service.technician }),
           backgroundColor: getServiceColor(service.status),
@@ -231,9 +349,22 @@ const Calendar = ({ darkMode = false }) => {
             clientEmail: service.email,
             direccion: service.address,
             address: service.address,
+            scheduledStart: service.scheduledStart,
+            scheduledEnd: service.scheduledEnd,
           },
         };
-        console.log("Created calendar event:", event);
+        
+        // Log para debugging
+        const durationMinutes = Math.round((new Date(endDate) - new Date(startDate)) / (1000 * 60));
+        console.log(`Created calendar event for service ${service._id}:`, {
+          title: event.title,
+          start: startDate,
+          end: endDate,
+          durationMinutes: durationMinutes,
+          scheduledStart: service.scheduledStart,
+          scheduledEnd: service.scheduledEnd
+        });
+        
         return event;
       });
 
@@ -599,13 +730,15 @@ const Calendar = ({ darkMode = false }) => {
       const currentDate = new Date().toISOString();
       // Asegurarse de que todos los campos obligatorios estén presentes
       const serviceData = {
-        name: nuevoServicio.clientName,
-        email: nuevoServicio.clientEmail,
-        phone: nuevoServicio.clientPhone,
+        name: nuevoServicio.name || nuevoServicio.clientName,
+        email: nuevoServicio.email || nuevoServicio.clientEmail,
+        phone: nuevoServicio.phone || nuevoServicio.clientPhone,
         address: nuevoServicio.address || "No especificada",
         serviceType: nuevoServicio.serviceType || "Control de Plagas", // Valor por defecto más común
-        description: nuevoServicio.descripcion || "",
+        description: nuevoServicio.description || nuevoServicio.descripcion || "",
         preferredDate: nuevoServicio.preferredDate || currentDate,
+        scheduledStart: nuevoServicio.scheduledStart || null, // IMPORTANTE: Mantener los campos de horario
+        scheduledEnd: nuevoServicio.scheduledEnd || null, // IMPORTANTE: Mantener los campos de horario
         // Asegurarse de que document siempre tenga un valor válido
         document: nuevoServicio.document || "1234567890",
         // Usar el estado explícito si viene del calendario, o usar el mapeo
@@ -628,6 +761,20 @@ const Calendar = ({ darkMode = false }) => {
       };
 
       console.log("Creando nuevo servicio con datos:", serviceData);
+      
+      // Debug: Log específico de los campos de tiempo
+      console.log("=== DEBUG HORARIOS EN handleAgregarServicio ===");
+      console.log("scheduledStart original:", nuevoServicio.scheduledStart);
+      console.log("scheduledEnd original:", nuevoServicio.scheduledEnd);
+      console.log("scheduledStart en serviceData:", serviceData.scheduledStart);
+      console.log("scheduledEnd en serviceData:", serviceData.scheduledEnd);
+      if (serviceData.scheduledStart && serviceData.scheduledEnd) {
+        const startTime = new Date(serviceData.scheduledStart);
+        const endTime = new Date(serviceData.scheduledEnd);
+        const durationMinutes = (endTime - startTime) / (1000 * 60);
+        console.log("Duración calculada (minutos):", durationMinutes);
+      }
+      console.log("=== FIN DEBUG HORARIOS ===");
 
       // Create service in database
       console.log("=== CALENDAR - ANTES DE CREAR SERVICIO ===");
@@ -657,7 +804,17 @@ const Calendar = ({ darkMode = false }) => {
         id: createdService._id,
         nombre: mapServiceTypeToSpanish(createdService.serviceType),
         descripcion: createdService.description,
-        duracion: 60, // Default duration in minutes
+        // Calcular duración basada en scheduledStart/End si están disponibles
+        duracion: (() => {
+          if (createdService.scheduledStart && createdService.scheduledEnd) {
+            const start = new Date(createdService.scheduledStart);
+            const end = new Date(createdService.scheduledEnd);
+            const calculatedDuration = Math.round((end - start) / (1000 * 60));
+            console.log(`Duración calculada para servicio ${createdService._id}: ${calculatedDuration} minutos`);
+            return calculatedDuration;
+          }
+          return 60; // Default duration in minutes solo si no hay horarios específicos
+        })(),
         color: getServiceColor(createdService.status), // Color basado en estado
         estado: mapStatusToEstado(createdService.status),
         clientName: createdService.name,
@@ -665,6 +822,8 @@ const Calendar = ({ darkMode = false }) => {
         clientPhone: createdService.phone,
         address: createdService.address,
         preferredDate: createdService.preferredDate || currentDate,
+        scheduledStart: createdService.scheduledStart, // Mantener campos de horario
+        scheduledEnd: createdService.scheduledEnd, // Mantener campos de horario
         _id: createdService._id,
         technician: createdService.technician || null, // Incluir técnico si existe
       };
@@ -1380,6 +1539,13 @@ const Calendar = ({ darkMode = false }) => {
     const fechaInicio = new Date(selectInfo.start);
     const fechaFin = new Date(selectInfo.end);
 
+    // Debug: Log the selected time range
+    console.log("Selección de tiempo en calendario:", {
+      inicio: fechaInicio.toLocaleString(),
+      fin: fechaFin.toLocaleString(),
+      duracionMinutos: (fechaFin - fechaInicio) / (1000 * 60),
+    });
+
     const estadosServicio = {
       confirmado: {
         nombre: "Confirmado",
@@ -1800,7 +1966,7 @@ const Calendar = ({ darkMode = false }) => {
       buttonsStyling: true,
       confirmButtonAriaLabel: "Guardar servicio",
       cancelButtonAriaLabel: "Cancelar",
-      borderRadius: "10px",
+      // borderRadius eliminado porque no es válido en SweetAlert2
       customClass: {
         popup: "swal2-popup-custom",
         title: "swal2-title-custom",
@@ -1994,50 +2160,64 @@ const Calendar = ({ darkMode = false }) => {
     });
 
     if (formValues) {
-      const calendarApi = selectInfo.view.calendar;
-      calendarApi.unselect();
-
-      let nuevoEvento;
-
-      // Primero crear el servicio en la base de datos
       try {
-        // Mapear estado seleccionado a su equivalente en inglés para el backend
-        let statusForBackend = "confirmed"; // Por defecto confirmado
-        if (formValues.estado === "pendiente") statusForBackend = "pending";
-        if (formValues.estado === "cancelado") statusForBackend = "cancelled";
-        if (formValues.estado === "facturado") statusForBackend = "billed";
-        if (formValues.estado === "especial") statusForBackend = "special";
-        if (formValues.estado === "almuerzo") statusForBackend = "lunch";
+        const calendarApi = selectInfo.view.calendar;
+        calendarApi.unselect();
+
+        // Usar la fecha y hora seleccionada directamente del selectInfo
+        const start = new Date(selectInfo.start);
+        const end = new Date(selectInfo.end);
+
+        // Debug: Verificar que las fechas se mantienen correctas
+        console.log("Creando evento con fechas:", {
+          inicio: start.toLocaleString(),
+          fin: end.toLocaleString(),
+          duracionMinutos: (end - start) / (1000 * 60),
+        });
+
+        // Determinar el color de fondo y el color de texto
+        const bgColor = formValues.color;
+        const txtColor = "white";
 
         // Crear un nuevo objeto con los datos del servicio
         const nuevoServicio = {
-          clientName: formValues.clientName,
-          clientEmail: formValues.clientEmail,
-          clientPhone: formValues.clientPhone,
+          name: formValues.clientName, // Backend espera 'name', no 'clientName'
+          email: formValues.clientEmail, // Backend espera 'email', no 'clientEmail'  
+          phone: formValues.clientPhone, // Backend espera 'phone', no 'clientPhone'
           address: formValues.address, // Dirección completa
-          municipality: document.getElementById("municipality").value,
-          neighborhood: document.getElementById("neighborhood").value,
-          streetAddress: document.getElementById("streetAddress").value,
-          addressDetails: document.getElementById("addressDetails").value || "",
+          municipality: formValues.municipality,
+          neighborhood: formValues.neighborhood,
+          streetAddress: formValues.streetAddress,
+          addressDetails: formValues.addressDetails,
           serviceType: formValues.serviceType,
-          descripcion: formValues.descripcion,
+          description: formValues.descripcion, // Backend espera 'description', no 'descripcion'
           document: "1234567890", // Valor por defecto
-          preferredDate: selectInfo.start.toISOString(),
+          preferredDate: start.toISOString(),
+          scheduledStart: start.toISOString(), // Agregar hora de inicio específica
+          scheduledEnd: end.toISOString(), // Agregar hora de fin específica
           isFromCalendar: true, // Indicar que viene del calendario para asignarlo directamente
           technicianId: selectInfo.resource.id, // Incluir el ID del técnico seleccionado
           estado: formValues.estado, // Estado en español para UI
-          status: statusForBackend, // Estado en inglés para el backend
+          status: formValues.estado, // Usar el mismo valor para status
         };
+
+        // Debug: Log detallado de los datos del servicio
+        console.log("=== DATOS DEL SERVICIO A ENVIAR ===");
+        console.log("Objeto completo nuevoServicio:", nuevoServicio);
+        console.log("scheduledStart:", nuevoServicio.scheduledStart);
+        console.log("scheduledEnd:", nuevoServicio.scheduledEnd);
+        console.log("Duración calculada (minutos):", (end - start) / (1000 * 60));
+        console.log("=== FIN DEBUG SERVICIO ===");
 
         // Guardar el servicio en la base de datos
         const createdService = await handleAgregarServicio(nuevoServicio);
 
         // Crear evento con la clase correcta para el estado y el ID del servicio creado
-        nuevoEvento = {
+        const nuevoEvento = {
           id: createdService ? createdService._id : `evento-${Date.now()}`,
           title: formValues.nombre,
-          start: selectInfo.start,
-          end: selectInfo.end,
+          start,
+          end,
           resourceId: selectInfo.resource.id,
           extendedProps: {
             descripcion: formValues.descripcion,
@@ -2046,29 +2226,46 @@ const Calendar = ({ darkMode = false }) => {
             clientEmail: formValues.clientEmail,
             clientPhone: formValues.clientPhone,
             address: formValues.address,
-            municipality: document.getElementById("municipality").value,
-            neighborhood: document.getElementById("neighborhood").value,
-            streetAddress: document.getElementById("streetAddress").value,
-            addressDetails:
-              document.getElementById("addressDetails").value || "",
+            municipality: formValues.municipality,
+            neighborhood: formValues.neighborhood,
+            streetAddress: formValues.streetAddress,
+            addressDetails: formValues.addressDetails,
             serviceType: formValues.serviceType,
             serviceId: createdService ? createdService._id : null,
+            scheduledStart: start.toISOString(), // Agregar campos de horario específicos
+            scheduledEnd: end.toISOString(), // Agregar campos de horario específicos
+            horaInicio: start.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            }),
+            horaFin: end.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            }),
           },
           backgroundColor: createdService
-            ? getServiceColor(createdService.status)
-            : formValues.color,
+            ? getColorByEstado(formValues.estado)
+            : bgColor,
           borderColor: createdService
-            ? getServiceColor(createdService.status)
-            : formValues.color,
-          textColor: "white",
+            ? getColorByEstado(formValues.estado)
+            : bgColor,
+          textColor: txtColor,
           className: `estado-${formValues.estado}`,
           display: "block",
         };
 
-        console.log("Event created:", nuevoEvento);
-        console.log("Technicians state:", tecnicos);
+        // Debug: Log detallado del evento que se va a crear
+        console.log("=== EVENTO A CREAR EN CALENDARIO ===");
+        console.log("nuevoEvento completo:", nuevoEvento);
+        console.log("start:", nuevoEvento.start);
+        console.log("end:", nuevoEvento.end);
+        console.log("Duración en minutos:", (new Date(nuevoEvento.end) - new Date(nuevoEvento.start)) / (1000 * 60));
+        console.log("scheduledStart en extendedProps:", nuevoEvento.extendedProps.scheduledStart);
+        console.log("scheduledEnd en extendedProps:", nuevoEvento.extendedProps.scheduledEnd);
+        console.log("=== FIN DEBUG EVENTO ===");
 
-        // Agregar evento al estado
         setEventos((prevEventos) => {
           const eventosActualizados = [...prevEventos, nuevoEvento];
           localStorage.setItem("eventos", JSON.stringify(eventosActualizados));
@@ -2077,7 +2274,6 @@ const Calendar = ({ darkMode = false }) => {
 
         calendarApi.addEvent(nuevoEvento);
 
-        // Mostrar una alerta de éxito
         mostrarAlerta({
           icon: "success",
           title: "Servicio creado",
@@ -2099,7 +2295,9 @@ const Calendar = ({ darkMode = false }) => {
 
   const handleEventClick = (info) => {
     const evento = info.event;
-    const tecnico = tecnicos.find((t) => t.id === evento.getResources()[0]?.id);
+    // Obtener el resourceId de manera segura
+    const resourceId = evento.resourceId || (evento.getResources && evento.getResources()[0]?.id);
+    const tecnico = tecnicos.find((t) => t.id === resourceId);
     const fechaInicio = new Date(evento.start);
     const fechaFin = new Date(evento.end);
 
@@ -2191,9 +2389,9 @@ const Calendar = ({ darkMode = false }) => {
     // Si se pasa un evento del calendario (objeto con propiedades de FullCalendar)
     if (servicioId && typeof servicioId === "object" && servicioId.start) {
       const evento = servicioId;
-      const tecnico = tecnicos.find(
-        (t) => t.id === evento.getResources()[0]?.id
-      );
+      // Obtener el resourceId de manera segura
+      const resourceId = evento.resourceId || (evento.getResources && evento.getResources()[0]?.id);
+      const tecnico = tecnicos.find((t) => t.id === resourceId);
       const fechaInicio = new Date(evento.start);
       const fechaFin = new Date(evento.end);
 
@@ -2885,8 +3083,14 @@ const Calendar = ({ darkMode = false }) => {
       })
       .map((event, idx) => ({
         ...event,
-        id: typeof event.id === "string" ? event.id : `evento-${idx}-${Date.now()}`,
-        resourceId: typeof event.resourceId === "string" ? event.resourceId : String(event.resourceId),
+        id:
+          typeof event.id === "string"
+            ? event.id
+            : `evento-${idx}-${Date.now()}`,
+        resourceId:
+          typeof event.resourceId === "string"
+            ? event.resourceId
+            : String(event.resourceId),
         editable: true,
         display: event.display || "auto",
       }));
@@ -2895,10 +3099,15 @@ const Calendar = ({ darkMode = false }) => {
   // Manejador de eventos montados
   const handleEventDidMount = (info) => {
     try {
+      // Obtener recursos de manera segura
+      const eventResources = info.event.getResources ? info.event.getResources() : [];
+      const resourceIds = eventResources.map((r) => r.id);
+
       console.log("Event mounted:", {
         id: info.event.id,
         title: info.event.title,
-        resourceId: info.event.getResources().map((r) => r.id),
+        resourceId: resourceIds,
+        resourceIdFromProp: info.event.resourceId, // También log del resourceId directo
         start: info.event.start,
         extendedProps: info.event.extendedProps,
       });
@@ -2909,49 +3118,48 @@ const Calendar = ({ darkMode = false }) => {
       }
 
       // Ensure the event is draggable
-      info.el.setAttribute('draggable', 'true');
-      
+      info.el.setAttribute("draggable", "true");
+
       // Fix pointer events to ensure dragging works
-      info.el.style.pointerEvents = 'auto';
-      
+      info.el.style.pointerEvents = "auto";
+
       // Ensure drag cursor is shown
-      info.el.style.cursor = 'move';
+      info.el.style.cursor = "move";
 
-      // Aplicar clase de estado si no está presente
-      const estado =
-        info.event.extendedProps?.estado ||
-        (info.event.extendedProps?.status === "confirmed"
-          ? "confirmado"
-          : "pendiente");
-
-      if (estado) {
-        const claseEstado = `estado-${estado}`;
-        if (!info.el.classList.contains(claseEstado)) {
-          info.el.classList.add(claseEstado);
-        }
-
-        // Establecer el color de fondo basado en el estado si no se ha establecido
-        if (!info.event.backgroundColor) {
-          const color = getColorByEstado(estado);
-          info.event.setProp("backgroundColor", color);
-          info.event.setProp("borderColor", color);
-          info.event.setProp("textColor", "white");
-        }
+      // Aplicar clase de estado y color correctamente
+      let estado = info.event.extendedProps?.estado;
+      if (!estado && info.event.extendedProps?.status) {
+        estado =
+          info.event.extendedProps.status === "confirmed"
+            ? "confirmado"
+            : info.event.extendedProps.status;
+      }
+      if (!estado) {
+        estado = "pendiente";
       }
 
-      // Add custom CSS classes for better visibility
-      if (info.event.getResources().length > 0) {
+      const claseEstado = `estado-${estado}`;
+      if (!info.el.classList.contains(claseEstado)) {
+        info.el.classList.add(claseEstado);
+      }
+
+      // Siempre establecer el color de fondo basado en el estado
+      const color = getColorByEstado(estado);
+      info.event.setProp("backgroundColor", color);
+      info.event.setProp("borderColor", color);
+      info.event.setProp("textColor", "white");
+
+      // Add custom CSS classes for better visibility - usar resourceId del evento
+      const hasResource = info.event.resourceId || eventResources.length > 0;
+      if (hasResource) {
         info.el.classList.add("assigned-event");
       }
 
       // Fix for making sure technician events are visible
-      if (
-        info.event.getResources().length > 0 &&
-        !info.el.classList.contains("fc-event-assigned")
-      ) {
+      if (hasResource && !info.el.classList.contains("fc-event-assigned")) {
         info.el.classList.add("fc-event-assigned");
       }
-      
+
       // Ensure the event is registered as draggable by FullCalendar
       info.el.classList.add("fc-event-draggable");
     } catch (error) {
@@ -3101,51 +3309,9 @@ const Calendar = ({ darkMode = false }) => {
       background: "#f8ffec",
       color: "#004122",
     });
-  };
-
-  // Manejar cuando se arrastra un servicio desde fuera del calendario
-  const handleExternalDrop = (info) => {
-    // Crear un nuevo evento a partir del elemento arrastrado
-    const servicioData = JSON.parse(
-      info.draggedEl.getAttribute("data-servicio")
-    );
-    const newEvento = {
-      id: `evento-${Date.now()}`,
-      title: servicioData.titulo,
-      start: info.date,
-      end: new Date(info.date.getTime() + 60 * 60 * 1000),
-      backgroundColor: getColorByEstado(servicioData.estado),
-      borderColor: getColorByEstado(servicioData.estado),
-      textColor: "white",
-      className: `estado-${servicioData.estado}`, // Usar className en lugar de classNames
-      extendedProps: {
-        ...servicioData.extendedProps,
-        serviceId: servicioData._id, // Store the real MongoDB ID
-        estado: servicioData.estado,
-        description: servicioData.descripcion,
-        clienteId: servicioData.clienteId,
-        resourceId: info.resource?.id || null,
-      },
-    };
-
-    // Agregar el nuevo evento a tu estado
-    const updatedEventos = [...eventos, newEvento];
-    setEventos(updatedEventos);
-
-    // Guardar en localStorage o API
-    localStorage.setItem("eventos", JSON.stringify(updatedEventos));
-
-    // Notificar al usuario
-    mostrarAlerta({
-      icon: "success",
-      title: "Servicio asignado",
-      text: `El servicio ha sido asignado al calendario.`,
-      timer: 2000,
-      timerProgressBar: true,
-    });
 
     // Opcional: remover el servicio de los pendientes si corresponde
-    if (info.draggedEl.classList.contains("servicio-card")) {
+    if (info.draggedEl && info.draggedEl.classList.contains("servicio-card")) {
       const serviciosActualizados = serviciosPendientes.filter(
         (s) => s.id !== servicioData.id
       );
@@ -3411,7 +3577,6 @@ const Calendar = ({ darkMode = false }) => {
               multiMonthPlugin,
             ]}
             schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
-            licenseKey="GPL-My-Project-Is-Open-Source"
             initialView="resourceTimeGridDay"
             headerToolbar={{
               left: "prev,next today",
@@ -3429,6 +3594,7 @@ const Calendar = ({ darkMode = false }) => {
                 editable: true,
                 allDaySlot: false,
                 nowIndicator: true,
+                eventContent: renderEventContent,
               },
               dayGridMonth: {
                 type: "dayGrid",
@@ -3445,12 +3611,7 @@ const Calendar = ({ darkMode = false }) => {
                 },
                 eventDisplay: "block",
                 displayEventEnd: false,
-                eventContent: (arg) => {
-                  // Solo renderiza el texto, sin divs extra que puedan bloquear eventos
-                  return {
-                    html: `<span class="fc-event-time">${arg.timeText}</span> <span class="fc-event-title">${arg.event.title}</span>`
-                  };
-                },
+                eventContent: renderEventContent,
               },
               multiMonthYear: {
                 type: "multiMonth",
@@ -3464,15 +3625,7 @@ const Calendar = ({ darkMode = false }) => {
                 moreLinkContent: (args) => {
                   return `+${args.num} más`;
                 },
-                eventContent: (arg) => {
-                  return {
-                    html: `
-                    <div class="fc-event-main-frame year-view-event">
-                        <div class="fc-event-title">${arg.event.title}</div>
-                    </div>
-                    `,
-                  };
-                },
+                eventContent: renderEventContent,
               },
             }}
             resources={tecnicos}
@@ -3506,6 +3659,9 @@ const Calendar = ({ darkMode = false }) => {
             eventResourceEditable={true}
             locale={esLocale}
             selectable={true}
+            selectMirror={true}
+            selectMinDistance={0}
+            selectLongPressDelay={100}
             select={(info) => {
               if (info.view.type === "resourceTimeGridDay") {
                 handleDateSelect(info);

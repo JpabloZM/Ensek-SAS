@@ -1,0 +1,8 @@
+/* Corrige el z-index del indicador de hora actual para que quede detrás de los eventos */
+.fc-timegrid-now-indicator-line {
+  z-index: 0 !important;
+}
+
+.fc-event {
+  z-index: 2 !important;
+}

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/services";
+const API_URL = "http://localhost:5001/api/services";
 
 // Keep track of the last request time to implement simple request throttling
 let lastRequestTime = 0;
@@ -122,6 +122,13 @@ const saveService = async (service) => {
     console.log("=== SAVE SERVICE - INICIO ===");
     console.log("Enviando datos al servidor:", service);
     console.log("URL de la API:", API_URL);
+    
+    // Debug específico de campos de tiempo
+    console.log("=== DEBUG CAMPOS TIEMPO EN SAVE SERVICE ===");
+    console.log("scheduledStart:", service.scheduledStart);
+    console.log("scheduledEnd:", service.scheduledEnd);
+    console.log("preferredDate:", service.preferredDate);
+    console.log("=== FIN DEBUG TIEMPO ===");
 
     // Intentar primero con autenticación
     let config = getAuthConfig();
