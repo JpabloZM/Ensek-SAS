@@ -30,26 +30,15 @@ const serviceRequestSchema = new mongoose.Schema(
     },
     serviceType: {
       type: String,
-      enum: [
-        "pest-control",
-        "gardening",
-        "fumigation",
-        "other",
-        "Control de Plagas",
-        "Fumigación",
-        "Desinfección",
-        "Otro",
-        "residential-fumigation",
-        "commercial-fumigation",
-        "aire_acondicionado",
-        "pest_control",
-        // Asegurar que todos los tipos de ServiceModel también estén aquí
-        "Control de Plagas",
-        "Fumigación",
-        "Desinfección",
-        "Otro",
-      ],
       required: [true, "Please select a service type"],
+      // Remover enum para permitir tipos de servicio personalizados
+      validate: {
+        validator: function(value) {
+          // Permitir cualquier string no vacío para máxima flexibilidad
+          return typeof value === 'string' && value.trim().length > 0;
+        },
+        message: 'Service type must be a non-empty string'
+      }
     },
     description: {
       type: String,

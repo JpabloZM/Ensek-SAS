@@ -59,9 +59,14 @@ const Calendar = ({ darkMode = false }) => {
         serviceTypeRaw = parts[0];
       }
     }
+    
+    // Detectar si es un servicio personalizado (cuando clientName está vacío pero hay serviceType)
+    const isCustomService = !clientName && serviceTypeRaw;
+    
     const serviceType = serviceTypeRaw
       ? mapServiceTypeToSpanish(serviceTypeRaw)
       : "Sin tipo";
+    
     // Horario inicio y fin
     let startTime = "";
     let endTime = "";
@@ -79,6 +84,7 @@ const Calendar = ({ darkMode = false }) => {
         minute: "2-digit",
       });
     }
+    
     // Forzar color de texto blanco
     return (
       <div
@@ -89,8 +95,16 @@ const Calendar = ({ darkMode = false }) => {
           color: "white",
         }}
       >
-        <span style={{ fontWeight: "bold" }}>{clientName}</span>
-        <span style={{ fontSize: "0.95em" }}>{serviceType}</span>
+        {isCustomService ? (
+          // Para servicios personalizados, mostrar solo el nombre del servicio
+          <span style={{ fontWeight: "bold" }}>{serviceTypeRaw}</span>
+        ) : (
+          // Para servicios normales, mostrar cliente y tipo
+          <>
+            {clientName && <span style={{ fontWeight: "bold" }}>{clientName}</span>}
+            <span style={{ fontSize: "0.95em" }}>{serviceType}</span>
+          </>
+        )}
         <span style={{ fontSize: "0.9em" }}>
           {startTime} - {endTime}
         </span>
@@ -1703,46 +1717,47 @@ const Calendar = ({ darkMode = false }) => {
         <div class="form-row">
           <div class="input-group">
             <label>Tipo de servicio</label>
-            <select id="nombre" class="form-field" required>
+            <select id="nombre" class="form-field">
               <option value="">Seleccionar tipo de servicio...</option>
               <option value="pest-control">Control de Plagas</option>
               <option value="gardening">Jardinería</option>
               <option value="residential-fumigation">Fumigación Residencial</option>
               <option value="commercial-fumigation">Fumigación Comercial</option>
+              <option value="custom">Otro</option>
             </select>
           </div>
           <div class="input-group">
-            <label>Cliente</label>
-            <input type="text" id="clientName" class="form-field" placeholder="Nombre del cliente" required>
+            <label id="clientNameLabel">Cliente</label>
+            <input type="text" id="clientName" class="form-field" placeholder="Nombre del cliente">
           </div>
         </div>
         
         <div class="form-row">
           <div class="input-group">
             <label>Email</label>
-            <input type="email" id="clientEmail" class="form-field" placeholder="correo@ejemplo.com" required>
+            <input type="email" id="clientEmail" class="form-field" placeholder="correo@ejemplo.com">
           </div>
           <div class="input-group">
             <label>Teléfono</label>
-            <input type="tel" id="clientPhone" class="form-field" placeholder="Teléfono de contacto" required>
+            <input type="tel" id="clientPhone" class="form-field" placeholder="Teléfono de contacto">
           </div>
         </div>
         
         <div class="form-row">
           <div class="input-group">
             <label>Municipio</label>
-            <input type="text" id="municipality" class="form-field" placeholder="Municipio" required>
+            <input type="text" id="municipality" class="form-field" placeholder="Municipio">
           </div>
           <div class="input-group">
             <label>Barrio</label>
-            <input type="text" id="neighborhood" class="form-field" placeholder="Barrio o sector" required>
+            <input type="text" id="neighborhood" class="form-field" placeholder="Barrio o sector">
           </div>
         </div>
         
         <div class="form-row">
           <div class="input-group">
             <label>Dirección</label>
-            <input type="text" id="streetAddress" class="form-field" placeholder="Calle/Carrera, número" required>
+            <input type="text" id="streetAddress" class="form-field" placeholder="Calle/Carrera, número">
           </div>
           <div class="input-group">
             <label>Especificaciones</label>
@@ -1753,7 +1768,7 @@ const Calendar = ({ darkMode = false }) => {
         <div class="form-row description-row">
           <div class="input-group full-width">
             <label>Descripción</label>
-            <textarea id="descripcion" class="form-field" placeholder="Descripción detallada del servicio" rows="3" required></textarea>
+            <textarea id="descripcion" class="form-field" placeholder="Descripción detallada del servicio" rows="3"></textarea>
           </div>
         </div>
         
@@ -2164,6 +2179,21 @@ const Calendar = ({ darkMode = false }) => {
         `;
         document.head.appendChild(style);
 
+        // Manejar el select de tipo de servicio para cambiar la etiqueta del campo cliente
+        const selectTipoServicio = document.getElementById("nombre");
+        const clientNameLabel = document.getElementById("clientNameLabel");
+        const clientNameInput = document.getElementById("clientName");
+        
+        selectTipoServicio.addEventListener("change", function() {
+          if (this.value === "custom") {
+            clientNameLabel.textContent = "Nombre del servicio";
+            clientNameInput.placeholder = "Ej: Almuerzo, Cita médica, Reunión, etc.";
+          } else {
+            clientNameLabel.textContent = "Cliente";
+            clientNameInput.placeholder = "Nombre del cliente";
+          }
+        });
+
         // Manejar los botones de estado
         const btns = Swal.getPopup().querySelectorAll(".estado-btn");
 
@@ -2223,30 +2253,27 @@ const Calendar = ({ darkMode = false }) => {
         const descripcion = document.getElementById("descripcion").value;
         const estado = document.getElementById("estadoServicio").value;
 
-        // Construir dirección completa
-        const address =
-          `${municipality}, ${neighborhood}, ${streetAddress}, ${addressDetails}`.trim();
-
-        if (
-          !nombre ||
-          !clientName ||
-          !clientEmail ||
-          !clientPhone ||
-          !municipality ||
-          !neighborhood ||
-          !streetAddress ||
-          !descripcion
-        ) {
+        // Validar campo de cliente/servicio si se seleccionó "Otro"
+        if (nombre === "custom" && (!clientName || !clientName.trim())) {
           mostrarAlerta({
             icon: "error",
             title: "Error",
-            text: "Por favor complete todos los campos requeridos",
+            text: "Por favor ingrese el nombre del servicio personalizado",
             confirmButtonColor: "#87c947",
             background: "#f8ffec",
             color: "#004122",
           });
           return false;
         }
+
+        // Construir dirección completa solo con los campos que tienen valor
+        const addressParts = [municipality, neighborhood, streetAddress, addressDetails]
+          .filter(part => part && part.trim())
+          .join(", ");
+        const address = addressParts || "";
+
+        // Validación mínima: solo verificar que tenga estado seleccionado
+        // La descripción ya no es obligatoria
 
         if (!estado) {
           mostrarAlerta({
@@ -2267,16 +2294,33 @@ const Calendar = ({ darkMode = false }) => {
           "commercial-fumigation": "Fumigación Comercial",
         };
 
+        // Determinar el tipo de servicio y nombre
+        let finalServiceType = nombre;
+        let finalServiceName = serviceTypes[nombre] || nombre;
+        let finalClientName = clientName;
+        
+        if (nombre === "custom") {
+          // Cuando es "custom", usar el clientName como el nombre del servicio
+          finalServiceType = clientName.trim();
+          finalServiceName = clientName.trim();
+          finalClientName = ""; // Limpiar el clientName ya que se usa para el servicio
+        }
+
         return {
-          nombre: serviceTypes[nombre] || nombre, // Nombre en español para mostrar
-          serviceType: nombre, // Valor original para el backend
+          nombre: finalServiceName, // Nombre en español para mostrar
+          serviceType: finalServiceType, // Valor para el backend
           descripcion,
-          clientName,
+          clientName: finalClientName, // Cliente vacío si es servicio personalizado
           clientEmail,
           clientPhone,
+          municipality,
+          neighborhood,
+          streetAddress,
+          addressDetails,
           address,
           estado,
           color: estadosServicio[estado].color,
+          isCustomService: nombre === "custom", // Flag para identificar servicios personalizados
         };
       },
     });
@@ -2302,19 +2346,22 @@ const Calendar = ({ darkMode = false }) => {
         const txtColor = "white";
 
         // Crear un nuevo objeto con los datos del servicio
+        // Asegurar que los campos requeridos por el backend tengan valores válidos
         const nuevoServicio = {
-          name: formValues.clientName, // Backend espera 'name', no 'clientName'
-          email: formValues.clientEmail, // Backend espera 'email', no 'clientEmail'
-          phone: formValues.clientPhone, // Backend espera 'phone', no 'clientPhone'
-          address: formValues.address, // Dirección completa
-          municipality: formValues.municipality,
-          neighborhood: formValues.neighborhood,
-          streetAddress: formValues.streetAddress,
-          addressDetails: formValues.addressDetails,
-          serviceType: formValues.serviceType,
-          description: formValues.descripcion, // Backend espera 'description', no 'descripcion'
-          document: "1234567890", // Valor por defecto
-          preferredDate: start.toISOString(),
+          name: formValues.isCustomService 
+            ? formValues.serviceType  // Para servicios personalizados, usar el nombre del servicio
+            : (formValues.clientName || "Cliente no especificado"), // Para servicios normales, usar el cliente
+          email: formValues.clientEmail || "no-email@ejemplo.com", // Backend requiere 'email'
+          phone: formValues.clientPhone || "No especificado", // Backend requiere 'phone'
+          address: formValues.address || "Dirección no especificada", // Backend requiere 'address'
+          municipality: formValues.municipality || "",
+          neighborhood: formValues.neighborhood || "",
+          streetAddress: formValues.streetAddress || "",
+          addressDetails: formValues.addressDetails || "",
+          serviceType: formValues.serviceType || "general", // Backend requiere 'serviceType'
+          description: formValues.descripcion || "Evento sin descripción", // Proporcionar descripción por defecto si está vacía
+          document: formValues.clientPhone || "N/A", // Usar teléfono si está disponible, si no "N/A"
+          preferredDate: start.toISOString(), // Backend requiere 'preferredDate'
           scheduledStart: start.toISOString(), // Agregar hora de inicio específica
           scheduledEnd: end.toISOString(), // Agregar hora de fin específica
           isFromCalendar: true, // Indicar que viene del calendario para asignarlo directamente
@@ -2338,24 +2385,54 @@ const Calendar = ({ darkMode = false }) => {
         const createdService = await handleAgregarServicio(nuevoServicio);
 
         // Crear evento con la clase correcta para el estado y el ID del servicio creado
+        // Construir un título dinámico basado en los campos disponibles
+        let eventTitle = "";
+        if (formValues.serviceType) {
+          if (formValues.isCustomService) {
+            // Para servicios personalizados, usar solo el nombre del servicio
+            eventTitle = formValues.serviceType;
+          } else {
+            // Para servicios predefinidos, usar tipo + cliente si existe
+            eventTitle = mapServiceTypeToSpanish(formValues.serviceType);
+            if (formValues.clientName) {
+              eventTitle += ` - ${formValues.clientName}`;
+            }
+          }
+        } else if (formValues.clientName) {
+          // Si no hay tipo de servicio pero sí cliente, usar solo el cliente
+          eventTitle = formValues.clientName;
+        } else {
+          // Si no hay información específica, usar un título genérico con la hora
+          const timeString = start.toLocaleTimeString([], {
+            hour: "2-digit", 
+            minute: "2-digit",
+            hour12: false
+          });
+          eventTitle = formValues.descripcion && formValues.descripcion.trim() && formValues.descripcion !== "Evento sin descripción"
+            ? (formValues.descripcion.length > 30 
+                ? formValues.descripcion.substring(0, 30) + "..."
+                : formValues.descripcion)
+            : `Evento ${timeString}`;
+        }
+
         const nuevoEvento = {
           id: createdService ? createdService._id : `evento-${Date.now()}`,
-          title: formValues.nombre,
+          title: eventTitle,
           start,
           end,
           resourceId: selectInfo.resource.id,
           extendedProps: {
-            descripcion: formValues.descripcion,
+            descripcion: formValues.descripcion || "Sin descripción",
             estado: formValues.estado,
-            clientName: formValues.clientName,
-            clientEmail: formValues.clientEmail,
-            clientPhone: formValues.clientPhone,
-            address: formValues.address,
-            municipality: formValues.municipality,
-            neighborhood: formValues.neighborhood,
-            streetAddress: formValues.streetAddress,
-            addressDetails: formValues.addressDetails,
-            serviceType: formValues.serviceType,
+            clientName: formValues.clientName || "",
+            clientEmail: formValues.clientEmail || "",
+            clientPhone: formValues.clientPhone || "",
+            address: formValues.address || "",
+            municipality: formValues.municipality || "",
+            neighborhood: formValues.neighborhood || "",
+            streetAddress: formValues.streetAddress || "",
+            addressDetails: formValues.addressDetails || "",
+            serviceType: formValues.serviceType || "",
             serviceId: createdService ? createdService._id : null,
             scheduledStart: start.toISOString(), // Agregar campos de horario específicos
             scheduledEnd: end.toISOString(), // Agregar campos de horario específicos
