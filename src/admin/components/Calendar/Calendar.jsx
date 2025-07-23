@@ -59,14 +59,14 @@ const Calendar = ({ darkMode = false }) => {
         serviceTypeRaw = parts[0];
       }
     }
-    
+
     // Detectar si es un servicio personalizado (cuando clientName está vacío pero hay serviceType)
     const isCustomService = !clientName && serviceTypeRaw;
-    
+
     const serviceType = serviceTypeRaw
       ? mapServiceTypeToSpanish(serviceTypeRaw)
       : "Sin tipo";
-    
+
     // Horario inicio y fin
     let startTime = "";
     let endTime = "";
@@ -84,7 +84,7 @@ const Calendar = ({ darkMode = false }) => {
         minute: "2-digit",
       });
     }
-    
+
     // Forzar color de texto blanco
     return (
       <div
@@ -101,7 +101,9 @@ const Calendar = ({ darkMode = false }) => {
         ) : (
           // Para servicios normales, mostrar cliente y tipo
           <>
-            {clientName && <span style={{ fontWeight: "bold" }}>{clientName}</span>}
+            {clientName && (
+              <span style={{ fontWeight: "bold" }}>{clientName}</span>
+            )}
             <span style={{ fontSize: "0.95em" }}>{serviceType}</span>
           </>
         )}
@@ -1625,18 +1627,135 @@ const Calendar = ({ darkMode = false }) => {
     });
   };
 
-  // Agregar el evento contextmenu a los elementos de técnico
+  // Agregar el evento contextmenu específicamente a los elementos de nombre de técnico
   useEffect(() => {
-    const tecnicoElements = document.querySelectorAll(".fc-resource");
-    tecnicoElements.forEach((element) => {
-      element.addEventListener("contextmenu", (e) => {
-        const tecnicoId = element.getAttribute("data-resource-id");
-        const tecnico = tecnicos.find((t) => t.id === tecnicoId);
-        if (tecnico) {
-          showContextMenu(e, tecnico);
+    let isSetupRunning = false; // Bandera para prevenir ejecuciones múltiples
+
+    const setupContextMenus = () => {
+      if (isSetupRunning) return; // Si ya se está ejecutando, salir
+      isSetupRunning = true;
+
+      try {
+        // Buscar específicamente los elementos de label de técnico clickeables
+        const tecnicoLabels = document.querySelectorAll(
+          ".tecnico-label-clickable"
+        );
+
+        console.log(
+          "Configurando menús contextuales para",
+          tecnicoLabels.length,
+          "técnicos"
+        );
+
+        tecnicoLabels.forEach((element) => {
+          // Verificar si ya tiene el event listener configurado
+          if (element.hasAttribute("data-context-menu-setup")) {
+            return; // Ya está configurado, no hacer nada
+          }
+
+          // Marcar como configurado
+          element.setAttribute("data-context-menu-setup", "true");
+
+          // Agregar el event listener solo al área del nombre del técnico
+          element.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const tecnicoId = element.getAttribute("data-resource-id");
+            const tecnico = tecnicos.find((t) => t.id === tecnicoId);
+
+            console.log(
+              "Menu contextual activado para técnico:",
+              tecnico?.title
+            );
+
+            if (tecnico) {
+              showContextMenu(e, tecnico);
+            }
+          });
+        });
+      } finally {
+        isSetupRunning = false; // Resetear la bandera
+      }
+    };
+
+    // Configurar los menús después de un pequeño delay para asegurar que el DOM esté listo
+    const timeoutId = setTimeout(setupContextMenus, 100);
+
+    // También configurar cuando cambie la vista del calendario
+    const observer = new MutationObserver((mutations) => {
+      let shouldSetup = false;
+
+      mutations.forEach((mutation) => {
+        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+          // Verificar si se agregaron elementos de técnico NUEVOS (sin nuestro atributo)
+          const addedResourceLabels = Array.from(mutation.addedNodes).some(
+            (node) => {
+              if (node.nodeType === 1) {
+                // Verificar si el nodo o sus hijos contienen elementos de técnico sin configurar
+                const hasUnconfiguredLabels =
+                  node.classList?.contains("tecnico-label-clickable") &&
+                  !node.hasAttribute("data-context-menu-setup");
+                const hasUnconfiguredChildren = node.querySelector?.(
+                  ".tecnico-label-clickable:not([data-context-menu-setup])"
+                );
+
+                return hasUnconfiguredLabels || hasUnconfiguredChildren;
+              }
+              return false;
+            }
+          );
+
+          if (addedResourceLabels) {
+            shouldSetup = true;
+          }
         }
       });
+
+      // Solo ejecutar setup si realmente hay elementos nuevos que configurar
+      if (shouldSetup && !isSetupRunning) {
+        setTimeout(setupContextMenus, 50);
+      }
     });
+
+    // Observar cambios en el contenedor del calendario
+    const calendarContainer = document.querySelector("#calendario");
+    if (calendarContainer) {
+      observer.observe(calendarContainer, {
+        childList: true,
+        subtree: true,
+      });
+
+      // Prevenir menú contextual en todo el calendario excepto en nombres de técnicos
+      const handleCalendarContextMenu = (e) => {
+        // Solo permitir menú contextual si el elemento clickeado es un nombre de técnico
+        const isTecnicoLabel = e.target.closest(".tecnico-label-clickable");
+        if (!isTecnicoLabel) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      };
+
+      calendarContainer.addEventListener(
+        "contextmenu",
+        handleCalendarContextMenu
+      );
+
+      // Cleanup function mejorada
+      return () => {
+        clearTimeout(timeoutId);
+        observer.disconnect();
+        calendarContainer.removeEventListener(
+          "contextmenu",
+          handleCalendarContextMenu
+        );
+      };
+    }
+
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
   }, [tecnicos]);
   // Contenido personalizado para las etiquetas de recursos
   const resourceLabelContent = useCallback((arg) => {
@@ -1648,10 +1767,12 @@ const Calendar = ({ darkMode = false }) => {
     const initials = names.map((name) => name.charAt(0).toUpperCase()).join("");
 
     return {
-      html: `<div class="resource-label" 
-              style="cursor: context-menu;" 
+      html: `<div class="resource-label tecnico-label-clickable" 
+              style="cursor: context-menu; padding: 8px; border-radius: 4px; transition: background-color 0.2s;" 
               data-resource-id="${arg.resource.id}" 
-              title="${fullName}">
+              title="Clic derecho para opciones del técnico: ${fullName}"
+              onmouseenter="this.style.backgroundColor='rgba(135, 201, 71, 0.1)'"
+              onmouseleave="this.style.backgroundColor='transparent'">
               <div class="tecnico-nombre">
                 <span class="tecnico-initials">${initials}</span>
               </div>
@@ -1660,15 +1781,57 @@ const Calendar = ({ darkMode = false }) => {
   }, []);
 
   const handleDateSelect = async (selectInfo) => {
+    console.log("📅 handleDateSelect disparado:", selectInfo);
+
     const tecnico = tecnicos.find((t) => t.id === selectInfo.resource.id);
     const fechaInicio = new Date(selectInfo.start);
     const fechaFin = new Date(selectInfo.end);
+
+    // Solo verificar conflictos si la selección tiene una duración mayor a 0
+    // Esto permite clics únicos pero previene selecciones de rango sobre eventos existentes
+    const duracionMinutos = (fechaFin - fechaInicio) / (1000 * 60);
+
+    if (duracionMinutos > 0) {
+      // Verificar si ya existe un evento en este período de tiempo para este técnico
+      const eventoExistente = eventos.find((evento) => {
+        const eventoInicio = new Date(evento.start);
+        const eventoFin = new Date(evento.end);
+        const mismoTecnico = evento.resourceId === selectInfo.resource.id;
+
+        // Verificar si hay solapamiento de tiempo
+        const hayConflicto =
+          mismoTecnico &&
+          ((fechaInicio >= eventoInicio && fechaInicio < eventoFin) ||
+            (fechaFin > eventoInicio && fechaFin <= eventoFin) ||
+            (fechaInicio <= eventoInicio && fechaFin >= eventoFin));
+
+        return hayConflicto;
+      });
+
+      // Si ya existe un evento en este tiempo, no crear uno nuevo
+      if (eventoExistente) {
+        console.log("Ya existe un evento en este horario:", eventoExistente);
+        selectInfo.view.calendar.unselect(); // Deseleccionar
+
+        // Mostrar mensaje informativo
+        mostrarAlerta({
+          icon: "info",
+          title: "Espacio Ocupado",
+          text: "Ya existe un servicio programado en este horario. Haz clic en el evento existente para editarlo.",
+          timer: 2000,
+          showConfirmButton: false,
+          background: "#f8ffec",
+          color: "#004122",
+        });
+        return;
+      }
+    }
 
     // Debug: Log the selected time range
     console.log("Selección de tiempo en calendario:", {
       inicio: fechaInicio.toLocaleString(),
       fin: fechaFin.toLocaleString(),
-      duracionMinutos: (fechaFin - fechaInicio) / (1000 * 60),
+      duracionMinutos: duracionMinutos,
     });
 
     const estadosServicio = {
@@ -2183,11 +2346,12 @@ const Calendar = ({ darkMode = false }) => {
         const selectTipoServicio = document.getElementById("nombre");
         const clientNameLabel = document.getElementById("clientNameLabel");
         const clientNameInput = document.getElementById("clientName");
-        
-        selectTipoServicio.addEventListener("change", function() {
+
+        selectTipoServicio.addEventListener("change", function () {
           if (this.value === "custom") {
             clientNameLabel.textContent = "Nombre del servicio";
-            clientNameInput.placeholder = "Ej: Almuerzo, Cita médica, Reunión, etc.";
+            clientNameInput.placeholder =
+              "Ej: Almuerzo, Cita médica, Reunión, etc.";
           } else {
             clientNameLabel.textContent = "Cliente";
             clientNameInput.placeholder = "Nombre del cliente";
@@ -2267,8 +2431,13 @@ const Calendar = ({ darkMode = false }) => {
         }
 
         // Construir dirección completa solo con los campos que tienen valor
-        const addressParts = [municipality, neighborhood, streetAddress, addressDetails]
-          .filter(part => part && part.trim())
+        const addressParts = [
+          municipality,
+          neighborhood,
+          streetAddress,
+          addressDetails,
+        ]
+          .filter((part) => part && part.trim())
           .join(", ");
         const address = addressParts || "";
 
@@ -2298,7 +2467,7 @@ const Calendar = ({ darkMode = false }) => {
         let finalServiceType = nombre;
         let finalServiceName = serviceTypes[nombre] || nombre;
         let finalClientName = clientName;
-        
+
         if (nombre === "custom") {
           // Cuando es "custom", usar el clientName como el nombre del servicio
           finalServiceType = clientName.trim();
@@ -2348,9 +2517,9 @@ const Calendar = ({ darkMode = false }) => {
         // Crear un nuevo objeto con los datos del servicio
         // Asegurar que los campos requeridos por el backend tengan valores válidos
         const nuevoServicio = {
-          name: formValues.isCustomService 
-            ? formValues.serviceType  // Para servicios personalizados, usar el nombre del servicio
-            : (formValues.clientName || "Cliente no especificado"), // Para servicios normales, usar el cliente
+          name: formValues.isCustomService
+            ? formValues.serviceType // Para servicios personalizados, usar el nombre del servicio
+            : formValues.clientName || "Cliente no especificado", // Para servicios normales, usar el cliente
           email: formValues.clientEmail || "no-email@ejemplo.com", // Backend requiere 'email'
           phone: formValues.clientPhone || "No especificado", // Backend requiere 'phone'
           address: formValues.address || "Dirección no especificada", // Backend requiere 'address'
@@ -2404,15 +2573,18 @@ const Calendar = ({ darkMode = false }) => {
         } else {
           // Si no hay información específica, usar un título genérico con la hora
           const timeString = start.toLocaleTimeString([], {
-            hour: "2-digit", 
+            hour: "2-digit",
             minute: "2-digit",
-            hour12: false
+            hour12: false,
           });
-          eventTitle = formValues.descripcion && formValues.descripcion.trim() && formValues.descripcion !== "Evento sin descripción"
-            ? (formValues.descripcion.length > 30 
+          eventTitle =
+            formValues.descripcion &&
+            formValues.descripcion.trim() &&
+            formValues.descripcion !== "Evento sin descripción"
+              ? formValues.descripcion.length > 30
                 ? formValues.descripcion.substring(0, 30) + "..."
-                : formValues.descripcion)
-            : `Evento ${timeString}`;
+                : formValues.descripcion
+              : `Evento ${timeString}`;
         }
 
         const nuevoEvento = {
@@ -2509,6 +2681,8 @@ const Calendar = ({ darkMode = false }) => {
   };
 
   const handleEventClick = (info) => {
+    console.log("🔥 handleEventClick ejecutado:", info.event);
+
     const evento = info.event;
     // Obtener el resourceId de manera segura
     const resourceId =
@@ -2517,6 +2691,12 @@ const Calendar = ({ darkMode = false }) => {
     const tecnico = tecnicos.find((t) => t.id === resourceId);
     const fechaInicio = new Date(evento.start);
     const fechaFin = new Date(evento.end);
+
+    console.log("📊 Datos del evento:", {
+      title: evento.title,
+      tecnico: tecnico?.title,
+      extendedProps: evento.extendedProps,
+    });
 
     mostrarAlerta({
       title: evento.title,
@@ -3826,6 +4006,46 @@ const Calendar = ({ darkMode = false }) => {
     // Agregar estilos del menú contextual y colores forzados de eventos
     const style = document.createElement("style");
     style.textContent = `
+      /* Prevenir menú contextual del navegador en el área del calendario excepto en nombres de técnicos */
+      .fc-view-harness, .fc-daygrid-body, .fc-timegrid-body, .fc-resource-timeline-body {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      
+      /* Permitir menú contextual solo en nombres de técnicos */
+      .tecnico-label-clickable {
+        -webkit-user-select: auto !important;
+        -moz-user-select: auto !important;
+        -ms-user-select: auto !important;
+        user-select: auto !important;
+        position: relative;
+        z-index: 10;
+      }
+      
+      /* Estilos mejorados para el área clickeable del técnico */
+      .tecnico-label-clickable:hover {
+        background-color: rgba(135, 201, 71, 0.1) !important;
+        border-radius: 4px;
+      }
+      
+      .tecnico-label-clickable::after {
+        content: "⋮";
+        position: absolute;
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 12px;
+        color: #87c947;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      
+      .tecnico-label-clickable:hover::after {
+        opacity: 1;
+      }
+
       .context-menu {
         position: fixed;
         background: white;
@@ -4086,14 +4306,47 @@ const Calendar = ({ darkMode = false }) => {
             locale={esLocale}
             selectable={true}
             selectMirror={true}
+            unselectAuto={true}
             selectMinDistance={0}
             selectLongPressDelay={100}
             select={(info) => {
-              if (info.view.type === "resourceTimeGridDay") {
+              console.log("🎯 Select disparado en FullCalendar:", {
+                view: info.view.type,
+                start: info.startStr,
+                end: info.endStr,
+                resource: info.resource?.id,
+              });
+
+              // Permitir selección en vistas de tiempo y solo si hay un recurso (técnico) seleccionado
+              const isTimeGridView =
+                info.view.type.includes("timeGrid") ||
+                info.view.type.includes("resourceTimeGrid");
+              const hasResource = info.resource?.id;
+
+              if (isTimeGridView && hasResource) {
                 handleDateSelect(info);
+              } else if (!hasResource) {
+                console.log(
+                  "⚠️ No se puede crear servicio sin técnico asignado"
+                );
+                // Mostrar mensaje informativo
+                mostrarAlerta({
+                  icon: "info",
+                  title: "Selecciona un Técnico",
+                  text: "Para crear un servicio, debe seleccionar una fecha en la columna de un técnico específico.",
+                  timer: 2000,
+                  showConfirmButton: false,
+                  background: "#f8ffec",
+                  color: "#004122",
+                });
               }
             }}
-            eventClick={handleEventClick}
+            eventClick={(info) => {
+              console.log("🎯 EventClick disparado en FullCalendar:", info);
+              // Deseleccionar cualquier selección activa antes de manejar el clic del evento
+              info.view.calendar.unselect();
+              handleEventClick(info);
+            }}
             dateClick={handleDateClick}
             eventDidMount={handleEventDidMount}
             resourceAreaHeaderContent="Técnicos"

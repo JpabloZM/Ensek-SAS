@@ -33,12 +33,12 @@ const serviceRequestSchema = new mongoose.Schema(
       required: [true, "Please select a service type"],
       // Remover enum para permitir tipos de servicio personalizados
       validate: {
-        validator: function(value) {
+        validator: function (value) {
           // Permitir cualquier string no vacío para máxima flexibilidad
-          return typeof value === 'string' && value.trim().length > 0;
+          return typeof value === "string" && value.trim().length > 0;
         },
-        message: 'Service type must be a non-empty string'
-      }
+        message: "Service type must be a non-empty string",
+      },
     },
     description: {
       type: String,
