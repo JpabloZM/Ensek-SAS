@@ -15,6 +15,10 @@ import { useCalendar } from "../../../hooks/useCalendar";
 import { useServices } from "../../../hooks/useServices";
 import { serviceService } from "../../../client/services/serviceService";
 import { userService } from "../../../client/services/userService";
+import {
+  setupCalendarSelectVisuals,
+  addTimeLabelsToSelection,
+} from "./selectFix";
 import "./Calendar.css";
 import "./styles/forms.css";
 import "./styles/service-card-override.css"; // Asegurar que estos estilos se apliquen al final
@@ -1041,9 +1045,39 @@ const Calendar = ({ darkMode = false }) => {
   const handleEventDrop = async (info) => {
     console.log("handleEventDrop triggered:", info);
     const { event } = info;
-    const tecnicoDestino = tecnicos.find(
-      (t) => t.id === event.getResources()[0]?.id
-    );
+
+    // Verificar solapamientos antes de permitir el drop
+    const newStart = new Date(event.start);
+    const newEnd = new Date(event.end);
+    const newResourceId = event.getResources()[0]?.id;
+
+    // Buscar conflictos con otros eventos
+    const conflicto = eventos.find((otroEvento) => {
+      if (otroEvento.id === event.id) return false; // Ignorar el evento actual
+      if (otroEvento.resourceId !== newResourceId) return false; // Solo verificar mismo técnico
+
+      const otroInicio = new Date(otroEvento.start);
+      const otroFin = new Date(otroEvento.end);
+
+      return (
+        (newStart >= otroInicio && newStart < otroFin) ||
+        (newEnd > otroInicio && newEnd <= otroFin) ||
+        (newStart <= otroInicio && newEnd >= otroFin)
+      );
+    });
+
+    if (conflicto) {
+      mostrarAlerta({
+        icon: "error",
+        title: "Conflicto de Horario",
+        text: "No se puede mover el servicio a ese horario porque ya existe otro servicio",
+        confirmButtonColor: "#e74c3c",
+      });
+      info.revert(); // Revertir el movimiento
+      return;
+    }
+
+    const tecnicoDestino = tecnicos.find((t) => t.id === newResourceId);
 
     // Check if the event represents a service
     const serviceId = event.id
@@ -1787,47 +1821,9 @@ const Calendar = ({ darkMode = false }) => {
     const fechaInicio = new Date(selectInfo.start);
     const fechaFin = new Date(selectInfo.end);
 
-    // Solo verificar conflictos si la selección tiene una duración mayor a 0
-    // Esto permite clics únicos pero previene selecciones de rango sobre eventos existentes
+    // Calcular duración en minutos
     const duracionMinutos = (fechaFin - fechaInicio) / (1000 * 60);
 
-    if (duracionMinutos > 0) {
-      // Verificar si ya existe un evento en este período de tiempo para este técnico
-      const eventoExistente = eventos.find((evento) => {
-        const eventoInicio = new Date(evento.start);
-        const eventoFin = new Date(evento.end);
-        const mismoTecnico = evento.resourceId === selectInfo.resource.id;
-
-        // Verificar si hay solapamiento de tiempo
-        const hayConflicto =
-          mismoTecnico &&
-          ((fechaInicio >= eventoInicio && fechaInicio < eventoFin) ||
-            (fechaFin > eventoInicio && fechaFin <= eventoFin) ||
-            (fechaInicio <= eventoInicio && fechaFin >= eventoFin));
-
-        return hayConflicto;
-      });
-
-      // Si ya existe un evento en este tiempo, no crear uno nuevo
-      if (eventoExistente) {
-        console.log("Ya existe un evento en este horario:", eventoExistente);
-        selectInfo.view.calendar.unselect(); // Deseleccionar
-
-        // Mostrar mensaje informativo
-        mostrarAlerta({
-          icon: "info",
-          title: "Espacio Ocupado",
-          text: "Ya existe un servicio programado en este horario. Haz clic en el evento existente para editarlo.",
-          timer: 2000,
-          showConfirmButton: false,
-          background: "#f8ffec",
-          color: "#004122",
-        });
-        return;
-      }
-    }
-
-    // Debug: Log the selected time range
     console.log("Selección de tiempo en calendario:", {
       inicio: fechaInicio.toLocaleString(),
       fin: fechaFin.toLocaleString(),
@@ -2504,11 +2500,31 @@ const Calendar = ({ darkMode = false }) => {
         const end = new Date(selectInfo.end);
 
         // Debug: Verificar que las fechas se mantienen correctas
-        console.log("Creando evento con fechas:", {
-          inicio: start.toLocaleString(),
-          fin: end.toLocaleString(),
-          duracionMinutos: (end - start) / (1000 * 60),
-        });
+        console.log("🕐 DEPURACIÓN DE FECHAS:");
+        console.log("selectInfo.start original:", selectInfo.start);
+        console.log("selectInfo.end original:", selectInfo.end);
+        console.log("start procesada:", start.toLocaleString());
+        console.log("end procesada:", end.toLocaleString());
+        console.log(
+          "Duración calculada (minutos):",
+          (end - start) / (1000 * 60)
+        );
+        console.log("start.toISOString():", start.toISOString());
+        console.log("end.toISOString():", end.toISOString());
+
+        // VERIFICACIÓN CRÍTICA: Asegurar que end > start
+        if (end <= start) {
+          console.error(
+            "❌ ERROR: Fecha de fin debe ser posterior a fecha de inicio"
+          );
+          mostrarAlerta({
+            icon: "error",
+            title: "Error de Fechas",
+            text: "La fecha de fin debe ser posterior a la fecha de inicio. Seleccione un rango de tiempo válido.",
+            confirmButtonColor: "#e74c3c",
+          });
+          return;
+        }
 
         // Determinar el color de fondo y el color de texto
         const bgColor = formValues.color;
@@ -2587,12 +2603,42 @@ const Calendar = ({ darkMode = false }) => {
               : `Evento ${timeString}`;
         }
 
+        // Asegurarnos de que las fechas estén en formato ISO para evitar problemas de serialización
+        const startISO = start.toISOString();
+        const endISO = end.toISOString();
+
+        // Calculamos la duración exacta para mostrarla en la consola
+        const duracionMinutos = Math.round((end - start) / (1000 * 60));
+        console.log("📊 FECHAS ISO PARA EVENTO:");
+        console.log("startISO:", startISO);
+        console.log("endISO:", endISO);
+        console.log("Duración del evento:", duracionMinutos, "minutos");
+
+        // Agregar logs adicionales para verificar que las fechas ISO sean correctas
+        console.log("🚀 CREANDO EVENTO CON FECHAS ESPECÍFICAS:");
+        console.log("startISO final:", startISO);
+        console.log("endISO final:", endISO);
+        console.log(
+          "Diferencia en milisegundos:",
+          new Date(endISO) - new Date(startISO)
+        );
+        console.log(
+          "Duración en minutos:",
+          Math.round((new Date(endISO) - new Date(startISO)) / (1000 * 60))
+        );
+
         const nuevoEvento = {
           id: createdService ? createdService._id : `evento-${Date.now()}`,
           title: eventTitle,
-          start,
-          end,
+          start: startISO,
+          end: endISO, // SIEMPRE incluir fecha de fin explícita
           resourceId: selectInfo.resource.id,
+          allDay: false, // Asegurar que no sea evento de día completo
+          editable: true,
+          durationEditable: true,
+          startEditable: true,
+          constraint: false, // No aplicar restricciones automáticas
+          overlap: true, // Permitir que este evento específico maneje su propio solapamiento
           extendedProps: {
             descripcion: formValues.descripcion || "Sin descripción",
             estado: formValues.estado,
@@ -2606,8 +2652,9 @@ const Calendar = ({ darkMode = false }) => {
             addressDetails: formValues.addressDetails || "",
             serviceType: formValues.serviceType || "",
             serviceId: createdService ? createdService._id : null,
-            scheduledStart: start.toISOString(), // Agregar campos de horario específicos
-            scheduledEnd: end.toISOString(), // Agregar campos de horario específicos
+            scheduledStart: startISO, // Asegurarnos de incluir las fechas exactas
+            scheduledEnd: endISO, // en los extendedProps
+            duracionMinutos: duracionMinutos, // Guardar también la duración
             horaInicio: start.toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
@@ -2659,7 +2706,111 @@ const Calendar = ({ darkMode = false }) => {
           return eventosActualizados;
         });
 
-        calendarApi.addEvent(nuevoEvento);
+        // Crear el evento directamente en FullCalendar con configuraciones específicas
+        const eventoCalendar = calendarApi.addEvent({
+          id: nuevoEvento.id,
+          title: nuevoEvento.title,
+          start: new Date(startISO), // Usar objetos Date directamente
+          end: new Date(endISO), // Usar objetos Date directamente
+          resourceId: nuevoEvento.resourceId,
+          allDay: false,
+          editable: true,
+          durationEditable: true,
+          startEditable: true,
+          extendedProps: nuevoEvento.extendedProps,
+          backgroundColor: nuevoEvento.backgroundColor,
+          borderColor: nuevoEvento.borderColor,
+          textColor: nuevoEvento.textColor,
+          className: nuevoEvento.className,
+          display: "block",
+        });
+
+        // Log para verificar que el evento se creó con las fechas correctas
+        console.log("🎯 Evento creado directamente en calendar API:", {
+          id: eventoCalendar.id,
+          start: eventoCalendar.start.toISOString(),
+          end: eventoCalendar.end.toISOString(),
+          duracionMinutos: Math.round(
+            (eventoCalendar.end - eventoCalendar.start) / (1000 * 60)
+          ),
+        });
+
+        // MÉTODO ALTERNATIVO: Corrección agresiva de duración
+        // Usar múltiples métodos para asegurar que la duración sea correcta
+        setTimeout(() => {
+          // Usar el evento que acabamos de crear directamente
+          if (eventoCalendar) {
+            const duracionActual = Math.round(
+              (eventoCalendar.end - eventoCalendar.start) / (1000 * 60)
+            );
+            const duracionEsperada = Math.round(
+              (new Date(endISO) - new Date(startISO)) / (1000 * 60)
+            );
+
+            console.log("🔍 Verificación post-creación:", {
+              duracionEsperada,
+              duracionActual,
+              startEsperado: startISO,
+              endEsperado: endISO,
+              startActual: eventoCalendar.start.toISOString(),
+              endActual: eventoCalendar.end.toISOString(),
+            });
+
+            // SIEMPRE forzar las fechas correctas, sin importar si coinciden o no
+            console.log("🔧 Aplicando corrección de duración obligatoria...");
+            eventoCalendar.setDates(new Date(startISO), new Date(endISO));
+            console.log("✅ Fechas corregidas a:", {
+              nuevaStart: eventoCalendar.start.toISOString(),
+              nuevaEnd: eventoCalendar.end.toISOString(),
+              nuevaDuracion: Math.round(
+                (eventoCalendar.end - eventoCalendar.start) / (1000 * 60)
+              ),
+            });
+          }
+        }, 50);
+
+        // Verificación adicional después de más tiempo para asegurar persistencia
+        setTimeout(() => {
+          if (eventoCalendar) {
+            const duracionFinal = Math.round(
+              (eventoCalendar.end - eventoCalendar.start) / (1000 * 60)
+            );
+            console.log("🎯 Verificación final de duración:", {
+              duracionFinal,
+              startFinal: eventoCalendar.start.toISOString(),
+              endFinal: eventoCalendar.end.toISOString(),
+            });
+
+            // Si aún no es correcto, aplicar otro intento
+            if (
+              duracionFinal !==
+              Math.round((new Date(endISO) - new Date(startISO)) / (1000 * 60))
+            ) {
+              console.log("⚠️ Segundo intento de corrección...");
+              eventoCalendar.setDates(new Date(startISO), new Date(endISO));
+            }
+          }
+        }, 200);
+
+        // Verificar que el evento se agregó correctamente
+        setTimeout(() => {
+          if (eventoCalendar) {
+            console.log("✅ Evento agregado al calendario:");
+            console.log("ID:", eventoCalendar.id);
+            console.log("Título:", eventoCalendar.title);
+            console.log("Start:", eventoCalendar.start);
+            console.log("End:", eventoCalendar.end);
+            console.log(
+              "Duración real en calendario:",
+              Math.round(
+                (eventoCalendar.end - eventoCalendar.start) / (1000 * 60)
+              ),
+              "minutos"
+            );
+          } else {
+            console.error("❌ No se pudo encontrar el evento en el calendario");
+          }
+        }, 300);
 
         mostrarAlerta({
           icon: "success",
@@ -2681,6 +2832,13 @@ const Calendar = ({ darkMode = false }) => {
   };
 
   const handleEventClick = (info) => {
+    // Evitar CUALQUIER propagación del evento - importante para prevenir la creación de un nuevo evento
+    if (info.jsEvent) {
+      info.jsEvent.preventDefault();
+      info.jsEvent.stopPropagation();
+      info.jsEvent.stopImmediatePropagation();
+    }
+
     console.log("🔥 handleEventClick ejecutado:", info.event);
 
     const evento = info.event;
@@ -2698,87 +2856,74 @@ const Calendar = ({ darkMode = false }) => {
       extendedProps: evento.extendedProps,
     });
 
+    // Modal simple y claro con las opciones principales
     mostrarAlerta({
-      title: evento.title,
+      title: `📋 ${evento.title}`,
       html: `
-      <div class="detalles-content">
-        <div class="detalle-row">
-          <div class="detalle-label">
-            <i class="fas fa-user"></i>
-            <span>Técnico:</span>
+      <div class="evento-detalles">
+        <div class="detalle-info">
+          <div class="info-item">
+            <strong>👤 Técnico:</strong> ${tecnico?.title || "Sin asignar"}
           </div>
-          <div class="detalle-value">${tecnico?.title}</div>
+          <div class="info-item">
+            <strong>🕐 Inicio:</strong> ${fechaInicio.toLocaleDateString()} ${fechaInicio.toLocaleTimeString()}
+          </div>
+          <div class="info-item">
+            <strong>🕐 Fin:</strong> ${fechaFin.toLocaleDateString()} ${fechaFin.toLocaleTimeString()}
+          </div>
+          <div class="info-item">
+            <strong>📝 Descripción:</strong> ${
+              evento.extendedProps.descripcion || "Sin descripción"
+            }
+          </div>
         </div>
-        <div class="detalle-row">
-          <div class="detalle-label">
-            <i class="fas fa-clock"></i>
-            <span>Horario:</span>
-          </div>
-          <div class="detalle-value">
-            <div>Inicio: ${fechaInicio.toLocaleTimeString()}</div>
-            <div>Fin: ${fechaFin.toLocaleTimeString()}</div>
-          </div>
-        </div>
-        <div class="detalle-row">
-          <div class="detalle-label">
-            <i class="fas fa-align-left"></i>
-            <span>Descripción:</span>
-          </div>
-          <div class="detalle-value">
-            ${evento.extendedProps.descripcion || "Sin descripción"}
-          </div>
+        <div class="opciones-evento">
+          <h4>¿Qué deseas hacer con este servicio?</h4>
         </div>
       </div>
       `,
       showCancelButton: true,
-      confirmButtonText: '<i class="fas fa-calendar-plus"></i> Asignar',
-      cancelButtonText: '<i class="fas fa-trash"></i> Eliminar',
-      confirmButtonColor: "#87c947",
-      cancelButtonColor: "#e74c3c",
+      showDenyButton: true,
+      showConfirmButton: true,
+      confirmButtonText: '<i class="fas fa-edit"></i> Editar',
+      denyButtonText: '<i class="fas fa-trash"></i> Eliminar',
+      cancelButtonText: '<i class="fas fa-times"></i> Cerrar',
+      confirmButtonColor: "#3085d6",
+      denyButtonColor: "#dc3545",
+      cancelButtonColor: "#6c757d",
+      footer: `
+        <button type="button" class="swal2-styled" id="moverBtn" style="background-color: #f39c12; border: none; margin: 0 5px;">
+          <i class="fas fa-arrows-alt"></i> Mover Servicio
+        </button>
+      `,
       customClass: {
-        popup: "detalles-servicio",
-        actions: "detalles-actions",
-        confirmButton: "detalles-confirm",
-        cancelButton: "detalles-cancel",
+        popup: "evento-modal",
+        actions: "evento-actions",
+        confirmButton: "btn-editar",
+        denyButton: "btn-eliminar",
+        cancelButton: "btn-cerrar",
       },
       didOpen: () => {
-        // Insertar el botón Editar en el centro
-        const swalActions = document.querySelector(".swal2-actions");
-        if (swalActions) {
-          const btnEditar = document.createElement("button");
-          btnEditar.id = "btn-editar-evento";
-          btnEditar.className = "swal2-styled swal2-edit-btn";
-          btnEditar.style.background = "#6c757d";
-          btnEditar.style.color = "#fff";
-          btnEditar.style.fontWeight = "bold";
-          btnEditar.innerHTML = '<i class="fas fa-edit"></i> Editar';
-          btnEditar.onclick = (e) => {
-            e.stopPropagation();
+        // Agregar evento al botón mover
+        const moverBtn = document.getElementById("moverBtn");
+        if (moverBtn) {
+          moverBtn.addEventListener("click", () => {
             Swal.close();
-            handleEditarServicio(evento);
-          };
-          // Insertar después del botón de confirmar (Asignar) y antes del de cancelar (Eliminar)
-          const btnConfirm = swalActions.querySelector(".swal2-confirm");
-          const btnCancel = swalActions.querySelector(".swal2-cancel");
-          if (btnConfirm && btnCancel) {
-            swalActions.insertBefore(btnEditar, btnCancel);
-          } else {
-            swalActions.appendChild(btnEditar);
-          }
+            handleMoverServicio(evento);
+          });
         }
       },
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        // Asignar servicio (puedes implementar la lógica aquí si lo deseas)
-        // Por ahora solo muestra un mensaje
-        mostrarAlerta({
-          icon: "info",
-          title: "Funcionalidad por implementar",
-          text: "Aquí puedes implementar la lógica para asignar el servicio desde el calendario.",
-        });
-      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        // Editar servicio
+        console.log("🖊️ Editando servicio:", evento);
+        handleEditarServicio(evento);
+      } else if (result.isDenied) {
+        // Eliminar servicio
+        console.log("🗑️ Eliminando servicio:", evento);
         handleEliminarServicioCalendario(evento);
       }
+      // Si se cancela, simplemente se cierra el modal
     });
   };
 
@@ -3072,6 +3217,162 @@ const Calendar = ({ darkMode = false }) => {
     }
   };
 
+  const handleMoverServicio = async (evento) => {
+    // Obtener el resourceId actual
+    const resourceIdActual =
+      evento.resourceId ||
+      (evento.getResources && evento.getResources()[0]?.id);
+
+    // Crear opciones de técnicos
+    const opcionesTecnicos = tecnicos
+      .map(
+        (tecnico) =>
+          `<option value="${tecnico.id}" ${
+            tecnico.id === resourceIdActual ? "selected" : ""
+          }>
+        ${tecnico.title}
+      </option>`
+      )
+      .join("");
+
+    const { value: formValues } = await mostrarAlerta({
+      title: "Mover Servicio",
+      html: `
+        <div class="move-service-form">
+          <div class="mb-3">
+            <label class="form-label">Técnico de destino:</label>
+            <select id="nuevoTecnico" class="form-control">
+              ${opcionesTecnicos}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nueva fecha y hora de inicio:</label>
+            <input type="datetime-local" id="nuevaFecha" class="form-control" 
+                   value="${new Date(evento.start)
+                     .toISOString()
+                     .slice(0, 16)}" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Duración (minutos):</label>
+            <input type="number" id="duracion" class="form-control" 
+                   value="${Math.round(
+                     (new Date(evento.end) - new Date(evento.start)) /
+                       (1000 * 60)
+                   )}" 
+                   min="15" step="15" />
+          </div>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: "Mover Servicio",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#f39c12",
+      preConfirm: () => {
+        const nuevoTecnico = document.getElementById("nuevoTecnico").value;
+        const nuevaFecha = document.getElementById("nuevaFecha").value;
+        const duracion = parseInt(document.getElementById("duracion").value);
+
+        if (!nuevoTecnico || !nuevaFecha || !duracion) {
+          Swal.showValidationMessage("Por favor complete todos los campos");
+          return false;
+        }
+
+        return { nuevoTecnico, nuevaFecha, duracion };
+      },
+    });
+
+    if (formValues) {
+      try {
+        const nuevaFechaInicio = new Date(formValues.nuevaFecha);
+        const nuevaFechaFin = new Date(
+          nuevaFechaInicio.getTime() + formValues.duracion * 60 * 1000
+        );
+
+        // Verificar conflictos en el nuevo horario
+        const conflicto = eventos.find((otroEvento) => {
+          if (otroEvento.id === evento.id) return false; // Ignorar el evento actual
+          if (otroEvento.resourceId !== formValues.nuevoTecnico) return false; // Solo verificar mismo técnico
+
+          const otroInicio = new Date(otroEvento.start);
+          const otroFin = new Date(otroEvento.end);
+
+          return (
+            (nuevaFechaInicio >= otroInicio && nuevaFechaInicio < otroFin) ||
+            (nuevaFechaFin > otroInicio && nuevaFechaFin <= otroFin) ||
+            (nuevaFechaInicio <= otroInicio && nuevaFechaFin >= otroFin)
+          );
+        });
+
+        if (conflicto) {
+          mostrarAlerta({
+            icon: "error",
+            title: "Conflicto de Horario",
+            text: "Ya existe un servicio en ese horario para el técnico seleccionado",
+            confirmButtonColor: "#e74c3c",
+          });
+          return;
+        }
+
+        // Actualizar el evento
+        evento.setProp("start", nuevaFechaInicio);
+        evento.setProp("end", nuevaFechaFin);
+
+        // Si cambió el técnico, mover el evento al nuevo recurso
+        if (formValues.nuevoTecnico !== resourceIdActual) {
+          evento.remove();
+
+          // Crear nuevo evento con el nuevo técnico
+          const nuevoEvento = {
+            id: evento.id,
+            title: evento.title,
+            start: nuevaFechaInicio,
+            end: nuevaFechaFin,
+            resourceId: formValues.nuevoTecnico,
+            backgroundColor: evento.backgroundColor,
+            borderColor: evento.borderColor,
+            textColor: evento.textColor,
+            extendedProps: evento.extendedProps,
+          };
+
+          const calendarApi = calendarRef.current?.getApi();
+          if (calendarApi) {
+            calendarApi.addEvent(nuevoEvento);
+          }
+        }
+
+        // Actualizar el estado local
+        setEventos((prevEventos) =>
+          prevEventos.map((ev) =>
+            ev.id === evento.id
+              ? {
+                  ...ev,
+                  start: nuevaFechaInicio.toISOString(),
+                  end: nuevaFechaFin.toISOString(),
+                  resourceId: formValues.nuevoTecnico,
+                }
+              : ev
+          )
+        );
+
+        mostrarAlerta({
+          icon: "success",
+          title: "Servicio Movido",
+          text: "El servicio ha sido movido exitosamente",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        console.error("Error al mover servicio:", error);
+        mostrarAlerta({
+          icon: "error",
+          title: "Error",
+          text: "No se pudo mover el servicio. Intente nuevamente.",
+          confirmButtonColor: "#e74c3c",
+        });
+      }
+    }
+  };
+
   const handleEliminarServicioCalendario = async (evento) => {
     const result = await mostrarAlerta({
       title: "¿Eliminar Servicio?",
@@ -3137,28 +3438,134 @@ const Calendar = ({ darkMode = false }) => {
         throw new Error("Invalid service ID");
       }
 
+      // Asegurarnos de usar ISOString para las fechas y conservar la duración exacta
+      let scheduledStart, scheduledEnd;
+
+      // Primero intentamos usar las fechas de extendedProps si existen
+      if (
+        eventoCalendario.extendedProps?.scheduledStart &&
+        eventoCalendario.extendedProps?.scheduledEnd
+      ) {
+        scheduledStart = eventoCalendario.extendedProps.scheduledStart;
+        scheduledEnd = eventoCalendario.extendedProps.scheduledEnd;
+      }
+      // Si no están en extendedProps, usamos las fechas del evento
+      else if (eventoCalendario.start && eventoCalendario.end) {
+        // Convertir a objeto Date y luego a ISOString para asegurar el formato correcto
+        const startDate = new Date(eventoCalendario.start);
+        const endDate = new Date(eventoCalendario.end);
+
+        // Verificar que las fechas son válidas
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+          console.error("Fechas inválidas detectadas", {
+            start: eventoCalendario.start,
+            end: eventoCalendario.end,
+          });
+          // Usar fecha actual como fallback y agregar 1 hora para el fin
+          const now = new Date();
+          scheduledStart = now.toISOString();
+          scheduledEnd = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+        } else {
+          scheduledStart = startDate.toISOString();
+          scheduledEnd = endDate.toISOString();
+        }
+      }
+      // Si no hay fechas disponibles, usamos la fecha actual
+      else {
+        const now = new Date();
+        scheduledStart = now.toISOString();
+        scheduledEnd = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+      }
+
+      // Calcular y verificar la duración en minutos
+      const startTime = new Date(scheduledStart);
+      const endTime = new Date(scheduledEnd);
+      const durationMinutes = Math.round((endTime - startTime) / (1000 * 60));
+
+      console.log("Fechas procesadas para asignación:", {
+        scheduledStart,
+        scheduledEnd,
+        durationMinutes,
+      });
+
       console.log("Assigning service to calendar event:", {
         serviceId: realServiceId,
         technician: eventoCalendario.resourceId,
         technicians: technicianIds,
-        start: eventoCalendario.start,
-        end: eventoCalendario.end,
+        start: scheduledStart,
+        end: scheduledEnd,
+        durationMinutes,
       });
 
-      // Utilizar fechas específicas del evento - priorizar las de extendedProps si existen
-      const scheduledStart =
-        eventoCalendario.extendedProps?.scheduledStart ||
-        eventoCalendario.start;
-      const scheduledEnd =
-        eventoCalendario.extendedProps?.scheduledEnd || eventoCalendario.end;
+      // Utilizar fechas específicas del evento - procesarlas adecuadamente
+      // Asegurarnos de usar ISOString para las fechas y conservar la duración exacta
+      let processedStart, processedEnd;
+
+      // Primero intentamos usar las fechas de extendedProps si existen
+      if (
+        eventoCalendario.extendedProps?.scheduledStart &&
+        eventoCalendario.extendedProps?.scheduledEnd
+      ) {
+        processedStart = eventoCalendario.extendedProps.scheduledStart;
+        processedEnd = eventoCalendario.extendedProps.scheduledEnd;
+      }
+      // Si no están en extendedProps, usamos las fechas del evento
+      else if (eventoCalendario.start && eventoCalendario.end) {
+        // Convertir a objeto Date y luego a ISOString para asegurar el formato correcto
+        const startDate = new Date(eventoCalendario.start);
+        const endDate = new Date(eventoCalendario.end);
+
+        // Verificar que las fechas son válidas
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+          console.error("Fechas inválidas detectadas", {
+            start: eventoCalendario.start,
+            end: eventoCalendario.end,
+          });
+          // Usar fecha actual como fallback y agregar 1 hora para el fin
+          const now = new Date();
+          processedStart = now.toISOString();
+          processedEnd = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+        } else {
+          processedStart = startDate.toISOString();
+          processedEnd = endDate.toISOString();
+        }
+      }
+      // Si no hay fechas disponibles, usamos la fecha actual
+      else {
+        const now = new Date();
+        processedStart = now.toISOString();
+        processedEnd = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+      }
+
+      // Calcular y verificar la duración en minutos
+      const processedStartTime = new Date(processedStart);
+      const processedEndTime = new Date(processedEnd);
+      const processedDurationMinutes = Math.round(
+        (processedEndTime - processedStartTime) / (1000 * 60)
+      );
+
+      console.log("Fechas procesadas para asignación:", {
+        processedStart,
+        processedEnd,
+        processedDurationMinutes,
+      });
+
+      console.log("Assigning service to calendar event:", {
+        serviceId: realServiceId,
+        technician: eventoCalendario.resourceId,
+        technicians: technicianIds,
+        start: processedStart,
+        end: processedEnd,
+        durationMinutes: processedDurationMinutes,
+      });
 
       // First convert the service request to a service if needed
       // This will create a new service record in the services collection
       let updatedService;
       try {
         console.log("Converting service request to service...", {
-          startDate: scheduledStart,
-          endDate: scheduledEnd,
+          startDate: processedStart,
+          endDate: processedEnd,
         });
 
         const conversionResult =
@@ -3166,8 +3573,8 @@ const Calendar = ({ darkMode = false }) => {
             realServiceId,
             eventoCalendario.resourceId,
             technicianIds, // Pasar el array de técnicos
-            scheduledStart, // Usar la fecha exacta del extendedProps o del evento
-            scheduledEnd // Usar la fecha exacta del extendedProps o del evento
+            processedStart, // Usar fechas procesadas
+            processedEnd // Usar fechas procesadas
           );
 
         updatedService = conversionResult.service;
@@ -3183,16 +3590,16 @@ const Calendar = ({ darkMode = false }) => {
           status: "confirmed",
           technician: eventoCalendario.resourceId, // Técnico principal
           technicians: technicianIds, // Array de todos los técnicos
-          scheduledStart: scheduledStart,
-          scheduledEnd: scheduledEnd,
-          preferredDate: scheduledStart, // Actualizar también la fecha preferida con la fecha exacta
+          scheduledStart: processedStart, // Usar fechas procesadas
+          scheduledEnd: processedEnd, // Usar fechas procesadas
+          preferredDate: processedStart, // Actualizar también la fecha preferida
         });
       }
 
       console.log("Service successfully updated:", updatedService);
 
       // Create a properly formatted calendar event with required properties
-      // Usar siempre las fechas exactas que fueron seleccionadas en el modal
+      // Usar siempre las fechas exactas que fueron procesadas
       const formattedEvent = {
         id: updatedService._id,
         title: `${
@@ -3202,8 +3609,8 @@ const Calendar = ({ darkMode = false }) => {
           eventoCalendario.extendedProps?.clientName ||
           "Cliente"
         }`,
-        start: scheduledStart, // Usar las fechas exactas del evento o extendedProps
-        end: scheduledEnd,
+        start: processedStart, // Usar fechas procesadas
+        end: processedEnd, // Usar fechas procesadas
         resourceId: eventoCalendario.resourceId, // Usar el técnico específico para este evento
         backgroundColor: "#87c947",
         borderColor: "#87c947",
@@ -3237,9 +3644,10 @@ const Calendar = ({ darkMode = false }) => {
             updatedService.address || eventoCalendario.extendedProps?.address,
           technicians: technicianIds, // Guardar los IDs de todos los técnicos en las props extendidas
           serviceId: updatedService._id || realServiceId,
-          scheduledStart: scheduledStart, // Guardar también las fechas exactas en extendedProps
-          scheduledEnd: scheduledEnd,
+          scheduledStart: processedStart, // Guardar también las fechas procesadas
+          scheduledEnd: processedEnd, // en extendedProps
           fecha: eventoCalendario.extendedProps?.fecha, // Guardar la fecha original del modal
+          duracionMinutos: processedDurationMinutes, // Incluir la duración en minutos para referencia
         },
       };
 
@@ -3480,19 +3888,41 @@ const Calendar = ({ darkMode = false }) => {
         }
         return true;
       })
-      .map((event, idx) => ({
-        ...event,
-        id:
-          typeof event.id === "string"
-            ? event.id
-            : `evento-${idx}-${Date.now()}`,
-        resourceId:
-          typeof event.resourceId === "string"
-            ? event.resourceId
-            : String(event.resourceId),
-        editable: true,
-        display: event.display || "auto",
-      }));
+      .map((event, idx) => {
+        const validatedEvent = {
+          ...event,
+          id:
+            typeof event.id === "string"
+              ? event.id
+              : `evento-${idx}-${Date.now()}`,
+          resourceId:
+            typeof event.resourceId === "string"
+              ? event.resourceId
+              : String(event.resourceId),
+          editable: true,
+          display: event.display || "auto",
+        };
+
+        // Log para depurar si las fechas se están alterando en la validación
+        if (event.start && event.end) {
+          console.log("🔍 validateEvents - Evento procesado:", {
+            id: validatedEvent.id,
+            title: validatedEvent.title,
+            start: validatedEvent.start,
+            end: validatedEvent.end,
+            duracion:
+              validatedEvent.end && validatedEvent.start
+                ? Math.round(
+                    (new Date(validatedEvent.end) -
+                      new Date(validatedEvent.start)) /
+                      (1000 * 60)
+                  )
+                : "N/A",
+          });
+        }
+
+        return validatedEvent;
+      });
   };
 
   // Manejador de eventos montados
@@ -3700,11 +4130,279 @@ const Calendar = ({ darkMode = false }) => {
 
       // Ensure the event is registered as draggable by FullCalendar
       info.el.classList.add("fc-event-draggable");
+
+      // CALCULAR Y FORZAR ALTURA CORRECTA BASADA EN DURACIÓN REAL
+      const startTime = new Date(info.event.start);
+      const endTime = new Date(info.event.end);
+      const durationMinutes = Math.round((endTime - startTime) / (1000 * 60));
+
+      // Medir dinámicamente la altura real de un slot de 30 minutos
+      let pixelsPerSlot = 20; // Valor por defecto
+
+      try {
+        // Buscar una celda de tiempo para medir su altura real
+        const timeSlot = document.querySelector(".fc-timegrid-slot");
+        if (timeSlot) {
+          pixelsPerSlot = timeSlot.getBoundingClientRect().height;
+        }
+      } catch (e) {
+        console.warn(
+          "No se pudo medir altura del slot, usando valor por defecto"
+        );
+      }
+
+      const minutesPerSlot = 30;
+      const slotsNeeded = durationMinutes / minutesPerSlot;
+      const correctHeight = Math.round(slotsNeeded * pixelsPerSlot);
+
+      console.log("🎯 Calculando altura correcta (medición dinámica):", {
+        eventoId: info.event.id,
+        duracionMinutos: durationMinutes,
+        pixelsPorSlot: pixelsPerSlot + "px (medido)",
+        slotsNecesarios: slotsNeeded,
+        alturaCorrecta: correctHeight + "px",
+        start: startTime.toLocaleTimeString(),
+        end: endTime.toLocaleTimeString(),
+      });
+
+      // Aplicar altura inmediatamente usando múltiples métodos
+      if (info.el) {
+        // Método 1: CSS directo con !important
+        info.el.style.setProperty("height", correctHeight + "px", "important");
+        info.el.style.setProperty(
+          "min-height",
+          correctHeight + "px",
+          "important"
+        );
+        info.el.style.setProperty("max-height", "none", "important");
+
+        // Método 2: Variable CSS personalizada para mayor control
+        info.el.style.setProperty("--custom-height", correctHeight + "px");
+
+        // Método 3: Aplicar también a contenedores internos
+        const eventMain = info.el.querySelector(".fc-event-main");
+        if (eventMain) {
+          eventMain.style.setProperty("height", "100%", "important");
+          eventMain.style.setProperty(
+            "min-height",
+            correctHeight + "px",
+            "important"
+          );
+        }
+
+        const eventMainFrame = info.el.querySelector(".fc-event-main-frame");
+        if (eventMainFrame) {
+          eventMainFrame.style.setProperty("height", "100%", "important");
+          eventMainFrame.style.setProperty(
+            "min-height",
+            correctHeight + "px",
+            "important"
+          );
+        }
+
+        // Método 4: Forzar posicionamiento si es necesario
+        const computedStyle = window.getComputedStyle(info.el);
+        if (computedStyle.position === "absolute") {
+          // Para eventos con posición absoluta, también ajustar bottom si existe
+          if (info.el.style.bottom) {
+            info.el.style.removeProperty("bottom");
+          }
+        }
+      }
+
+      // Aplicar con múltiples timeouts para asegurar persistencia
+      const applyHeightFix = () => {
+        if (info.el && document.contains(info.el)) {
+          info.el.style.setProperty(
+            "height",
+            correctHeight + "px",
+            "important"
+          );
+          info.el.style.setProperty(
+            "min-height",
+            correctHeight + "px",
+            "important"
+          );
+          info.el.style.setProperty("max-height", "none", "important");
+          info.el.style.setProperty("--custom-height", correctHeight + "px");
+
+          const eventMain = info.el.querySelector(".fc-event-main");
+          if (eventMain) {
+            eventMain.style.setProperty(
+              "min-height",
+              correctHeight + "px",
+              "important"
+            );
+          }
+
+          console.log("✅ Altura forzada aplicada:", {
+            elemento: info.event.id,
+            alturaFinal: info.el.style.height,
+            alturaCalculada: correctHeight + "px",
+            duracion: durationMinutes + " minutos",
+            pixelsPorSlot: pixelsPerSlot + "px",
+          });
+        }
+      };
+
+      // Aplicar inmediatamente y con retrasos progresivos
+      setTimeout(applyHeightFix, 50);
+      setTimeout(applyHeightFix, 200);
+      setTimeout(applyHeightFix, 500);
     } catch (error) {
       console.error("Error al montar evento:", error);
       console.log("Evento problemático:", info.event);
     }
   };
+
+  // Función simplificada - ya no forzamos altura
+  const forceCorrectEventHeight = (eventElement, startTime, endTime) => {
+    // FullCalendar maneja las alturas automáticamente
+    return false;
+  };
+
+  // Agregar un efecto para limpiar selecciones residuales y prevenir selecciones no deseadas
+  useEffect(() => {
+    const clearSelections = () => {
+      // Solo limpiar las selecciones cuando se hace clic en un evento existente
+      // NO limpiar todas las selecciones automáticamente
+      const selectionElements = document.querySelectorAll(
+        ".fc-event .fc-highlight, .fc-event ~ .fc-highlight, .fc-event-selected::after, .fc-event:focus::after, .fc-selected-cell.fc-has-event"
+      );
+      selectionElements.forEach((el) => {
+        el.style.display = "none";
+        el.style.opacity = "0";
+        el.style.visibility = "hidden";
+      });
+    };
+
+    // No usar intervalo para limpiar continuamente, solo configurar los listeners
+    document.addEventListener("click", (e) => {
+      // Solo limpiar selecciones si se hace clic en un evento existente
+      if (e.target.closest(".fc-event")) {
+        clearSelections();
+      }
+    });
+
+    // Función para actualizar la información de tiempo durante el arrastre de selección
+    const updateSelectionTimeInfo = (e) => {
+      if (
+        e.target.closest(".fc-highlight") ||
+        document.querySelector(".fc-highlight")
+      ) {
+        const highlightElements = document.querySelectorAll(".fc-highlight");
+
+        // Forzar visibilidad para todas las selecciones
+        highlightElements.forEach((el) => {
+          // Asegurar que la selección es completamente visible
+          el.style.visibility = "visible";
+          el.style.opacity = "1";
+          el.style.display = "block";
+
+          // Mantener el estilo visual consistente
+          el.style.backgroundColor = "rgba(135, 201, 71, 0.3)";
+          el.style.border = "2px dashed rgba(135, 201, 71, 0.8)";
+          el.style.boxShadow = "0 0 5px rgba(135, 201, 71, 0.5)";
+
+          // Asegurarse de que los elementos de tiempo son visibles
+          const timeLabels = el.querySelectorAll(".selection-time-label");
+          timeLabels.forEach((label) => {
+            label.style.visibility = "visible";
+            label.style.opacity = "1";
+            label.style.display = "block";
+            label.style.zIndex = "100";
+          });
+        });
+      }
+
+      // También hacer visibles las celdas que se están seleccionando
+      const selectingCells = document.querySelectorAll(
+        ".fc-selecting-cell, .fc-selecting"
+      );
+      selectingCells.forEach((cell) => {
+        cell.style.backgroundColor = "rgba(135, 201, 71, 0.2)";
+        cell.style.opacity = "1";
+        cell.style.visibility = "visible";
+      });
+    };
+
+    // Agregar listener para movimiento del mouse para actualizar info de tiempo
+    document.addEventListener("mousemove", updateSelectionTimeInfo);
+
+    return () => {
+      document.removeEventListener("click", clearSelections);
+      document.removeEventListener("mousemove", updateSelectionTimeInfo);
+    };
+  }, []);
+
+  // Efecto especial para forzar la visibilidad de la selección mientras se arrastra
+  useEffect(() => {
+    // Usar nuestra nueva utilidad para configurar las visualizaciones de selección
+    const cleanup = setupCalendarSelectVisuals();
+
+    return () => {
+      if (typeof cleanup === "function") cleanup();
+    };
+  }, []);
+
+  // Función para monitorear la selección de eventos en tiempo real
+  useEffect(() => {
+    // Agregar un listener global para el evento pointerdown para iniciar el seguimiento
+    const handlePointerDown = (e) => {
+      // Solo seguir si es un click en el área del calendario (no en eventos)
+      if (
+        e.target.closest(".fc-timegrid-body") &&
+        !e.target.closest(".fc-event")
+      ) {
+        // Configurar seguimiento de selección
+        const handlePointerMove = (moveEvent) => {
+          // Buscar los elementos highlight y hacer que sean visibles
+          const highlightElements = document.querySelectorAll(".fc-highlight");
+          highlightElements.forEach((el) => {
+            // Forzar visibilidad para la selección
+            el.style.visibility = "visible";
+            el.style.opacity = "1";
+            el.style.display = "block";
+            el.style.borderWidth = "2px";
+            el.style.borderStyle = "dashed";
+            el.style.borderColor = "rgba(135, 201, 71, 0.8)";
+            el.style.backgroundColor = "rgba(135, 201, 71, 0.3)";
+
+            // Asegurarse de que los indicadores de tiempo son visibles
+            const timeLabels = el.querySelectorAll(".selection-time-label");
+            timeLabels.forEach((label) => {
+              label.style.visibility = "visible";
+              label.style.opacity = "1";
+              label.style.zIndex = "100";
+            });
+          });
+
+          // También hacer que las celdas que se están seleccionando sean visibles
+          document.querySelectorAll(".fc-selecting-cell").forEach((el) => {
+            el.style.backgroundColor = "rgba(135, 201, 71, 0.2)";
+            el.style.opacity = "1";
+            el.style.visibility = "visible";
+          });
+        };
+
+        // Limpiar evento al soltar
+        const handlePointerUp = () => {
+          document.removeEventListener("pointermove", handlePointerMove);
+          document.removeEventListener("pointerup", handlePointerUp);
+        };
+
+        // Agregar listeners temporales durante la selección
+        document.addEventListener("pointermove", handlePointerMove);
+        document.addEventListener("pointerup", handlePointerUp);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, []);
 
   // Event listener to refresh calendar when new events are added
   useEffect(() => {
@@ -3820,6 +4518,36 @@ const Calendar = ({ darkMode = false }) => {
 
   // Manejar cuando un evento se redimensiona
   const handleEventResize = (info) => {
+    const newStart = new Date(info.event.start);
+    const newEnd = new Date(info.event.end);
+    const resourceId = info.event.getResources()[0]?.id;
+
+    // Verificar solapamientos con el nuevo tamaño
+    const conflicto = eventos.find((otroEvento) => {
+      if (otroEvento.id === info.event.id) return false; // Ignorar el evento actual
+      if (otroEvento.resourceId !== resourceId) return false; // Solo verificar mismo técnico
+
+      const otroInicio = new Date(otroEvento.start);
+      const otroFin = new Date(otroEvento.end);
+
+      return (
+        (newStart >= otroInicio && newStart < otroFin) ||
+        (newEnd > otroInicio && newEnd <= otroFin) ||
+        (newStart <= otroInicio && newEnd >= otroFin)
+      );
+    });
+
+    if (conflicto) {
+      mostrarAlerta({
+        icon: "error",
+        title: "Conflicto de Horario",
+        text: "No se puede redimensionar el servicio porque se solaparía con otro servicio",
+        confirmButtonColor: "#e74c3c",
+      });
+      info.revert(); // Revertir el cambio de tamaño
+      return;
+    }
+
     // Actualizar el evento en tu estado
     const updatedEventos = eventos.map((evento) => {
       if (evento.id === info.event.id) {
@@ -3844,6 +4572,7 @@ const Calendar = ({ darkMode = false }) => {
       text: `La duración del servicio ha sido actualizada.`,
       timer: 2000,
       timerProgressBar: true,
+      showConfirmButton: false,
       background: "#f8ffec",
       color: "#004122",
     });
@@ -4014,6 +4743,75 @@ const Calendar = ({ darkMode = false }) => {
         user-select: none;
       }
       
+      /* Preservar apariencia original de los eventos */
+      .fc-event {
+        z-index: 10 !important;
+        position: relative !important;
+      }
+      
+      /* Ocultar cualquier efecto de selección en eventos sin afectar su tamaño/diseño */
+      .fc-event-selected,
+      .fc-event:focus,
+      .fc-event-selected::after,
+      .fc-event:focus::after {
+        box-shadow: none !important;
+        outline: none !important;
+      }
+      
+      /* Permitir animaciones de selección en áreas vacías pero no en eventos */
+      .fc-highlight {
+        background-color: rgba(135, 201, 71, 0.3) !important; /* Verde semi-transparente */
+        border: 2px dashed rgba(135, 201, 71, 0.8) !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        position: relative !important;
+        z-index: 5 !important;
+        pointer-events: auto !important;
+        display: block !important;
+      }
+      
+      /* Estilos para celdas durante el arrastre de selección */
+      .fc-selecting {
+        background-color: rgba(135, 201, 71, 0.2) !important;
+      }
+      
+      /* Estilos para el rectángulo de selección mientras se arrastra */
+      .fc-selecting-cell {
+        background-color: rgba(135, 201, 71, 0.2) !important;
+      }
+      
+      /* Estilo específico para selecciones visibles */
+      .visible-selection {
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: block !important;
+      }
+      
+      /* Desactivar indicadores solo cuando haya conflicto */
+      .fc-event .fc-highlight,
+      .fc-event ~ .fc-highlight {
+        opacity: 0 !important;
+        visibility: hidden !important;
+      }
+      
+      /* Mantener el cursor correcto para eventos */
+      .fc-event {
+        cursor: pointer !important; 
+      }
+      
+      /* Estilos para las celdas durante la selección */
+      .fc-selecting-cell {
+        background-color: rgba(135, 201, 71, 0.2) !important;
+      }
+      
+      /* Estilos específicos para el proceso de selección actual */
+      .fc-timegrid-col.fc-day.fc-day-future:not(.fc-day-other).fc-selecting,
+      .fc-timegrid-col.fc-day.fc-day-past:not(.fc-day-other).fc-selecting,
+      .fc-timegrid-col.fc-day.fc-day-today:not(.fc-day-other).fc-selecting,
+      .fc-timegrid-body .fc-selecting {
+        background-color: rgba(135, 201, 71, 0.1) !important;
+      }
+      
       /* Permitir menú contextual solo en nombres de técnicos */
       .tecnico-label-clickable {
         -webkit-user-select: auto !important;
@@ -4082,6 +4880,47 @@ const Calendar = ({ darkMode = false }) => {
         height: 1px;
         background-color: #e0e0e0;
         margin: 4px 0;
+      }
+
+      /* FORZAR ALTURA CORRECTA PARA EVENTOS DE CUALQUIER DURACIÓN */
+      .fc-timegrid-event {
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      
+      .fc-timegrid-event .fc-event-main {
+        height: 100% !important;
+        min-height: 100% !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      
+      .fc-timegrid-event .fc-event-main-frame {
+        height: 100% !important;
+        min-height: 100% !important;
+        max-height: none !important;
+        overflow: visible !important;
+      }
+      
+      /* Asegurar que las alturas forzadas se respeten SIEMPRE */
+      .fc-timegrid-event[style*="height"] {
+        height: auto !important;
+      }
+      
+      /* Prevenir que FullCalendar sobrescriba alturas personalizadas */
+      .fc-timegrid-event[style*="height"][style*="important"] {
+        height: var(--custom-height, auto) !important;
+      }
+      
+      /* Arreglar cabecera de técnicos que se desalineó */
+      .fc-resource-area-header,
+      .fc-resource-area {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 100 !important;
+        background: white !important;
       }
 
       /* Estilos forzados para eventos por estado */
@@ -4241,6 +5080,10 @@ const Calendar = ({ darkMode = false }) => {
                 allDaySlot: false,
                 nowIndicator: true,
                 eventContent: renderEventContent,
+                defaultTimedEventDuration: null,
+                forceEventDuration: false,
+                slotEventOverlap: false,
+                // Sin configuración de altura específica - usar defaults de FullCalendar
               },
               dayGridMonth: {
                 type: "dayGrid",
@@ -4280,8 +5123,11 @@ const Calendar = ({ darkMode = false }) => {
             eventStartEditable={true}
             eventDurationEditable={true}
             droppable={true}
-            eventOverlap={true}
-            eventConstraint={null}
+            eventOverlap={false}
+            eventConstraint={{
+              start: "06:00:00",
+              end: "20:00:00",
+            }}
             eventResizableFromStart={true}
             dragRevertDuration={0}
             dragScroll={true}
@@ -4292,9 +5138,16 @@ const Calendar = ({ darkMode = false }) => {
               }
             }}
             businessHours={false}
-            snapDuration={"00:15:00"}
+            snapDuration={"00:30:00"}
             slotDuration={"00:30:00"}
             slotLabelInterval={"01:00:00"}
+            slotMinTime="06:00:00"
+            slotMaxTime="20:00:00"
+            aspectRatio={1.8}
+            defaultTimedEventDuration={null}
+            forceEventDuration={false}
+            nextDayThreshold={"00:00:00"}
+            height={600}
             allDaySlot={false}
             eventResize={handleEventResize}
             eventDrop={handleEventDrop}
@@ -4305,10 +5158,38 @@ const Calendar = ({ darkMode = false }) => {
             eventResourceEditable={true}
             locale={esLocale}
             selectable={true}
-            selectMirror={true}
+            selectMirror={true} // Habilitar el espejo de selección para visualizar mientras se arrastra
             unselectAuto={true}
-            selectMinDistance={0}
-            selectLongPressDelay={100}
+            selectMinDistance={2} // Distancia mínima razonable para evitar selecciones accidentales
+            selectLongPressDelay={300} // Delay razonable para evitar selecciones por clicks rápidos
+            selectAllow={(selectInfo) => {
+              // Verificación básica - debe haber un recurso
+              if (!selectInfo?.resource?.id) {
+                return false;
+              }
+
+              // Verificar si hay algún evento existente que se solape con esta selección
+              const hasOverlap = eventos.some((evento) => {
+                // Solo considerar eventos en el mismo recurso (técnico)
+                if (evento.resourceId !== selectInfo.resource.id) {
+                  return false;
+                }
+
+                const eventStart = new Date(evento.start);
+                const eventEnd = new Date(evento.end);
+                const selectStart = new Date(selectInfo.start);
+                const selectEnd = new Date(selectInfo.end);
+
+                // Verificar solapamiento
+                return (
+                  (selectStart >= eventStart && selectStart < eventEnd) ||
+                  (selectEnd > eventStart && selectEnd <= eventEnd) ||
+                  (selectStart <= eventStart && selectEnd >= eventEnd)
+                );
+              });
+
+              return !hasOverlap; // Permitir selección solo si NO hay solapamiento
+            }}
             select={(info) => {
               console.log("🎯 Select disparado en FullCalendar:", {
                 view: info.view.type,
@@ -4316,6 +5197,9 @@ const Calendar = ({ darkMode = false }) => {
                 end: info.endStr,
                 resource: info.resource?.id,
               });
+
+              // Usar nuestra función de ayuda para añadir etiquetas de tiempo a la selección
+              addTimeLabelsToSelection(info);
 
               // Permitir selección en vistas de tiempo y solo si hay un recurso (técnico) seleccionado
               const isTimeGridView =
@@ -4343,8 +5227,35 @@ const Calendar = ({ darkMode = false }) => {
             }}
             eventClick={(info) => {
               console.log("🎯 EventClick disparado en FullCalendar:", info);
-              // Deseleccionar cualquier selección activa antes de manejar el clic del evento
+
+              // Prevenir TOTALMENTE cualquier comportamiento por defecto o propagación
+              if (info.jsEvent) {
+                info.jsEvent.preventDefault();
+                info.jsEvent.stopPropagation();
+                info.jsEvent.stopImmediatePropagation();
+              }
+
+              // Deseleccionar cualquier selección activa inmediatamente
               info.view.calendar.unselect();
+
+              // Eliminar cualquier indicador de selección SOLO en los eventos
+              const removeSelectionIndicators = () => {
+                // Solo remover indicadores si estamos haciendo clic en un evento existente
+                // NO remover la selección actual en áreas vacías
+                const selectionElements = document.querySelectorAll(
+                  ".fc-event .fc-highlight, .fc-event ~ .fc-highlight"
+                );
+                selectionElements.forEach((el) => {
+                  el.style.opacity = "0";
+                  el.style.visibility = "hidden";
+                });
+              };
+
+              // Ejecutar ahora y con un pequeño retraso para asegurarnos de eliminar cualquier selección
+              removeSelectionIndicators();
+              setTimeout(removeSelectionIndicators, 50);
+
+              // Manejar el clic en el evento existente
               handleEventClick(info);
             }}
             dateClick={handleDateClick}

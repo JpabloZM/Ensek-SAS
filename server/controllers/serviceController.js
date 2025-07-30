@@ -709,7 +709,13 @@ export const convertServiceRequestToService = async (req, res) => {
       address: serviceRequest.address,
       serviceType: serviceRequest.serviceType,
       description: serviceRequest.description,
-      preferredDate: serviceRequest.preferredDate,
+      preferredDate: req.body.preferredDate || serviceRequest.preferredDate,
+      scheduledStart: req.body.scheduledStart
+        ? new Date(req.body.scheduledStart)
+        : null,
+      scheduledEnd: req.body.scheduledEnd
+        ? new Date(req.body.scheduledEnd)
+        : null,
       status: "confirmed",
       technician: req.body.technician || null,
       technicians: technicians.length > 0 ? technicians : [],

@@ -29,9 +29,17 @@
   padding: 2px 4px !important;
 }
 
-/* Ensure events don't overlap too much but can be dragged */
+/* Prevent event overlap by ensuring proper sizing */
 .fc-timegrid-event-harness {
   z-index: 9 !important;
+  position: relative !important;
+}
+
+/* Ensure events don't visually overlap */
+.fc-timegrid-event {
+  margin: 0 !important;
+  border-radius: 4px !important;
+  min-height: 20px !important;
 }
 
 /* Improve draggable events */
@@ -39,12 +47,60 @@
   cursor: pointer !important;
   pointer-events: auto !important;
   user-select: none !important;
+  margin: 1px 0 !important;
+  border: 2px solid transparent !important;
+  transition: all 0.2s ease !important;
+}
+
+.fc-event:hover {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: scale(1.02) !important;
 }
 
 .fc-event-draggable {
   cursor: move !important;
   pointer-events: auto !important;
   user-select: none !important;
+}
+
+/* Improve event selection visual feedback */
+.fc-event-selected {
+  border-color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(135, 201, 71, 0.8) !important;
+}
+
+/* Better visual feedback for time slot selection */
+.fc-highlight {
+  background-color: rgba(135, 201, 71, 0.3) !important;
+  border: 2px dashed rgba(135, 201, 71, 0.8) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Prevent selection in occupied time slots */
+.fc-timegrid-slot[data-occupied="true"] {
+  background-color: rgba(231, 76, 60, 0.1) !important;
+  cursor: not-allowed !important;
+}
+
+/* Styles for the move service modal */
+.move-service-form .form-label {
+  font-weight: 600 !important;
+  color: #004122 !important;
+  margin-bottom: 8px !important;
+}
+
+.move-service-form .form-control {
+  border: 2px solid #c5f198 !important;
+  border-radius: 6px !important;
+  padding: 10px !important;
+  font-size: 14px !important;
+}
+
+.move-service-form .form-control:focus {
+  border-color: #87c947 !important;
+  box-shadow: 0 0 0 0.2rem rgba(135, 201, 71, 0.25) !important;
+  outline: none !important;
 }
 
 .fc-event-main-frame {
@@ -59,4 +115,56 @@
   opacity: 0 !important;
   height: 0 !important;
   overflow: hidden !important;
+}
+
+/* Mejorar la visibilidad de las selecciones en el calendario */
+.fc-highlight {
+  height: 100% !important;
+  width: 100% !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+  background-color: rgba(135, 201, 71, 0.4) !important;
+  border: 3px dashed rgba(135, 201, 71, 0.9) !important;
+  box-shadow: 0 0 8px rgba(135, 201, 71, 0.7) !important;
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+/* Asegurar que las etiquetas de tiempo sean visibles */
+.selection-time-label {
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 100 !important;
+  pointer-events: none !important;
+}
+
+/* Mejorar la visualización de celdas durante la selección */
+.fc-selecting-cell,
+.fc-selecting {
+  background-color: rgba(135, 201, 71, 0.3) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Estilos específicos para las etiquetas de hora y duración */
+.selection-time-label.start-time,
+.selection-time-label.end-time {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+  color: white !important;
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
+  font-size: 13px !important;
+  font-weight: bold !important;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5) !important;
+}
+
+.selection-time-label.duration {
+  background-color: rgba(135, 201, 71, 1) !important;
+  color: white !important;
+  padding: 5px 10px !important;
+  border-radius: 4px !important;
+  font-size: 15px !important;
+  font-weight: bold !important;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3) !important;
 }
