@@ -29,18 +29,803 @@ import "./styles/now-indicator.css"; // Estilos para el indicador de hora actual
 
 const Calendar = ({ darkMode = false }) => {
   // Manejador para el drop externo en el calendario (drag & drop de servicios)
-  const handleExternalDrop = (info) => {
-    // Puedes personalizar la lógica aquí según tu modelo de datos
-    // Por defecto, solo muestra una alerta y recarga eventos
-    mostrarAlerta({
-      icon: "info",
-      title: "Servicio asignado",
-      text: "Se ha asignado un servicio al calendario.",
-      timer: 1500,
-      showConfirmButton: false,
+  const handleExternalDrop = async (info) => {
+    console.log("🎯 handleExternalDrop disparado:", info);
+    console.log("📊 Información completa del drop:", {
+      date: info.date,
+      dateStr: info.dateStr,
+      allDay: info.allDay,
+      resource: info.resource,
+      jsEvent: info.jsEvent,
+      view: info.view?.type,
     });
-    // Aquí podrías agregar el servicio a eventos si tienes la lógica
-    setEventos((prev) => [...prev]); // Forzar refresco visual
+
+    // Obtener información del evento arrastrado
+    const draggedEventId = info.draggedEl?.getAttribute("data-service-id");
+    const servicioArrastrado = serviciosPendientes.find(
+      (servicio) =>
+        String(servicio.id) === String(draggedEventId) ||
+        String(servicio._id) === String(draggedEventId)
+    );
+
+    if (!servicioArrastrado) {
+      console.warn("No se encontró el servicio arrastrado:", draggedEventId);
+      mostrarAlerta({
+        icon: "warning",
+        title: "Error",
+        text: "No se pudo encontrar el servicio seleccionado.",
+        confirmButtonColor: "#87c947",
+      });
+      return;
+    }
+
+    // Obtener información del técnico y horario de destino
+    const tecnico = tecnicos.find((t) => t.id === info.resource?.id);
+    if (!tecnico) {
+      console.warn("No se encontró el técnico:", info.resource?.id);
+      mostrarAlerta({
+        icon: "warning",
+        title: "Error",
+        text: "Debe soltar el servicio en la columna de un técnico específico.",
+        confirmButtonColor: "#87c947",
+      });
+      return;
+    }
+
+    // Usar la fecha exacta donde se soltó el servicio
+    let fechaInicio;
+
+    // Si tenemos dateStr, usarlo (más preciso)
+    if (info.dateStr) {
+      fechaInicio = new Date(info.dateStr);
+    } else {
+      fechaInicio = new Date(info.date);
+    }
+
+    // Si el evento no es de todo el día, y tenemos información más precisa del evento
+    if (!info.allDay && info.jsEvent) {
+      try {
+        // Intentar obtener la hora más precisa desde el evento del mouse
+        const calendarElement = document.querySelector(".fc-timegrid-slots");
+        if (calendarElement) {
+          const rect = calendarElement.getBoundingClientRect();
+          const mouseY = info.jsEvent.clientY - rect.top;
+
+          // Calcular la hora basada en la posición del mouse
+          const slotHeight = 30; // altura de cada slot de 30 minutos
+          const slotsFromTop = Math.floor(mouseY / slotHeight);
+          const minutesFromMidnight = slotsFromTop * 30;
+
+          // Crear nueva fecha con la hora calculada
+          const fechaBase = new Date(fechaInicio);
+          fechaBase.setHours(0, 0, 0, 0); // Resetear a medianoche
+          fechaBase.setMinutes(minutesFromMidnight); // Agregar los minutos calculados
+
+          // Solo usar esta fecha si parece razonable (entre 0 y 24 horas)
+          if (minutesFromMidnight >= 0 && minutesFromMidnight < 1440) {
+            fechaInicio = fechaBase;
+            console.log("🎯 Hora calculada desde posición del mouse:", {
+              mouseY,
+              slotsFromTop,
+              minutesFromMidnight,
+              nuevaHora: fechaInicio.toLocaleString(),
+            });
+          }
+        }
+      } catch (error) {
+        console.warn("Error calculando hora precisa:", error);
+      }
+    }
+
+    console.log("📅 Fecha y hora donde se soltó el servicio:", {
+      original: info.date,
+      dateStr: info.dateStr,
+      fechaInicioFinal: fechaInicio.toISOString(),
+      horaLocal: fechaInicio.toLocaleString(),
+      allDay: info.allDay,
+    });
+
+    // Por defecto, asignar 1 hora de duración
+    const fechaFin = new Date(fechaInicio.getTime() + 60 * 60 * 1000);
+
+    // Verificar si ya existe un evento en este horario
+    const eventoExistente = eventos.find((evento) => {
+      const eventoInicio = new Date(evento.start);
+      const eventoFinEvento = new Date(evento.end);
+      const mismoTecnico = evento.resourceId === info.resource.id;
+
+      const hayConflicto =
+        mismoTecnico &&
+        ((fechaInicio >= eventoInicio && fechaInicio < eventoFinEvento) ||
+          (fechaFin > eventoInicio && fechaFin <= eventoFinEvento) ||
+          (fechaInicio <= eventoInicio && fechaFin >= eventoFinEvento));
+
+      return hayConflicto;
+    });
+
+    if (eventoExistente) {
+      mostrarAlerta({
+        icon: "info",
+        title: "Espacio Ocupado",
+        text: "Ya existe un servicio programado en este horario. Seleccione otro horario.",
+        timer: 2000,
+        showConfirmButton: false,
+        background: "#f8ffec",
+        color: "#004122",
+      });
+      return;
+    }
+
+    // Crear los estados del servicio para el modal
+    const estadosServicio = {
+      confirmado: {
+        nombre: "Confirmado",
+        color: "#87c947",
+        icon: "fa-check",
+        gradient: "linear-gradient(135deg, #87c947, #66b417)",
+      },
+      cancelado: {
+        nombre: "Cancelado",
+        color: "#e74c3c",
+        icon: "fa-times",
+        gradient: "linear-gradient(135deg, #e74c3c, #c0392b)",
+      },
+      pendiente: {
+        nombre: "Pendiente",
+        color: "#ffd54f",
+        icon: "fa-clock",
+        gradient: "linear-gradient(135deg, #ffd54f, #f1c40f)",
+      },
+      facturado: {
+        nombre: "Facturado",
+        color: "#7f8c8d",
+        icon: "fa-file-invoice-dollar",
+        gradient: "linear-gradient(135deg, #95a5a6, #7f8c8d)",
+      },
+      almuerzo: {
+        nombre: "Hora de Almuerzo",
+        color: "#3498db",
+        icon: "fa-utensils",
+        gradient: "linear-gradient(135deg, #3498db, #2980b9)",
+      },
+      especial: {
+        nombre: "Situación Especial",
+        color: "#9b59b6",
+        icon: "fa-exclamation-circle",
+        gradient: "linear-gradient(135deg, #9b59b6, #8e44ad)",
+      },
+    };
+
+    // Mostrar modal para configurar el servicio asignado
+    const { value: formValues } = await mostrarAlerta({
+      title: "Asignar Servicio al Calendario",
+      html: `
+      <div id="servicioForm">
+        <div class="form-row">
+          <div class="input-group">
+            <label>Tipo de servicio</label>
+            <select id="nombre" class="form-field">
+              <option value="pest-control" ${
+                servicioArrastrado.serviceType === "pest-control"
+                  ? "selected"
+                  : ""
+              }>Control de Plagas</option>
+              <option value="gardening" ${
+                servicioArrastrado.serviceType === "gardening" ? "selected" : ""
+              }>Jardinería</option>
+              <option value="residential-fumigation" ${
+                servicioArrastrado.serviceType === "residential-fumigation"
+                  ? "selected"
+                  : ""
+              }>Fumigación Residencial</option>
+              <option value="commercial-fumigation" ${
+                servicioArrastrado.serviceType === "commercial-fumigation"
+                  ? "selected"
+                  : ""
+              }>Fumigación Comercial</option>
+              <option value="custom" ${
+                servicioArrastrado.serviceType === "custom" ? "selected" : ""
+              }>Otro</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Cliente</label>
+            <input type="text" id="clientName" class="form-field" placeholder="Nombre del cliente" value="${
+              servicioArrastrado.clientName || servicioArrastrado.name || ""
+            }">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="clientEmail" class="form-field" placeholder="correo@ejemplo.com" value="${
+              servicioArrastrado.clientEmail || servicioArrastrado.email || ""
+            }">
+          </div>
+          <div class="input-group">
+            <label>Teléfono</label>
+            <input type="tel" id="clientPhone" class="form-field" placeholder="Teléfono de contacto" value="${
+              servicioArrastrado.clientPhone || servicioArrastrado.phone || ""
+            }">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="input-group">
+            <label>Dirección</label>
+            <input type="text" id="address" class="form-field" placeholder="Dirección completa" value="${
+              servicioArrastrado.address || ""
+            }">
+          </div>
+          <div class="input-group">
+            <label>Duración (horas)</label>
+            <select id="duracion" class="form-field">
+              <option value="0.5">30 minutos</option>
+              <option value="1" selected>1 hora</option>
+              <option value="1.5">1 hora 30 minutos</option>
+              <option value="2">2 horas</option>
+              <option value="2.5">2 horas 30 minutos</option>
+              <option value="3">3 horas</option>
+              <option value="4">4 horas</option>
+              <option value="6">6 horas</option>
+              <option value="8">8 horas</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row description-row">
+          <div class="input-group full-width">
+            <label>Descripción</label>
+            <textarea id="descripcion" class="form-field" placeholder="Descripción detallada del servicio" rows="3">${
+              servicioArrastrado.descripcion ||
+              servicioArrastrado.description ||
+              ""
+            }</textarea>
+          </div>
+        </div>
+        
+        <div class="form-row mt-2">
+          <div class="input-group full-width">
+            <label>Estado del servicio</label>
+            <div id="estadosContainer">
+              ${Object.entries(estadosServicio)
+                .map(
+                  ([key, estado]) => `
+                  <button 
+                    type="button" 
+                    class="estado-btn ${key === "confirmado" ? "active" : ""}" 
+                    data-estado="${key}" 
+                    style="background: ${estado.gradient}; opacity: ${
+                    key === "confirmado" ? "1" : "0.6"
+                  };"
+                  >
+                    <i class="fas ${estado.icon}"></i>
+                    ${estado.nombre}
+                  </button>
+                `
+                )
+                .join("")}
+            </div>
+            <input type="hidden" id="estadoServicio" value="confirmado">
+          </div>
+        </div>
+        
+        <div class="form-row tech-info">
+          <div class="input-group full-width">
+            <div class="tech-details-card">
+              <div class="tech-header">
+                <i class="fas fa-info-circle"></i>
+                <span>Información de Asignación</span>
+              </div>
+              <div class="tech-details-content">
+                <div class="tech-detail-item">
+                  <i class="fas fa-user"></i>
+                  <span>Técnico: <strong>${tecnico.title}</strong></span>
+                </div>
+                <div class="tech-time-row">
+                  <div class="tech-detail-item time-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Inicio: <strong>${fechaInicio
+                      .toLocaleTimeString()
+                      .replace(/(:\d{2}):\d{2}$/, "$1")}</strong></span>
+                  </div>
+                  <div class="tech-detail-item time-item time-end">
+                    <i class="fas fa-hourglass-end"></i>
+                    <span id="tiempoFin">Fin: <strong>${fechaFin
+                      .toLocaleTimeString()
+                      .replace(/(:\d{2}):\d{2}$/, "$1")}</strong></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <style>
+          /* Usar los mismos estilos que en handleDateSelect */
+          #servicioForm {
+            padding: 15px 15px 5px 15px;
+            background-color: #2d3748;
+            border-radius: 10px;
+            width: 600px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
+          
+          .form-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            width: 100%;
+            gap: 20px;
+            box-sizing: border-box;
+          }
+          
+          .input-group {
+            display: flex;
+            flex-direction: column;
+            width: 270px;
+            max-width: 270px;
+            min-width: 270px;
+            box-sizing: border-box;
+          }
+          
+          .input-group.full-width {
+            width: 100%;
+            max-width: 100%;
+            min-width: 100%;
+          }
+          
+          .input-group label {
+            color: #87c947;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 14px;
+          }
+          
+          .form-field {
+            padding: 10px 12px;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            background-color: #1a202c;
+            color: white;
+            width: 100%;
+            height: 40px;
+            box-sizing: border-box;
+            font-size: 14px;
+            min-height: 40px;
+            text-align: left;
+          }
+          
+          .form-field::placeholder {
+            color: #718096;
+          }
+          
+          .form-field:focus {
+            border-color: #87c947;
+            outline: none;
+            box-shadow: 0 0 0 1px #87c947;
+          }
+          
+          textarea.form-field {
+            height: auto;
+            min-height: 80px;
+            resize: vertical;
+            width: 100%;
+            max-width: 100%;
+            min-width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            display: block;
+            margin: 0 auto;
+          }
+          
+          /* Estilos para los botones de estado */
+          #estadosContainer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+          }
+          
+          .estado-btn {
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: none;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.6;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          }
+          
+          .estado-btn i {
+            font-size: 14px;
+          }
+          
+          .estado-btn.active {
+            opacity: 1;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+          }
+          
+          .tech-details-card {
+            width: 100%;
+            background-color: #1a202c;
+            border-radius: 8px;
+            border-left: 4px solid #87c947;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            margin-top: 0;
+            margin-bottom: 0;
+          }
+          
+          .tech-header {
+            background-color: #22252f;
+            padding: 10px 15px;
+            color: #87c947;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #2d3748;
+            border-left: 4px solid #87c947;
+            margin-left: -4px;
+          }
+          
+          .tech-details-content {
+            padding: 10px 15px;
+          }
+          
+          .tech-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #a0aec0;
+            margin-bottom: 6px;
+            font-size: 14px;
+            line-height: 1.4;
+          }
+          
+          .tech-detail-item:last-child {
+            margin-bottom: 0;
+          }
+          
+          .tech-detail-item i {
+            color: #87c947;
+            width: 16px;
+            text-align: center;
+          }
+          
+          .tech-detail-item strong {
+            color: #e2e8f0;
+            font-weight: 500;
+          }
+          
+          .tech-time-row {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 30px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #2d3748;
+          }
+          
+          .tech-detail-item.time-item {
+            margin-bottom: 0;
+          }
+          
+          .tech-detail-item.time-end {
+            margin-left: 20px;
+          }
+          
+          .mt-2 {
+            margin-top: 10px;
+          }
+          
+          select.form-field, input.form-field {
+            min-width: 100%;
+            max-width: 100%;
+            width: 100%;
+          }
+        </style>
+      </div>
+    `,
+      showCancelButton: true,
+      confirmButtonText: "ASIGNAR",
+      cancelButtonText: "CANCELAR",
+      confirmButtonColor: "#87c947",
+      cancelButtonColor: "#383a46",
+      background: "#1e1e2f",
+      color: "#ffffff",
+      buttonsStyling: true,
+      customClass: {
+        popup: "swal2-popup-custom",
+        title: "swal2-title-custom",
+        confirmButton: "swal2-confirm-button swal2-styled",
+        cancelButton: "swal2-cancel-button swal2-styled",
+        htmlContainer: "swal2-html-custom",
+        actions: "swal2-actions-custom",
+      },
+      didOpen: () => {
+        // Agregar event listeners para los botones de estado
+        const estadoBtns = document.querySelectorAll(".estado-btn");
+        const estadoInput = document.getElementById("estadoServicio");
+
+        estadoBtns.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            // Remover clase active de todos los botones
+            estadoBtns.forEach((b) => {
+              b.classList.remove("active");
+              b.style.opacity = "0.6";
+            });
+
+            // Agregar clase active al botón clickeado
+            btn.classList.add("active");
+            btn.style.opacity = "1";
+            btn.style.transform = "scale(1.05)";
+
+            // Actualizar el input hidden
+            estadoInput.value = btn.getAttribute("data-estado");
+          });
+        });
+
+        // Agregar event listener para cambio de duración
+        const duracionSelect = document.getElementById("duracion");
+        const tiempoFinElement = document.getElementById("tiempoFin");
+
+        duracionSelect.addEventListener("change", () => {
+          const duracionHoras = parseFloat(duracionSelect.value);
+          const nuevaFechaFin = new Date(
+            fechaInicio.getTime() + duracionHoras * 60 * 60 * 1000
+          );
+          tiempoFinElement.innerHTML = `Fin: <strong>${nuevaFechaFin
+            .toLocaleTimeString()
+            .replace(/(:\d{2}):\d{2}$/, "$1")}</strong>`;
+        });
+      },
+      preConfirm: () => {
+        const nombre = document.getElementById("nombre").value;
+        const clientName = document.getElementById("clientName").value;
+        const clientEmail = document.getElementById("clientEmail").value;
+        const clientPhone = document.getElementById("clientPhone").value;
+        const address = document.getElementById("address").value;
+        const descripcion = document.getElementById("descripcion").value;
+        const estadoServicio = document.getElementById("estadoServicio").value;
+        const duracion = parseFloat(document.getElementById("duracion").value);
+
+        if (!nombre || !clientName) {
+          mostrarAlerta({
+            icon: "error",
+            title: "Error",
+            text: "Por favor complete al menos el tipo de servicio y el nombre del cliente",
+            confirmButtonColor: "#87c947",
+          });
+          return false;
+        }
+
+        return {
+          serviceType: nombre,
+          clientName,
+          clientEmail,
+          clientPhone,
+          address,
+          descripcion,
+          estado: estadoServicio,
+          duracion,
+        };
+      },
+    });
+
+    if (formValues) {
+      try {
+        // Calcular fecha fin basada en la duración seleccionada
+        const duracionMs = formValues.duracion * 60 * 60 * 1000;
+        const fechaFinCalculada = new Date(fechaInicio.getTime() + duracionMs);
+
+        // Función para formatear fecha manteniendo la zona horaria local
+        const formatearFechaLocal = (fecha) => {
+          const year = fecha.getFullYear();
+          const month = String(fecha.getMonth() + 1).padStart(2, "0");
+          const day = String(fecha.getDate()).padStart(2, "0");
+          const hours = String(fecha.getHours()).padStart(2, "0");
+          const minutes = String(fecha.getMinutes()).padStart(2, "0");
+          const seconds = String(fecha.getSeconds()).padStart(2, "0");
+
+          return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+        };
+
+        const startFormatted = formatearFechaLocal(fechaInicio);
+        const endFormatted = formatearFechaLocal(fechaFinCalculada);
+
+        console.log("🕐 Fechas calculadas:", {
+          fechaInicioOriginal: fechaInicio.toLocaleString(),
+          fechaFinCalculada: fechaFinCalculada.toLocaleString(),
+          startFormatted: startFormatted,
+          endFormatted: endFormatted,
+          duracionHoras: formValues.duracion,
+        });
+
+        // Crear el evento para asignar
+        const eventoParaAsignar = {
+          start: startFormatted,
+          end: endFormatted,
+          resourceId: tecnico.id,
+          title: `${mapServiceTypeToSpanish(formValues.serviceType)} - ${
+            formValues.clientName
+          }`,
+          extendedProps: {
+            ...servicioArrastrado,
+            clientName: formValues.clientName,
+            clientEmail: formValues.clientEmail,
+            clientPhone: formValues.clientPhone,
+            address: formValues.address,
+            descripcion: formValues.descripcion,
+            serviceType: formValues.serviceType,
+            estado: formValues.estado,
+            scheduledStart: startFormatted,
+            scheduledEnd: endFormatted,
+          },
+        };
+
+        console.log("Asignando servicio con datos:", eventoParaAsignar);
+
+        // Activar flag para evitar procesamiento automático
+        setIsProcessingTempEvent(true);
+
+        // Crear un ID temporal único que persista
+        const tempId = `drag-${Date.now()}-${Math.random()
+          .toString(36)
+          .substr(2, 9)}`;
+
+        // Primero agregar el evento al estado local para que aparezca inmediatamente
+        const eventoLocal = {
+          ...eventoParaAsignar,
+          id: tempId,
+          backgroundColor: getColorByEstado(formValues.estado),
+          borderColor: getColorByEstado(formValues.estado),
+          className: `estado-${formValues.estado}`,
+          textColor: "white",
+          display: "block",
+          // Marcar como evento local temporal para evitar que sea sobrescrito
+          extendedProps: {
+            ...eventoParaAsignar.extendedProps,
+            isLocalEvent: true,
+            localTempId: tempId,
+            preserveEvent: true,
+          },
+        };
+
+        console.log("🎯 Creando evento local temporal:", eventoLocal);
+
+        // Agregar inmediatamente al estado local
+        setEventos((prevEventos) => {
+          const nuevosEventos = [...prevEventos, eventoLocal];
+          console.log(
+            "📊 Estado de eventos después de agregar temporal:",
+            nuevosEventos.length
+          );
+          return nuevosEventos;
+        });
+
+        // Crear el servicio en el backend en paralelo
+        try {
+          const servicioActualizado = await handleAsignarServicio(
+            eventoParaAsignar,
+            servicioArrastrado._id || servicioArrastrado.id,
+            [tecnico.id],
+            true // skipRefresh = true para evitar que sobrescriba nuestro evento local
+          );
+
+          if (servicioActualizado && servicioActualizado._id) {
+            console.log(
+              "✅ Servicio creado exitosamente, actualizando ID:",
+              servicioActualizado._id
+            );
+
+            // Actualizar el evento temporal con el ID real del backend
+            setEventos((prevEventos) =>
+              prevEventos.map((evento) => {
+                if (
+                  evento.id === tempId ||
+                  evento.extendedProps?.localTempId === tempId
+                ) {
+                  return {
+                    ...evento,
+                    id: servicioActualizado._id,
+                    extendedProps: {
+                      ...evento.extendedProps,
+                      serviceId: servicioActualizado._id,
+                      isLocalEvent: false, // Ya no es temporal
+                    },
+                  };
+                }
+                return evento;
+              })
+            );
+
+            // Después de 3 segundos, permitir que el sistema refresh para sincronizar con el backend
+            setTimeout(() => {
+              console.log(
+                "🔄 Permitiendo refresh del sistema después de 3 segundos"
+              );
+              setEventos((prevEventos) =>
+                prevEventos.map((evento) => {
+                  if (evento.id === servicioActualizado._id) {
+                    return {
+                      ...evento,
+                      extendedProps: {
+                        ...evento.extendedProps,
+                        preserveEvent: false, // Permitir actualizaciones del backend
+                      },
+                    };
+                  }
+                  return evento;
+                })
+              );
+              // Desactivar flag después de completar el proceso
+              setIsProcessingTempEvent(false);
+            }, 3000);
+
+            mostrarAlerta({
+              icon: "success",
+              title: "Servicio Asignado",
+              text: "El servicio ha sido asignado correctamente al calendario.",
+              timer: 1500,
+              showConfirmButton: false,
+              background: "#f8ffec",
+              color: "#004122",
+            });
+          } else {
+            console.error(
+              "❌ Error en la creación del servicio, removiendo evento temporal"
+            );
+            // Si falló, remover el evento temporal y desactivar flag
+            setEventos((prevEventos) =>
+              prevEventos.filter(
+                (evento) =>
+                  evento.id !== tempId &&
+                  evento.extendedProps?.localTempId !== tempId
+              )
+            );
+            setIsProcessingTempEvent(false);
+          }
+        } catch (error) {
+          console.error("❌ Error al crear servicio:", error);
+          // Remover el evento temporal si hay error y desactivar flag
+          setEventos((prevEventos) =>
+            prevEventos.filter(
+              (evento) =>
+                evento.id !== tempId &&
+                evento.extendedProps?.localTempId !== tempId
+            )
+          );
+          setIsProcessingTempEvent(false);
+        }
+      } catch (error) {
+        console.error("Error al asignar servicio:", error);
+        mostrarAlerta({
+          icon: "error",
+          title: "Error",
+          text: "No se pudo asignar el servicio. Por favor, intente nuevamente.",
+          confirmButtonColor: "#87c947",
+        });
+      }
+    }
   };
   // Render personalizado para mostrar nombre, tipo de servicio y hora en cada evento
   // Función para traducir el tipo de servicio si es necesario
@@ -133,6 +918,7 @@ const Calendar = ({ darkMode = false }) => {
   const { services, loading, error, updateService, getAllServices } =
     useServices();
   const [serviciosPendientes, setServiciosPendientes] = useState([]);
+  const [isProcessingTempEvent, setIsProcessingTempEvent] = useState(false); // Nueva variable para controlar procesamiento
 
   // Inicializar eventos desde localStorage si existen
   const [eventos, setEventos] = useState(() => {
@@ -320,195 +1106,190 @@ const Calendar = ({ darkMode = false }) => {
   };
 
   // Function to process services data
-  const processServices = useCallback((servicesData) => {
-    console.log("Processing services data:", servicesData);
+  const processServices = useCallback(
+    (servicesData) => {
+      // ⭐ SOLUCIÓN RADICAL: No procesar NADA si estamos manejando eventos temporales
+      if (isProcessingTempEvent) {
+        console.log(
+          "� BLOQUEADO: processServices - asignación manual en curso"
+        );
+        return;
+      }
 
-    // Actualizar servicios locales
-    setLocalServices(servicesData);
+      console.log("Processing services data:", servicesData);
 
-    // Procesar servicios pendientes - solo incluir los que NO tienen técnico asignado
-    const pendingServices = servicesData
-      .filter((service) => service.status === "pending" && !service.technician)
-      .map((service) => {
-        // Calcular duración basada en scheduledStart/End
-        let calculatedDuration = 60; // default 60 minutos
-        if (service.scheduledStart && service.scheduledEnd) {
-          const start = new Date(service.scheduledStart);
-          const end = new Date(service.scheduledEnd);
-          calculatedDuration = Math.round((end - start) / (1000 * 60)); // diferencia en minutos
-          console.log(
-            `Service ${service._id}: scheduledStart=${service.scheduledStart}, scheduledEnd=${service.scheduledEnd}, duration=${calculatedDuration} minutes`
-          );
-        }
+      // Actualizar servicios locales
+      setLocalServices(servicesData);
 
-        return {
-          _id: service._id,
-          id: service._id,
-          nombre: mapServiceTypeToSpanish(service.serviceType),
-          descripcion: service.description || "",
-          duracion: calculatedDuration,
-          color: "#ffd54f",
-          estado: service.status || "pendiente",
-          clientName: service.name,
-          clientEmail: service.email,
-          clientPhone: service.phone,
-          address: service.address,
-          preferredDate: service.preferredDate,
-          scheduledStart: service.scheduledStart,
-          scheduledEnd: service.scheduledEnd,
-          updatedAt: service.updatedAt,
-          createdAt: service.createdAt,
-        };
-      });
-
-    console.log("Pending services:", pendingServices);
-    setServiciosPendientes(pendingServices);
-
-    // Actualizar eventos del calendario
-    const calendarEvents = servicesData
-      .filter((service) => {
-        // Incluir en el calendario todos los servicios con técnico asignado
-        // independientemente de su estado (incluidos los pendientes)
-        if (service.technician) {
-          return true;
-        }
-        return false;
-      })
-      .map((service) => {
-        // Calcular fechas de inicio y fin correctamente
-        let startDate, endDate;
-
-        if (service.scheduledStart && service.scheduledEnd) {
-          // Si tenemos fechas programadas específicas, usarlas
-          startDate = service.scheduledStart;
-          endDate = service.scheduledEnd;
-        } else if (service.preferredDate) {
-          // Si solo tenemos fecha preferida, calcular duración basada en scheduledStart/End si existen
-          startDate = service.preferredDate;
+      // Procesar servicios pendientes - solo incluir los que NO tienen técnico asignado
+      const pendingServices = servicesData
+        .filter(
+          (service) => service.status === "pending" && !service.technician
+        )
+        .map((service) => {
+          // Calcular duración basada en scheduledStart/End
+          let calculatedDuration = 60; // default 60 minutos
           if (service.scheduledStart && service.scheduledEnd) {
-            const duration =
-              new Date(service.scheduledEnd) - new Date(service.scheduledStart);
-            endDate = new Date(
-              new Date(service.preferredDate).getTime() + duration
-            ).toISOString();
-          } else {
-            // Fallback a 1 hora si no hay más información
-            endDate = new Date(
-              new Date(service.preferredDate).getTime() + 60 * 60 * 1000
-            ).toISOString();
+            const start = new Date(service.scheduledStart);
+            const end = new Date(service.scheduledEnd);
+            calculatedDuration = Math.round((end - start) / (1000 * 60)); // diferencia en minutos
+            console.log(
+              `Service ${service._id}: scheduledStart=${service.scheduledStart}, scheduledEnd=${service.scheduledEnd}, duration=${calculatedDuration} minutes`
+            );
           }
-        } else {
-          // Fallback si no hay fechas
-          const now = new Date();
-          startDate = now.toISOString();
-          endDate = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
-        }
 
-        // Create a properly formatted calendar event
-        const event = {
-          id: service._id,
-          title: mapServiceTypeToSpanish(service.serviceType),
-          start: startDate,
-          end: endDate,
-          // Set resourceId only for confirmed services
-          ...(service.technician && { resourceId: service.technician }),
-          backgroundColor: getServiceColor(service.status),
-          borderColor: getServiceColor(service.status),
-          extendedProps: {
-            estado: mapStatusToEstado(service.status),
-            status: service.status,
-            descripcion: service.description,
-            description: service.description,
-            cliente: service.name,
+          return {
+            _id: service._id,
+            id: service._id,
+            nombre: mapServiceTypeToSpanish(service.serviceType),
+            descripcion: service.description || "",
+            duracion: calculatedDuration,
+            color: "#ffd54f",
+            estado: service.status || "pendiente",
             clientName: service.name,
-            telefono: service.phone,
-            clientPhone: service.phone,
-            email: service.email,
             clientEmail: service.email,
-            direccion: service.address,
+            clientPhone: service.phone,
             address: service.address,
+            preferredDate: service.preferredDate,
             scheduledStart: service.scheduledStart,
             scheduledEnd: service.scheduledEnd,
-          },
-        };
-
-        // Log para debugging
-        const durationMinutes = Math.round(
-          (new Date(endDate) - new Date(startDate)) / (1000 * 60)
-        );
-        console.log(`Created calendar event for service ${service._id}:`, {
-          title: event.title,
-          start: startDate,
-          end: endDate,
-          durationMinutes: durationMinutes,
-          estado: event.extendedProps.estado,
-          backgroundColor: event.backgroundColor,
+            updatedAt: service.updatedAt,
+            createdAt: service.createdAt,
+          };
         });
 
-        return event;
-      });
+      console.log("Pending services:", pendingServices);
+      setServiciosPendientes(pendingServices);
 
-    console.log("Calendar events:", calendarEvents);
+      // ⭐ CRÍTICO: NO procesar eventos del calendario si hay eventos manuales presentes
+      const tieneEventosManuales = JSON.parse(
+        localStorage.getItem("eventos") || "[]"
+      ).some(
+        (evento) =>
+          evento.extendedProps?.preserveEvent ||
+          evento.extendedProps?.isLocalEvent ||
+          evento.extendedProps?.backendProcessed ||
+          evento.extendedProps?.scheduledStart ||
+          evento.id?.toString().includes("-6866dfd22577a11def1e50b0-") ||
+          evento.id?.toString().includes(`${new Date().getFullYear()}`)
+      );
 
-    // NUEVO: No sobrescribir eventos existentes si ya están en el calendario con un estado diferente
-    setEventos((prevEventos) => {
-      // Crear una copia de los nuevos eventos del backend
-      const merged = [...calendarEvents];
+      if (tieneEventosManuales) {
+        console.log(
+          "� BLOQUEADO: processServices - eventos manuales detectados, manteniendo calendario actual"
+        );
+        return;
+      }
 
-      // Revisar eventos existentes y preservar sus estados locales
-      prevEventos.forEach((existingEvent) => {
-        const backendEventIndex = merged.findIndex(
-          (e) => e.id === existingEvent.id
+      // Solo procesar eventos automáticos si NO hay eventos manuales
+      const calendarEvents = servicesData
+        .filter((service) => {
+          if (service.technician) {
+            return true;
+          }
+          return false;
+        })
+        .map((service) => {
+          // Calcular fechas de inicio y fin para eventos automáticos únicamente
+          let startDate, endDate;
+
+          if (service.scheduledStart && service.scheduledEnd) {
+            startDate = service.scheduledStart;
+            endDate = service.scheduledEnd;
+          } else if (service.preferredDate) {
+            startDate = service.preferredDate;
+            if (service.scheduledStart && service.scheduledEnd) {
+              const duration =
+                new Date(service.scheduledEnd) -
+                new Date(service.scheduledStart);
+              endDate = new Date(
+                new Date(service.preferredDate).getTime() + duration
+              ).toISOString();
+            } else {
+              endDate = new Date(
+                new Date(service.preferredDate).getTime() + 60 * 60 * 1000
+              ).toISOString();
+            }
+          } else {
+            const now = new Date();
+            startDate = now.toISOString();
+            endDate = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+          }
+
+          const event = {
+            id: service._id,
+            title: mapServiceTypeToSpanish(service.serviceType),
+            start: startDate,
+            end: endDate,
+            ...(service.technician && { resourceId: service.technician }),
+            backgroundColor: getServiceColor(service.status),
+            borderColor: getServiceColor(service.status),
+            extendedProps: {
+              estado: mapStatusToEstado(service.status),
+              status: service.status,
+              descripcion: service.description,
+              description: service.description,
+              cliente: service.name,
+              clientName: service.name,
+              telefono: service.phone,
+              clientPhone: service.phone,
+              email: service.email,
+              clientEmail: service.email,
+              direccion: service.address,
+              address: service.address,
+              scheduledStart: service.scheduledStart,
+              scheduledEnd: service.scheduledEnd,
+              automaticEvent: true, // Marcar como evento automático
+            },
+          };
+
+          const durationMinutes = Math.round(
+            (new Date(endDate) - new Date(startDate)) / (1000 * 60)
+          );
+          console.log(
+            `Created automatic calendar event for service ${service._id}:`,
+            {
+              title: event.title,
+              start: startDate,
+              end: endDate,
+              durationMinutes: durationMinutes,
+              estado: event.extendedProps.estado,
+              backgroundColor: event.backgroundColor,
+            }
+          );
+
+          return event;
+        })
+        .filter(Boolean);
+
+      console.log("Automatic calendar events:", calendarEvents);
+
+      // Reemplazar SOLO los eventos automáticos, preservar todos los manuales
+      setEventos((prevEventos) => {
+        // Mantener TODOS los eventos manuales
+        const eventosManuales = prevEventos.filter(
+          (evento) =>
+            evento.extendedProps?.preserveEvent ||
+            evento.extendedProps?.isLocalEvent ||
+            evento.extendedProps?.backendProcessed ||
+            evento.extendedProps?.scheduledStart ||
+            evento.id?.toString().includes("-6866dfd22577a11def1e50b0-") ||
+            evento.id?.toString().startsWith("drag-") ||
+            evento.id?.toString().includes(`${new Date().getFullYear()}`)
         );
 
-        if (backendEventIndex === -1) {
-          // El evento existente no está en la nueva lista del backend, mantenerlo
-          merged.push(existingEvent);
-          console.log(
-            `📌 Manteniendo evento local no encontrado en backend: ${existingEvent.id}`
-          );
-        } else {
-          const backendEvent = merged[backendEventIndex];
+        // Combinar eventos manuales con los nuevos eventos automáticos
+        const merged = [...eventosManuales, ...calendarEvents];
 
-          // Si el evento local tiene un estado diferente al del backend, preservar el local
-          if (
-            existingEvent.extendedProps?.estado &&
-            backendEvent.extendedProps?.estado &&
-            existingEvent.extendedProps.estado !==
-              backendEvent.extendedProps.estado
-          ) {
-            console.log(
-              `🔄 Preservando estado local para evento ${existingEvent.id}:`,
-              `local: ${existingEvent.extendedProps.estado} vs backend: ${backendEvent.extendedProps.estado}`
-            );
+        console.log(
+          `� Eventos finales: ${merged.length} (${eventosManuales.length} manuales + ${calendarEvents.length} automáticos)`
+        );
 
-            // Combinar datos del backend con estado y colores del evento local
-            const preservedEvent = {
-              ...backendEvent, // Datos actualizados del backend
-              backgroundColor: existingEvent.backgroundColor,
-              borderColor: existingEvent.borderColor,
-              textColor: existingEvent.textColor,
-              className: existingEvent.className,
-              extendedProps: {
-                ...backendEvent.extendedProps, // Datos del backend
-                estado: existingEvent.extendedProps.estado, // Estado local preservado
-                // Preservar también otras propiedades visuales
-                ...(existingEvent.extendedProps || {}),
-              },
-            };
-
-            // Reemplazar el evento del backend con la versión preservada
-            merged[backendEventIndex] = preservedEvent;
-          }
-        }
+        return merged;
       });
-
-      console.log(
-        `📊 Eventos finales después del merge: ${merged.length} eventos`
-      );
-      return merged;
-    });
-  }, []);
+    },
+    [isProcessingTempEvent] // Eliminar eventos como dependencia para evitar loops
+  );
 
   // Efecto para procesar servicios cuando cambian
   useEffect(() => {
@@ -553,7 +1334,7 @@ const Calendar = ({ darkMode = false }) => {
 
     // Process services data
     processServices(services);
-  }, [services, loading, processServices]);
+  }, [services, loading, processServices]); // REMOVIDO eventos de las dependencias
 
   // Efecto para detectar y manejar actualizaciones del calendario mediante eventos personalizados
   useEffect(() => {
@@ -3406,7 +4187,8 @@ const Calendar = ({ darkMode = false }) => {
   const handleAsignarServicio = async (
     eventoCalendario,
     servicioId,
-    technicianIds = []
+    technicianIds = [],
+    skipRefresh = false // Nuevo parámetro para evitar refresh automático
   ) => {
     try {
       console.log("Iniciando asignación de servicio con parámetros:", {
@@ -3578,11 +4360,11 @@ const Calendar = ({ darkMode = false }) => {
           );
 
         updatedService = conversionResult.service;
-        console.log("Service request converted to service:", updatedService);
+        console.log("✅ Service request converted to service:", updatedService);
       } catch (conversionError) {
         console.log(
-          "Not a service request or conversion failed. Falling back to regular update:",
-          conversionError
+          "⚠️ Conversion failed, attempting regular update:",
+          conversionError.message
         );
 
         // If conversion fails, fall back to the regular update
@@ -3820,14 +4602,18 @@ const Calendar = ({ darkMode = false }) => {
         })
       );
 
-      // Force a refresh of service data in the background
-      if (typeof getAllServices === "function") {
+      // Force a refresh of service data in the background only if not skipping
+      if (!skipRefresh && typeof getAllServices === "function") {
         getAllServices(true);
+      } else if (skipRefresh) {
+        console.log(
+          "Skipping automatic refresh to preserve local event timing"
+        );
       } else {
         console.warn("getAllServices function not available for refresh");
       }
 
-      return true;
+      return updatedService; // Retornar el servicio actualizado para que lo pueda usar el drag & drop
     } catch (error) {
       console.error("Error al asignar servicio:", error);
       mostrarAlerta({
@@ -4633,8 +5419,459 @@ const Calendar = ({ darkMode = false }) => {
               cancelButton: "btn-cancel",
               popup: "dark-theme",
             },
-            preConfirm: () => {
-              return handleAsignarServicio(servicio);
+            preConfirm: async () => {
+              // Primero mostrar modal para seleccionar técnicos, fecha y duración
+              const { value: assignmentData } = await mostrarAlerta({
+                title: "Configurar Asignación de Servicio",
+                html: `
+                <div id="assignmentForm">
+                  <div class="form-row-full">
+                    <div class="input-group-full">
+                      <label>Técnicos (seleccione uno o varios)</label>
+                      <div id="tecnicosCheckboxes" class="checkbox-container">
+                        ${tecnicos
+                          .map(
+                            (tecnico) =>
+                              `<label class="checkbox-label">
+                            <input type="checkbox" value="${tecnico.id}" class="tecnico-checkbox">
+                            <span class="checkmark"></span>
+                            ${tecnico.title}
+                          </label>`
+                          )
+                          .join("")}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="form-row">
+                    <div class="input-group">
+                      <label>Duración</label>
+                      <select id="duracionSelect" class="form-field">
+                        <option value="0.5">30 minutos</option>
+                        <option value="1" selected>1 hora</option>
+                        <option value="1.5">1 hora 30 minutos</option>
+                        <option value="2">2 horas</option>
+                        <option value="2.5">2 horas 30 minutos</option>
+                        <option value="3">3 horas</option>
+                        <option value="4">4 horas</option>
+                        <option value="6">6 horas</option>
+                        <option value="8">8 horas</option>
+                      </select>
+                    </div>
+                    <div class="input-group">
+                      <label>Fecha</label>
+                      <input type="date" id="fechaSelect" class="form-field" value="${
+                        new Date().toISOString().split("T")[0]
+                      }">
+                    </div>
+                  </div>
+                  
+                  <div class="form-row">
+                    <div class="input-group">
+                      <label>Hora de inicio</label>
+                      <input type="time" id="horaSelect" class="form-field" value="09:00">
+                    </div>
+                    <div class="input-group">
+                      <label>Intervalo entre técnicos (minutos)</label>
+                      <select id="intervaloSelect" class="form-field">
+                        <option value="0" selected>Mismo horario</option>
+                        <option value="15">15 minutos</option>
+                        <option value="30">30 minutos</option>
+                        <option value="60">1 hora</option>
+                        <option value="120">2 horas</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <style>
+                    #assignmentForm {
+                      padding: 20px;
+                      background-color: #2d3748;
+                      border-radius: 10px;
+                      width: 600px;
+                      max-width: 600px;
+                      margin: 0 auto;
+                    }
+                    
+                    .form-row {
+                      display: flex;
+                      justify-content: center;
+                      margin-bottom: 20px;
+                      gap: 20px;
+                    }
+                    
+                    .form-row-full {
+                      display: flex;
+                      justify-content: center;
+                      margin-bottom: 20px;
+                      width: 100%;
+                    }
+                    
+                    .input-group {
+                      display: flex;
+                      flex-direction: column;
+                      width: 200px;
+                    }
+                    
+                    .input-group-full {
+                      display: flex;
+                      flex-direction: column;
+                      width: 100%;
+                    }
+                    
+                    .input-group label, .input-group-full label {
+                      color: #87c947;
+                      font-weight: 500;
+                      margin-bottom: 8px;
+                      font-size: 14px;
+                    }
+                    
+                    .form-field {
+                      padding: 10px 12px;
+                      border: 1px solid #4a5568;
+                      border-radius: 6px;
+                      background-color: #1a202c;
+                      color: white;
+                      width: 100%;
+                      height: 40px;
+                      box-sizing: border-box;
+                      font-size: 14px;
+                    }
+                    
+                    .form-field:focus {
+                      border-color: #87c947;
+                      outline: none;
+                      box-shadow: 0 0 0 1px #87c947;
+                    }
+                    
+                    .checkbox-container {
+                      display: flex;
+                      flex-wrap: wrap;
+                      gap: 10px;
+                      padding: 10px;
+                      background-color: #1a202c;
+                      border: 1px solid #4a5568;
+                      border-radius: 6px;
+                      max-height: 120px;
+                      overflow-y: auto;
+                    }
+                    
+                    .checkbox-label {
+                      display: flex;
+                      align-items: center;
+                      color: white;
+                      cursor: pointer;
+                      padding: 5px 10px;
+                      border-radius: 4px;
+                      transition: background-color 0.2s;
+                      min-width: 120px;
+                    }
+                    
+                    .checkbox-label:hover {
+                      background-color: #4a5568;
+                    }
+                    
+                    .tecnico-checkbox {
+                      margin-right: 8px;
+                      accent-color: #87c947;
+                    }
+                    
+                    .checkbox-label input[type="checkbox"]:checked + .checkmark {
+                      background-color: #87c947;
+                    }
+                  </style>
+                </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: "Continuar",
+                cancelButtonText: "Cancelar",
+                confirmButtonColor: "#87c947",
+                cancelButtonColor: "#383a46",
+                background: "#1e1e2f",
+                color: "#ffffff",
+                preConfirm: () => {
+                  const tecnicosCheckboxes = document.querySelectorAll(
+                    ".tecnico-checkbox:checked"
+                  );
+                  const tecnicosIds = Array.from(tecnicosCheckboxes).map(
+                    (checkbox) => checkbox.value
+                  );
+                  const duracion = parseFloat(
+                    document.getElementById("duracionSelect").value
+                  );
+                  const fecha = document.getElementById("fechaSelect").value;
+                  const hora = document.getElementById("horaSelect").value;
+                  const intervalo = parseInt(
+                    document.getElementById("intervaloSelect").value
+                  );
+
+                  if (!tecnicosIds.length || !duracion || !fecha || !hora) {
+                    mostrarAlerta({
+                      icon: "error",
+                      title: "Error",
+                      text: "Por favor seleccione al menos un técnico y complete todos los campos",
+                      confirmButtonColor: "#87c947",
+                    });
+                    return false;
+                  }
+
+                  return { tecnicosIds, duracion, fecha, hora, intervalo };
+                },
+              });
+
+              if (!assignmentData) return false;
+
+              console.log("Datos de asignación recibidos:", assignmentData);
+
+              // Activar flag para evitar procesamiento automático
+              setIsProcessingTempEvent(true);
+
+              // Función para formatear fecha manteniendo la zona horaria local
+              const formatearFechaLocal = (fecha) => {
+                const year = fecha.getFullYear();
+                const month = String(fecha.getMonth() + 1).padStart(2, "0");
+                const day = String(fecha.getDate()).padStart(2, "0");
+                const hours = String(fecha.getHours()).padStart(2, "0");
+                const minutes = String(fecha.getMinutes()).padStart(2, "0");
+                const seconds = String(fecha.getSeconds()).padStart(2, "0");
+
+                return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+              };
+
+              // Crear eventos para cada técnico seleccionado
+              const eventosCreados = [];
+              let servicioBaseId = null;
+
+              for (let i = 0; i < assignmentData.tecnicosIds.length; i++) {
+                const tecnicoId = assignmentData.tecnicosIds[i];
+
+                // Calcular offset de tiempo para este técnico
+                const offsetMinutos = i * assignmentData.intervalo;
+
+                // Crear fechas de inicio y fin basadas en la selección y offset
+                const fechaHoraInicio = new Date(
+                  `${assignmentData.fecha}T${assignmentData.hora}`
+                );
+                fechaHoraInicio.setMinutes(
+                  fechaHoraInicio.getMinutes() + offsetMinutos
+                );
+                const fechaHoraFin = new Date(
+                  fechaHoraInicio.getTime() +
+                    assignmentData.duracion * 60 * 60 * 1000
+                );
+
+                // Crear ID único para este evento específico (servicio + técnico)
+                const eventoId = `${
+                  servicio._id || servicio.id
+                }-${tecnicoId}-${Date.now()}`;
+
+                // Crear evento con fechas específicas y preservar el horario seleccionado
+                const eventoParaAsignar = {
+                  id: eventoId,
+                  start: formatearFechaLocal(fechaHoraInicio),
+                  end: formatearFechaLocal(fechaHoraFin),
+                  resourceId: tecnicoId,
+                  title: `${mapServiceTypeToSpanish(
+                    servicio.serviceType || servicio.nombre
+                  )} - ${servicio.clientName || servicio.name || "Cliente"}`,
+                  backgroundColor: "#87c947",
+                  borderColor: "#87c947",
+                  className: "estado-confirmado",
+                  textColor: "white",
+                  display: "block",
+                  extendedProps: {
+                    ...servicio,
+                    estado: "confirmado",
+                    preserveEvent: true,
+                    isLocalEvent: true,
+                    scheduledStart: formatearFechaLocal(fechaHoraInicio),
+                    scheduledEnd: formatearFechaLocal(fechaHoraFin),
+                    serviceId: servicio._id || servicio.id,
+                    originalServiceData: servicio,
+                  },
+                };
+
+                console.log(
+                  `Creando evento para técnico ${tecnicoId}:`,
+                  eventoParaAsignar
+                );
+                eventosCreados.push(eventoParaAsignar);
+              }
+
+              // Agregar todos los eventos al estado de una vez
+              setEventos((prevEventos) => {
+                const nuevosEventos = [...prevEventos, ...eventosCreados];
+                console.log(
+                  `📊 Total de eventos después de agregar ${eventosCreados.length} nuevos:`,
+                  nuevosEventos.length
+                );
+                return nuevosEventos;
+              });
+
+              try {
+                // Solo necesitamos actualizar el servicio una vez en el backend
+                // Usar el primer evento como referencia pero incluir todos los técnicos
+                const eventoReferencia = eventosCreados[0];
+
+                console.log("🔄 Iniciando asignación múltiple en backend...");
+                const servicioActualizado = await handleAsignarServicio(
+                  eventoReferencia,
+                  servicio._id || servicio.id,
+                  assignmentData.tecnicosIds, // Pasar todos los técnicos
+                  true // skipRefresh = true para evitar conflictos
+                );
+
+                console.log("📤 Respuesta del backend:", servicioActualizado);
+
+                // Verificar si el servicio se actualizó correctamente
+                // (podría ser un objeto vacío si hubo errores manejados)
+                const servicioValido =
+                  servicioActualizado &&
+                  (servicioActualizado._id ||
+                    servicioActualizado.id ||
+                    typeof servicioActualizado === "object");
+
+                if (servicioValido) {
+                  console.log(
+                    "✅ Servicio base actualizado exitosamente:",
+                    servicioActualizado._id ||
+                      servicioActualizado.id ||
+                      "ID fallback"
+                  );
+
+                  // Actualizar todos los eventos creados con el ID real del servicio
+                  setEventos((prevEventos) =>
+                    prevEventos.map((evento) => {
+                      const eventoCreado = eventosCreados.find(
+                        (ec) => ec.id === evento.id
+                      );
+                      if (eventoCreado) {
+                        return {
+                          ...evento,
+                          extendedProps: {
+                            ...evento.extendedProps,
+                            serviceId:
+                              servicioActualizado._id ||
+                              servicioActualizado.id ||
+                              servicio._id ||
+                              servicio.id,
+                            isLocalEvent: false,
+                            preserveEvent: true,
+                            backendProcessed: true, // Marcar como procesado en backend
+                          },
+                        };
+                      }
+                      return evento;
+                    })
+                  );
+
+                  // Desactivar flag después de un delay más largo para evitar interferencias
+                  setTimeout(() => {
+                    setIsProcessingTempEvent(false);
+                    console.log(
+                      "🔓 DESBLOQUEADO: processServices puede ejecutarse nuevamente"
+                    );
+                  }, 5000); // 5 segundos en lugar de 1
+
+                  mostrarAlerta({
+                    icon: "success",
+                    title: "Servicio Asignado",
+                    text: `El servicio se asignó exitosamente a ${
+                      assignmentData.tecnicosIds.length
+                    } técnico(s) con horarios ${
+                      assignmentData.intervalo > 0
+                        ? "escalonados"
+                        : "simultáneos"
+                    }.`,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: "#f8ffec",
+                    color: "#004122",
+                  });
+
+                  // Cerrar el modal principal
+                  Swal.close();
+                  return true;
+                } else {
+                  console.warn(
+                    "⚠️ Backend devolvió respuesta inválida, manteniendo eventos locales"
+                  );
+
+                  // Mantener los eventos pero marcarlos como locales
+                  setEventos((prevEventos) =>
+                    prevEventos.map((evento) => {
+                      const eventoCreado = eventosCreados.find(
+                        (ec) => ec.id === evento.id
+                      );
+                      if (eventoCreado) {
+                        return {
+                          ...evento,
+                          extendedProps: {
+                            ...evento.extendedProps,
+                            isLocalEvent: true,
+                            preserveEvent: true,
+                            backendError: true, // Marcar que hubo error en backend
+                          },
+                        };
+                      }
+                      return evento;
+                    })
+                  );
+
+                  setIsProcessingTempEvent(false);
+                  console.log(
+                    "🔓 DESBLOQUEADO: processServices (error parcial)"
+                  );
+
+                  mostrarAlerta({
+                    icon: "warning",
+                    title: "Asignación Parcial",
+                    text: "Los eventos se crearon localmente pero hubo problemas con el backend. Los servicios aparecen en el calendario pero podrían no persistir al recargar.",
+                    confirmButtonColor: "#87c947",
+                  });
+                  return true; // Mantener como exitoso para no eliminar eventos
+                }
+              } catch (error) {
+                console.error("❌ Error en asignación múltiple:", error);
+
+                // En lugar de eliminar todos los eventos, mantenerlos como locales
+                console.log(
+                  "🔄 Manteniendo eventos como locales debido a error de backend"
+                );
+                setEventos((prevEventos) =>
+                  prevEventos.map((evento) => {
+                    const eventoCreado = eventosCreados.find(
+                      (ec) => ec.id === evento.id
+                    );
+                    if (eventoCreado) {
+                      return {
+                        ...evento,
+                        extendedProps: {
+                          ...evento.extendedProps,
+                          isLocalEvent: true,
+                          preserveEvent: true,
+                          backendError: true,
+                          errorDetails: error.message,
+                        },
+                      };
+                    }
+                    return evento;
+                  })
+                );
+
+                setIsProcessingTempEvent(false);
+                console.log(
+                  "🔓 DESBLOQUEADO: processServices (error de conexión)"
+                );
+
+                mostrarAlerta({
+                  icon: "warning",
+                  title: "Error de Conexión",
+                  text: "Los eventos se mantienen en el calendario pero hubo problemas de conexión con el servidor. Intente sincronizar más tarde.",
+                  confirmButtonColor: "#87c947",
+                });
+                return true; // Retornar true para mantener los eventos
+              }
             },
           });
         });

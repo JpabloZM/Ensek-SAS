@@ -916,23 +916,29 @@ const ServicioCard = ({
     // Si no hay tecnicosSeleccionados, usamos el estado React actual como respaldo
     const tecnicos = tecnicosSeleccionados || selectedTechnicians;
 
-    // Crear un evento en el calendario para cada técnico seleccionado
-    const resultados = [];
-
-    // Guardamos la cantidad de técnicos para mostrar mensaje correcto
-    const cantidadTecnicos = tecnicos.length;
+    // Crear eventos para todos los técnicos seleccionados
+    const eventosCreados = [];
+    const technicianIds = tecnicos.map((tech) => tech._id);
 
     console.log("Asignando servicios a técnicos:", {
-      cantidad: cantidadTecnicos,
+      cantidad: tecnicos.length,
       tecnicos: tecnicos,
       fecha,
       horaInicio,
       duracion,
+      technicianIds: technicianIds,
     });
 
-    for (const tecnico of tecnicos) {
+    // Crear eventos para cada técnico (sin asignar en backend aún)
+    for (let i = 0; i < tecnicos.length; i++) {
+      const tecnico = tecnicos[i];
+
       // Create calendar event with explicit date from the modal input
       const fechaInicio = new Date(`${fecha}T${horaInicio}`);
+      // Agregar intervalo de tiempo si hay múltiples técnicos (opcional)
+      const offsetMinutos = i * 0; // Por ahora sin intervalo, mismo horario para todos
+      fechaInicio.setMinutes(fechaInicio.getMinutes() + offsetMinutos);
+
       const fechaFin = new Date(
         fechaInicio.getTime() + parseInt(duracion) * 60000
       );
@@ -941,10 +947,12 @@ const ServicioCard = ({
         fechaString: `${fecha}T${horaInicio}`,
         fechaInicio: fechaInicio.toISOString(),
         fechaFin: fechaFin.toISOString(),
+        tecnico: tecnico.name,
+        offsetMinutos: offsetMinutos,
       });
 
       const eventoCalendario = {
-        id: servicio._id || servicio.id, // Usar el ID real del servicio
+        id: `${servicio._id || servicio.id}-${tecnico._id}-${Date.now()}`, // ID único por técnico
         title: `${servicio.nombre || servicio.serviceType} - ${
           servicio.clientName
         }`,
@@ -953,12 +961,12 @@ const ServicioCard = ({
         resourceId: tecnico._id,
         backgroundColor: "#87c947",
         borderColor: "#87c947",
-        className: "estado-confirmado calendar-event-interactive", // Agregar clases para estilo e interactividad
+        className: "estado-confirmado calendar-event-interactive",
         textColor: "white",
         display: "block",
-        editable: true, // Permitir edición
-        durationEditable: true, // Permitir cambio de duración
-        startEditable: true, // Permitir cambio de hora de inicio
+        editable: true,
+        durationEditable: true,
+        startEditable: true,
         extendedProps: {
           estado: "confirmado",
           status: "confirmed",
@@ -973,73 +981,80 @@ const ServicioCard = ({
           direccion: servicio.address,
           address: servicio.address,
           serviceId: servicio._id || servicio.id,
-          // Agregar las fechas explícitamente para asegurarnos que se conservan
           scheduledStart: fechaInicio.toISOString(),
           scheduledEnd: fechaFin.toISOString(),
-          fecha: fecha, // Preservar la fecha original seleccionada
+          fecha: fecha,
+          preserveEvent: true,
+          isLocalEvent: true,
+          originalServiceData: servicio,
         },
       };
 
-      // Asegurarnos de usar el ID correcto del servicio
+      eventosCreados.push(eventoCalendario);
+    }
+
+    console.log("Eventos creados:", eventosCreados);
+
+    try {
+      // Solo necesitamos UNA llamada al backend con TODOS los técnicos
+      // Usar el primer evento como referencia pero enviar todos los técnicos
+      const eventoReferencia = eventosCreados[0];
       const serviceId = servicio._id || servicio.id;
 
-      // Guardar técnicos seleccionados para enviar al backend
-      // Usamos los técnicos del bucle actual (tecnicos) en lugar de selectedTechnicians
-      const technicianIds = tecnicos.map((tech) => tech._id);
-
-      // Agregar el técnico actual como técnico principal para este evento específico
-      eventoCalendario.technicianIds = technicianIds;
-
-      console.log("Configurando evento para técnico:", {
-        tecnico: tecnico.name,
-        tecnicoId: tecnico._id,
-        technicianIds,
-        serviceId,
+      console.log("Configurando asignación múltiple:", {
+        servicioId: serviceId,
+        technicianIds: technicianIds,
+        eventoReferencia: eventoReferencia,
       });
 
-      try {
-        // Asignar servicio con el técnico actual como principal
-        const resultado = await onAsignarServicio(
-          eventoCalendario,
-          serviceId,
-          technicianIds
-        );
-        resultados.push(resultado);
-      } catch (error) {
-        console.error(
-          "Error al asignar servicio al técnico:",
-          tecnico.name,
-          error
-        );
+      // Llamar a onAsignarServicio UNA SOLA VEZ con todos los técnicos
+      const resultado = await onAsignarServicio(
+        eventoReferencia,
+        serviceId,
+        technicianIds // Pasar TODOS los técnicos de una vez
+      );
+
+      console.log("Resultado de asignación múltiple:", resultado);
+
+      if (resultado) {
+        // Éxito: mostrar mensaje apropiado
+        const cantidadTecnicos = tecnicos.length;
+        let mensajeExito;
+        if (cantidadTecnicos === 1) {
+          mensajeExito = `El servicio ha sido asignado correctamente a ${tecnicos[0].name}`;
+        } else if (cantidadTecnicos > 1) {
+          mensajeExito = `El servicio ha sido asignado a los ${cantidadTecnicos} técnicos seleccionados`;
+        } else {
+          mensajeExito = "El servicio ha sido asignado correctamente";
+        }
+
+        mostrarAlerta({
+          icon: "success",
+          title: "Servicio Asignado",
+          text: mensajeExito,
+          timer: 2500,
+          showConfirmButton: false,
+        });
+
+        // Limpiar la selección después de una asignación exitosa
+        setSelectedTechnicians([]);
+      } else {
+        // Error: mostrar mensaje de error
+        mostrarAlerta({
+          icon: "error",
+          title: "Error en Asignación",
+          text: "No se pudo asignar el servicio. Intente nuevamente.",
+          confirmButtonColor: "#87c947",
+        });
       }
-    }
-
-    // Verificar si todas las asignaciones fueron exitosas
-    const todasExitosas = resultados.every((res) => res === true);
-
-    // Mensaje personalizado según la cantidad de técnicos
-    let mensajeExito;
-    if (cantidadTecnicos === 1) {
-      mensajeExito = `El servicio ha sido asignado correctamente a ${tecnicos[0].name}`;
-    } else if (cantidadTecnicos > 1) {
-      mensajeExito = `El servicio ha sido asignado a los ${cantidadTecnicos} técnicos seleccionados`;
-    } else {
-      mensajeExito = "El servicio ha sido asignado correctamente";
-    }
-
-    mostrarAlerta({
-      icon: todasExitosas ? "success" : "warning",
-      title: todasExitosas ? "Servicio Asignado" : "Asignación Parcial",
-      text: todasExitosas
-        ? mensajeExito
-        : "El servicio fue asignado a algunos técnicos, pero hubo errores",
-      timer: 2500,
-      showConfirmButton: false,
-    });
-
-    // Solo limpiamos la selección después de una asignación exitosa
-    if (todasExitosas) {
-      setSelectedTechnicians([]);
+    } catch (error) {
+      console.error("Error al asignar servicio:", error);
+      mostrarAlerta({
+        icon: "error",
+        title: "Error en Asignación",
+        text: "Hubo un error al asignar el servicio. Intente nuevamente.",
+        confirmButtonColor: "#87c947",
+      });
     }
   };
 
