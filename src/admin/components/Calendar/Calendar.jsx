@@ -15,6 +15,7 @@ import { useCalendar } from "../../../hooks/useCalendar";
 import { useServices } from "../../../hooks/useServices";
 import { serviceService } from "../../../client/services/serviceService";
 import { userService } from "../../../client/services/userService";
+import { initCalendarEventClickHandlers } from "./fix-calendar-clicks";
 import {
   setupCalendarSelectVisuals,
   addTimeLabelsToSelection,
@@ -26,6 +27,8 @@ import "./styles/add-technician-form.css"; // Estilos específicos para el formu
 import "./styles/edit-technician-form.css"; // Estilos específicos para el formulario de editar técnico
 import "./styles/dark-mode-form-fields.css"; // Estilos para campos de formulario en modo oscuro
 import "./styles/now-indicator.css"; // Estilos para el indicador de hora actual
+import "./styles/event-modal-fix.css"; // Fix para el modal de eventos de calendario
+import "./styles/calendar-event-click-fix.css"; // Fix específico para hacer clickeables los eventos
 
 const Calendar = ({ darkMode = false }) => {
   // Manejador para el drop externo en el calendario (drag & drop de servicios)
@@ -2832,99 +2835,228 @@ const Calendar = ({ darkMode = false }) => {
   };
 
   const handleEventClick = (info) => {
-    // Evitar CUALQUIER propagación del evento - importante para prevenir la creación de un nuevo evento
-    if (info.jsEvent) {
-      info.jsEvent.preventDefault();
-      info.jsEvent.stopPropagation();
-      info.jsEvent.stopImmediatePropagation();
-    }
+    try {
+      // Evitar CUALQUIER propagación del evento
+      if (info.jsEvent) {
+        info.jsEvent.preventDefault();
+        info.jsEvent.stopPropagation();
+        info.jsEvent.stopImmediatePropagation();
+      }
 
-    console.log("🔥 handleEventClick ejecutado:", info.event);
+      console.log("🔥 handleEventClick ejecutado:", info);
 
-    const evento = info.event;
-    // Obtener el resourceId de manera segura
-    const resourceId =
-      evento.resourceId ||
-      (evento.getResources && evento.getResources()[0]?.id);
-    const tecnico = tecnicos.find((t) => t.id === resourceId);
-    const fechaInicio = new Date(evento.start);
-    const fechaFin = new Date(evento.end);
+      // Si no hay información del evento, crear un objeto básico para evitar errores
+      if (!info.event) {
+        console.warn(
+          "⚠️ No se proporcionó un evento válido, creando uno genérico"
+        );
+        info.event = {
+          id: "evento-desconocido",
+          title: "Servicio",
+          start: new Date(),
+          end: new Date(new Date().getTime() + 60 * 60 * 1000),
+          extendedProps: {},
+          getResources: () => [],
+        };
+      }
 
-    console.log("📊 Datos del evento:", {
-      title: evento.title,
-      tecnico: tecnico?.title,
-      extendedProps: evento.extendedProps,
-    });
+      const evento = info.event;
 
-    // Modal simple y claro con las opciones principales
-    mostrarAlerta({
-      title: `📋 ${evento.title}`,
-      html: `
-      <div class="evento-detalles">
-        <div class="detalle-info">
-          <div class="info-item">
-            <strong>👤 Técnico:</strong> ${tecnico?.title || "Sin asignar"}
+      // Obtener el resourceId de manera segura
+      const resourceId =
+        evento.resourceId ||
+        (evento.getResources && evento.getResources()[0]?.id);
+      const tecnico = tecnicos.find((t) => t.id === resourceId);
+
+      // Manejar fechas de forma segura
+      let fechaInicio = new Date();
+      let fechaFin = new Date(fechaInicio.getTime() + 60 * 60 * 1000);
+
+      try {
+        if (evento.start) {
+          fechaInicio = new Date(evento.start);
+        }
+        if (evento.end) {
+          fechaFin = new Date(evento.end);
+        } else {
+          // Si no hay fecha fin, calcularla como 1 hora después del inicio
+          fechaFin = new Date(fechaInicio.getTime() + 60 * 60 * 1000);
+        }
+      } catch (error) {
+        console.error("❌ Error al procesar fechas del evento:", error);
+      }
+
+      // Extraer información del evento (con fallbacks para evitar errores)
+      const title = evento.title || "Servicio";
+      const clientName =
+        evento.extendedProps?.clientName || evento.extendedProps?.cliente || "";
+      const clientEmail =
+        evento.extendedProps?.clientEmail || evento.extendedProps?.email || "";
+      const clientPhone =
+        evento.extendedProps?.clientPhone ||
+        evento.extendedProps?.telefono ||
+        "";
+      const address =
+        evento.extendedProps?.address || evento.extendedProps?.direccion || "";
+      const description =
+        evento.extendedProps?.descripcion ||
+        evento.extendedProps?.description ||
+        "Sin descripción";
+      const estado = evento.extendedProps?.estado || "pendiente";
+
+      console.log("📊 Información del servicio:", {
+        title,
+        tecnico: tecnico?.title || "Sin asignar",
+        fechaInicio: fechaInicio.toLocaleString(),
+        fechaFin: fechaFin.toLocaleString(),
+        cliente: clientName,
+        estado,
+      });
+
+      // Generar HTML para el modal
+      const modalHtml = `
+        <div class="detalles-servicio">
+          <div class="detalles-row">
+            <div class="detalles-label">Técnico</div>
+            <div class="detalles-value">${tecnico?.title || "Sin asignar"}</div>
           </div>
-          <div class="info-item">
-            <strong>🕐 Inicio:</strong> ${fechaInicio.toLocaleDateString()} ${fechaInicio.toLocaleTimeString()}
+          ${
+            clientName
+              ? `
+          <div class="detalles-row">
+            <div class="detalles-label">Cliente</div>
+            <div class="detalles-value">${clientName}</div>
+          </div>`
+              : ""
+          }
+          ${
+            clientPhone
+              ? `
+          <div class="detalles-row">
+            <div class="detalles-label">Teléfono</div>
+            <div class="detalles-value">${clientPhone}</div>
+          </div>`
+              : ""
+          }
+          ${
+            clientEmail
+              ? `
+          <div class="detalles-row">
+            <div class="detalles-label">Email</div>
+            <div class="detalles-value">${clientEmail}</div>
+          </div>`
+              : ""
+          }
+          ${
+            address
+              ? `
+          <div class="detalles-row">
+            <div class="detalles-label">Dirección</div>
+            <div class="detalles-value">${address}</div>
+          </div>`
+              : ""
+          }
+          <div class="detalles-row">
+            <div class="detalles-label">Fecha</div>
+            <div class="detalles-value">${fechaInicio.toLocaleDateString()}</div>
           </div>
-          <div class="info-item">
-            <strong>🕐 Fin:</strong> ${fechaFin.toLocaleDateString()} ${fechaFin.toLocaleTimeString()}
+          <div class="detalles-row">
+            <div class="detalles-label">Hora</div>
+            <div class="detalles-value">
+              ${fechaInicio.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })} - 
+              ${fechaFin.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </div>
           </div>
-          <div class="info-item">
-            <strong>📝 Descripción:</strong> ${
-              evento.extendedProps.descripcion || "Sin descripción"
-            }
+          <div class="detalles-row">
+            <div class="detalles-label">Estado</div>
+            <div class="detalles-value">
+              <span class="estado-badge estado-${estado}">${
+        estado.charAt(0).toUpperCase() + estado.slice(1)
+      }</span>
+            </div>
+          </div>
+          <div class="detalles-row">
+            <div class="detalles-label">Descripción</div>
+            <div class="detalles-value">${description}</div>
           </div>
         </div>
-        <div class="opciones-evento">
-          <h4>¿Qué deseas hacer con este servicio?</h4>
-        </div>
-      </div>
-      `,
-      showCancelButton: true,
-      showDenyButton: true,
-      showConfirmButton: true,
-      confirmButtonText: '<i class="fas fa-edit"></i> Editar',
-      denyButtonText: '<i class="fas fa-trash"></i> Eliminar',
-      cancelButtonText: '<i class="fas fa-times"></i> Cerrar',
-      confirmButtonColor: "#3085d6",
-      denyButtonColor: "#dc3545",
-      cancelButtonColor: "#6c757d",
-      footer: `
-        <button type="button" class="swal2-styled" id="moverBtn" style="background-color: #f39c12; border: none; margin: 0 5px;">
-          <i class="fas fa-arrows-alt"></i> Mover Servicio
-        </button>
-      `,
-      customClass: {
-        popup: "evento-modal",
-        actions: "evento-actions",
-        confirmButton: "btn-editar",
-        denyButton: "btn-eliminar",
-        cancelButton: "btn-cerrar",
-      },
-      didOpen: () => {
-        // Agregar evento al botón mover
+      `;
+
+      // Mostrar el modal con SweetAlert2
+      console.log("🎯 Mostrando modal de detalles del servicio");
+
+      // Esta solución directa garantiza que el modal aparezca
+      Swal.fire({
+        title: title,
+        html: modalHtml,
+        showCancelButton: true,
+        showDenyButton: true,
+        showConfirmButton: true,
+        confirmButtonText: '<i class="fas fa-edit"></i> Editar',
+        denyButtonText: '<i class="fas fa-trash"></i> Eliminar',
+        cancelButtonText: '<i class="fas fa-times"></i> Cerrar',
+        confirmButtonColor: "#3085d6",
+        denyButtonColor: "#dc3545",
+        cancelButtonColor: "#6c757d",
+        footer: `
+          <button type="button" class="swal2-styled" id="moverBtn" style="background-color: #f39c12; border: none; margin: 0 5px;">
+            <i class="fas fa-arrows-alt"></i> Mover Servicio
+          </button>
+        `,
+        customClass: {
+          popup: "servicio-info-modal",
+          actions: "evento-actions",
+          confirmButton: "btn-editar",
+          denyButton: "btn-eliminar",
+          cancelButton: "btn-cerrar",
+          htmlContainer: "modal-content-container",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          console.log("🖊️ Usuario eligió editar el servicio");
+          handleEditarServicio(evento);
+        } else if (result.isDenied) {
+          console.log("🗑️ Usuario eligió eliminar el servicio");
+          handleEliminarServicioCalendario(evento);
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          console.log("❌ Usuario cerró el modal");
+        }
+      });
+
+      // Configurar el botón de mover después de que se muestre el modal
+      setTimeout(() => {
         const moverBtn = document.getElementById("moverBtn");
         if (moverBtn) {
           moverBtn.addEventListener("click", () => {
+            console.log("➡️ Usuario eligió mover el servicio");
             Swal.close();
             handleMoverServicio(evento);
           });
         }
-      },
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        // Editar servicio
-        console.log("🖊️ Editando servicio:", evento);
-        handleEditarServicio(evento);
-      } else if (result.isDenied) {
-        // Eliminar servicio
-        console.log("🗑️ Eliminando servicio:", evento);
-        handleEliminarServicioCalendario(evento);
-      }
-      // Si se cancela, simplemente se cierra el modal
-    });
+
+        // Asegurarse de que el modal tenga el z-index correcto
+        const modalElement = document.querySelector(".servicio-info-modal");
+        if (modalElement) {
+          modalElement.style.zIndex = "10000";
+        }
+      }, 100);
+    } catch (error) {
+      console.error("❌ Error en handleEventClick:", error);
+
+      // Si ocurre un error, mostrar un modal simple
+      Swal.fire({
+        title: "Error",
+        text: "Ocurrió un problema al mostrar los detalles del servicio. Por favor, intente nuevamente.",
+        icon: "error",
+        confirmButtonColor: "#87c947",
+      });
+    }
   };
 
   const handleEditarServicio = async (servicioId, datosActualizados) => {
@@ -4485,6 +4617,23 @@ const Calendar = ({ darkMode = false }) => {
     }
   }, [eventos]);
 
+  // Efecto para asegurar que los eventos del calendario sean clickeables
+  useEffect(() => {
+    console.log(
+      "�️ Inicializando manejadores de clicks para eventos del calendario"
+    );
+
+    // Utilizamos nuestra función especializada para manejar los clicks
+    const cleanup = initCalendarEventClickHandlers(handleEventClick, eventos);
+
+    return () => {
+      // Limpiamos los event listeners cuando se desmonta el componente
+      if (typeof cleanup === "function") {
+        cleanup();
+      }
+    };
+  }, [eventos, handleEventClick]);
+
   // Función para manejar el clic derecho en un servicio
   const handleContextMenu = (e, servicio) => {
     e.preventDefault(); // Importante para prevenir el menú contextual del navegador
@@ -5226,40 +5375,52 @@ const Calendar = ({ darkMode = false }) => {
               }
             }}
             eventClick={(info) => {
-              console.log("🎯 EventClick disparado en FullCalendar:", info);
+              console.log("🎯 CLICK EN EVENTO DEL CALENDARIO:", info);
 
-              // Prevenir TOTALMENTE cualquier comportamiento por defecto o propagación
-              if (info.jsEvent) {
-                info.jsEvent.preventDefault();
-                info.jsEvent.stopPropagation();
-                info.jsEvent.stopImmediatePropagation();
+              try {
+                // Detener cualquier comportamiento por defecto
+                if (info.jsEvent) {
+                  info.jsEvent.preventDefault();
+                  info.jsEvent.stopPropagation();
+                }
+
+                // Forzar la invocación directa de handleEventClick
+                setTimeout(() => {
+                  handleEventClick(info);
+                }, 0);
+
+                return false;
+              } catch (error) {
+                console.error("❌ Error en eventClick:", error);
+
+                // En caso de error, intentar mostrar el modal de todos modos
+                setTimeout(() => {
+                  Swal.fire({
+                    title: info.event?.title || "Servicio",
+                    html: "<div class='detalles-servicio'>Error al cargar detalles del servicio</div>",
+                    icon: "warning",
+                    confirmButtonColor: "#87c947",
+                  });
+                }, 0);
               }
-
-              // Deseleccionar cualquier selección activa inmediatamente
-              info.view.calendar.unselect();
-
-              // Eliminar cualquier indicador de selección SOLO en los eventos
-              const removeSelectionIndicators = () => {
-                // Solo remover indicadores si estamos haciendo clic en un evento existente
-                // NO remover la selección actual en áreas vacías
-                const selectionElements = document.querySelectorAll(
-                  ".fc-event .fc-highlight, .fc-event ~ .fc-highlight"
-                );
-                selectionElements.forEach((el) => {
-                  el.style.opacity = "0";
-                  el.style.visibility = "hidden";
-                });
-              };
-
-              // Ejecutar ahora y con un pequeño retraso para asegurarnos de eliminar cualquier selección
-              removeSelectionIndicators();
-              setTimeout(removeSelectionIndicators, 50);
-
-              // Manejar el clic en el evento existente
-              handleEventClick(info);
             }}
             dateClick={handleDateClick}
             eventDidMount={handleEventDidMount}
+            datesDidMount={() => {
+              console.log("📅 El calendario terminó de renderizarse");
+              // Asegurarnos de que los eventos son clickeables después de renderizar
+              setTimeout(() => {
+                const eventElements = document.querySelectorAll(".fc-event");
+                console.log(
+                  `🔢 Encontrados ${eventElements.length} eventos en el calendario`
+                );
+                eventElements.forEach((el) => {
+                  el.style.cursor = "pointer";
+                  el.style.position = "relative";
+                  el.style.zIndex = "10";
+                });
+              }, 500);
+            }}
             resourceAreaHeaderContent="Técnicos"
           />
         </div>

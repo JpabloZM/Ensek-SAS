@@ -1,0 +1,69 @@
+/* Estilos para asegurar que los eventos del calendario son clickeables */
+.fc .fc-event,
+.fc .fc-daygrid-event,
+.fc .fc-timegrid-event {
+  cursor: pointer !important;
+  z-index: 10 !important;
+  position: relative !important;
+}
+
+/* Mejorar la visibilidad de los eventos */
+.fc .fc-event-main {
+  padding: 2px 4px !important;
+}
+
+/* Efecto al pasar el mouse sobre los eventos */
+.fc .fc-event:hover,
+.fc .fc-daygrid-event:hover,
+.fc .fc-timegrid-event:hover {
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px rgba(52, 152, 219, 0.7) !important;
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+/* Asegurar que el modal siempre esté por encima de todo */
+.swal2-container {
+  z-index: 10000 !important;
+}
+
+.servicio-info-modal {
+  z-index: 10001 !important;
+}
+
+/* Mejorar la visibilidad de los botones del modal */
+.evento-actions button {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+  padding: 10px 20px !important;
+}
+
+/* Fix para el overlay del modal */
+.swal2-container.swal2-backdrop-show {
+  background: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Fix para permitir eventos clickeables en cualquier vista */
+.fc-view-harness {
+  z-index: 0 !important;
+}
+
+/* Fix para elementos FC que podrían estar bloqueando los clicks */
+.fc-timegrid-col-bg,
+.fc-timegrid-col-events,
+.fc-timegrid-now-indicator-container {
+  pointer-events: none !important;
+}
+
+/* Pero asegurar que los eventos dentro siguen siendo clickeables */
+.fc-timegrid-event {
+  pointer-events: auto !important;
+}
+
+/* Fix para el contenedor de eventos que podría estar bloqueando clicks */
+.fc-timegrid-events {
+  pointer-events: none !important; /* El contenedor no captura clicks */
+}
+
+/* Pero los eventos individuales sí deben capturar clicks */
+.fc-timegrid-event-harness {
+  pointer-events: auto !important;
+}
