@@ -1,0 +1,53 @@
+.particles-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: var(--particle-size, 2px);
+  height: var(--particle-size, 2px);
+  background-color: var(--particle-color, rgba(255, 255, 255, 0.5));
+  border-radius: 50%;
+  animation: float var(--particle-speed, 15s) linear infinite;
+  top: var(--particle-start-position, 50%);
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(
+      calc(100vw + 10px),
+      calc(50vh - var(--particle-start-position))
+    );
+    opacity: 0;
+  }
+}
+
+/* Ajustar animación para diferentes tamaños de pantalla */
+@media (max-width: 768px) {
+  .particle {
+    animation-duration: calc(var(--particle-speed) * 0.75);
+  }
+}
+
+@media (max-width: 480px) {
+  .particle {
+    animation-duration: calc(var(--particle-speed) * 0.5);
+  }
+}

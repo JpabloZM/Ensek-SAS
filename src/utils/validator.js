@@ -2,24 +2,25 @@
 const ValidationRules = {
   email: {
     pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-    message: 'Formato de correo electrónico inválido'
+    message: "Formato de correo electrónico inválido",
   },
   password: {
     minLength: 6,
     maxLength: 50,
     pattern: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/,
-    message: 'La contraseña debe tener al menos 6 caracteres, incluyendo letras y números'
+    message:
+      "La contraseña debe tener al menos 6 caracteres, incluyendo letras y números",
   },
   phone: {
     pattern: /^\+?[\d\s-]{8,}$/,
-    message: 'Número de teléfono inválido'
-  }
+    message: "Número de teléfono inválido",
+  },
 };
 
 class ValidationService {
   validateEmail(email) {
     if (!email) {
-      return { isValid: false, message: 'El correo electrónico es requerido' };
+      return { isValid: false, message: "El correo electrónico es requerido" };
     }
     if (!ValidationRules.email.pattern.test(email)) {
       return { isValid: false, message: ValidationRules.email.message };
@@ -29,12 +30,12 @@ class ValidationService {
 
   validatePassword(password) {
     if (!password) {
-      return { isValid: false, message: 'La contraseña es requerida' };
+      return { isValid: false, message: "La contraseña es requerida" };
     }
     if (password.length < ValidationRules.password.minLength) {
-      return { 
-        isValid: false, 
-        message: `La contraseña debe tener al menos ${ValidationRules.password.minLength} caracteres`
+      return {
+        isValid: false,
+        message: `La contraseña debe tener al menos ${ValidationRules.password.minLength} caracteres`,
       };
     }
     if (!ValidationRules.password.pattern.test(password)) {
@@ -52,10 +53,10 @@ class ValidationService {
   }
 
   validateRequired(value, fieldName) {
-    if (!value || (typeof value === 'string' && !value.trim())) {
-      return { 
-        isValid: false, 
-        message: `El campo ${fieldName} es requerido`
+    if (!value || (typeof value === "string" && !value.trim())) {
+      return {
+        isValid: false,
+        message: `El campo ${fieldName} es requerido`,
       };
     }
     return { isValid: true };
@@ -63,15 +64,15 @@ class ValidationService {
 
   validateLength(value, fieldName, min, max) {
     if (value.length < min) {
-      return { 
-        isValid: false, 
-        message: `${fieldName} debe tener al menos ${min} caracteres`
+      return {
+        isValid: false,
+        message: `${fieldName} debe tener al menos ${min} caracteres`,
       };
     }
     if (max && value.length > max) {
-      return { 
-        isValid: false, 
-        message: `${fieldName} no puede tener más de ${max} caracteres`
+      return {
+        isValid: false,
+        message: `${fieldName} no puede tener más de ${max} caracteres`,
       };
     }
     return { isValid: true };
@@ -82,12 +83,15 @@ class ValidationService {
     const errors = {};
     let isValid = true;
 
-    Object.keys(schema).forEach(field => {
+    Object.keys(schema).forEach((field) => {
       const rules = schema[field];
       const value = data[field];
 
       if (rules.required) {
-        const requiredCheck = this.validateRequired(value, rules.label || field);
+        const requiredCheck = this.validateRequired(
+          value,
+          rules.label || field
+        );
         if (!requiredCheck.isValid) {
           errors[field] = requiredCheck.message;
           isValid = false;
@@ -97,7 +101,7 @@ class ValidationService {
 
       if (value) {
         switch (rules.type) {
-          case 'email':
+          case "email":
             const emailCheck = this.validateEmail(value);
             if (!emailCheck.isValid) {
               errors[field] = emailCheck.message;
@@ -105,7 +109,7 @@ class ValidationService {
             }
             break;
 
-          case 'password':
+          case "password":
             const passwordCheck = this.validatePassword(value);
             if (!passwordCheck.isValid) {
               errors[field] = passwordCheck.message;
@@ -113,7 +117,7 @@ class ValidationService {
             }
             break;
 
-          case 'phone':
+          case "phone":
             const phoneCheck = this.validatePhone(value);
             if (!phoneCheck.isValid) {
               errors[field] = phoneCheck.message;
@@ -121,12 +125,12 @@ class ValidationService {
             }
             break;
 
-          case 'string':
+          case "string":
             if (rules.minLength || rules.maxLength) {
               const lengthCheck = this.validateLength(
-                value, 
-                rules.label || field, 
-                rules.minLength || 0, 
+                value,
+                rules.label || field,
+                rules.minLength || 0,
                 rules.maxLength
               );
               if (!lengthCheck.isValid) {
@@ -158,46 +162,46 @@ export const validator = new ValidationService();
 export const ValidationSchemas = {
   login: {
     email: {
-      type: 'email',
+      type: "email",
       required: true,
-      label: 'Correo electrónico'
+      label: "Correo electrónico",
     },
     password: {
-      type: 'password',
+      type: "password",
       required: true,
-      label: 'Contraseña'
-    }
+      label: "Contraseña",
+    },
   },
   register: {
     name: {
-      type: 'string',
+      type: "string",
       required: true,
       minLength: 3,
-      label: 'Nombre completo'
+      label: "Nombre completo",
     },
     email: {
-      type: 'email',
+      type: "email",
       required: true,
-      label: 'Correo electrónico'
+      label: "Correo electrónico",
     },
     password: {
-      type: 'password',
+      type: "password",
       required: true,
-      label: 'Contraseña'
+      label: "Contraseña",
     },
     confirmPassword: {
-      type: 'string',
+      type: "string",
       required: true,
-      label: 'Confirmar contraseña',
+      label: "Confirmar contraseña",
       validate: (value, data) => ({
         isValid: value === data.password,
-        message: 'Las contraseñas no coinciden'
-      })
+        message: "Las contraseñas no coinciden",
+      }),
     },
     phone: {
-      type: 'phone',
+      type: "phone",
       required: false,
-      label: 'Teléfono'
-    }
-  }
+      label: "Teléfono",
+    },
+  },
 };

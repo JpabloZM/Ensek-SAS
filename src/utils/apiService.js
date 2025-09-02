@@ -5,32 +5,32 @@ import axios from "axios";
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
-import { errorHandler } from './errorHandler';
-import { logger } from './logger';
-import { validator, ValidationSchemas } from './validator';
+import { errorHandler } from "./errorHandler";
+import { logger } from "./logger";
+import { validator, ValidationSchemas } from "./validator";
 
 // Configure axios with enhanced error handling
 axios.interceptors.request.use(
   (config) => {
-    logger.debug('API Request', {
+    logger.debug("API Request", {
       url: config.url,
       method: config.method,
-      headers: config.headers
+      headers: config.headers,
     });
     return config;
   },
   (error) => {
-    logger.error('API Request Error', error);
+    logger.error("API Request Error", error);
     return Promise.reject(error);
   }
 );
 
 axios.interceptors.response.use(
   (response) => {
-    logger.debug('API Response', {
+    logger.debug("API Response", {
       url: response.config.url,
       status: response.status,
-      data: response.data
+      data: response.data,
     });
     return response;
   },

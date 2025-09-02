@@ -1,10 +1,10 @@
-import { logger } from './logger';
+import { logger } from "./logger";
 
 // Tipos de error personalizados
 export class ValidationError extends Error {
   constructor(message, errors = {}) {
     super(message);
-    this.name = 'ValidationError';
+    this.name = "ValidationError";
     this.errors = errors;
   }
 }
@@ -12,14 +12,14 @@ export class ValidationError extends Error {
 export class AuthenticationError extends Error {
   constructor(message) {
     super(message);
-    this.name = 'AuthenticationError';
+    this.name = "AuthenticationError";
   }
 }
 
 export class AuthorizationError extends Error {
   constructor(message) {
     super(message);
-    this.name = 'AuthorizationError';
+    this.name = "AuthorizationError";
   }
 }
 
@@ -34,74 +34,70 @@ class ErrorHandlerService {
     if (error.response) {
       // El servidor respondió con un status code fuera del rango 2xx
       const { status, data } = error.response;
-      
+
       switch (status) {
         case 400:
-          this.logger.warn('Error de validación en la petición', {
+          this.logger.warn("Error de validación en la petición", {
             data,
-            status
+            status,
           });
           throw new ValidationError(
-            data.message || 'Datos de entrada inválidos',
+            data.message || "Datos de entrada inválidos",
             data.errors
           );
 
         case 401:
-          this.logger.warn('Error de autenticación', {
+          this.logger.warn("Error de autenticación", {
             data,
-            status
+            status,
           });
-          throw new AuthenticationError(
-            data.message || 'No autorizado'
-          );
+          throw new AuthenticationError(data.message || "No autorizado");
 
         case 403:
-          this.logger.warn('Error de autorización', {
+          this.logger.warn("Error de autorización", {
             data,
-            status
+            status,
           });
-          throw new AuthorizationError(
-            data.message || 'Acceso denegado'
-          );
+          throw new AuthorizationError(data.message || "Acceso denegado");
 
         case 404:
-          this.logger.warn('Recurso no encontrado', {
+          this.logger.warn("Recurso no encontrado", {
             data,
-            status
+            status,
           });
-          throw new Error(data.message || 'Recurso no encontrado');
+          throw new Error(data.message || "Recurso no encontrado");
 
         case 422:
-          this.logger.warn('Error de validación', {
+          this.logger.warn("Error de validación", {
             data,
-            status
+            status,
           });
           throw new ValidationError(
-            data.message || 'Error de validación',
+            data.message || "Error de validación",
             data.errors
           );
 
         default:
-          this.logger.error('Error de servidor', {
+          this.logger.error("Error de servidor", {
             data,
-            status
+            status,
           });
           throw new Error(
-            data.message || 'Ha ocurrido un error en el servidor'
+            data.message || "Ha ocurrido un error en el servidor"
           );
       }
     } else if (error.request) {
       // La petición fue hecha pero no se recibió respuesta
-      this.logger.error('No se recibió respuesta del servidor', {
-        error: error.request
+      this.logger.error("No se recibió respuesta del servidor", {
+        error: error.request,
       });
-      throw new Error('No se pudo conectar con el servidor');
+      throw new Error("No se pudo conectar con el servidor");
     } else {
       // Algo sucedió en la configuración de la petición
-      this.logger.error('Error en la configuración de la petición', {
-        error: error.message
+      this.logger.error("Error en la configuración de la petición", {
+        error: error.message,
       });
-      throw new Error('Error al procesar la solicitud');
+      throw new Error("Error al procesar la solicitud");
     }
   }
 
@@ -110,57 +106,57 @@ class ErrorHandlerService {
     if (error instanceof ValidationError) {
       return {
         message: error.message,
-        errors: error.errors
+        errors: error.errors,
       };
     }
 
     if (error instanceof AuthenticationError) {
       return {
         message: error.message,
-        type: 'auth'
+        type: "auth",
       };
     }
 
-    this.logger.error('Error no manejado en formulario', {
+    this.logger.error("Error no manejado en formulario", {
       error: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
 
     return {
-      message: 'Ha ocurrido un error inesperado',
-      type: 'error'
+      message: "Ha ocurrido un error inesperado",
+      type: "error",
     };
   }
 
   // Manejar errores genéricos
   handleError(error, context = {}) {
-    this.logger.error('Error general', {
+    this.logger.error("Error general", {
       error: {
         message: error.message,
         name: error.name,
-        stack: error.stack
+        stack: error.stack,
       },
-      context
+      context,
     });
 
     return {
       message: this.getUserFriendlyMessage(error),
-      type: 'error'
+      type: "error",
     };
   }
 
   // Obtener mensaje amigable para el usuario
   getUserFriendlyMessage(error) {
     if (error instanceof ValidationError) {
-      return 'Por favor verifica los datos ingresados';
+      return "Por favor verifica los datos ingresados";
     }
     if (error instanceof AuthenticationError) {
-      return 'Error de autenticación. Por favor inicia sesión nuevamente';
+      return "Error de autenticación. Por favor inicia sesión nuevamente";
     }
     if (error instanceof AuthorizationError) {
-      return 'No tienes permisos para realizar esta acción';
+      return "No tienes permisos para realizar esta acción";
     }
-    return 'Ha ocurrido un error. Por favor intenta nuevamente';
+    return "Ha ocurrido un error. Por favor intenta nuevamente";
   }
 }
 

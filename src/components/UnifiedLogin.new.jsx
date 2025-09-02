@@ -29,13 +29,16 @@ const UnifiedLogin = () => {
 
   // Get the original path and service type from location state
   const from = location.state?.from?.pathname || "/app";
-  const serviceType = location.state?.from?.search?.serviceType || 
-                     location.state?.serviceType || "";
+  const serviceType =
+    location.state?.from?.search?.serviceType ||
+    location.state?.serviceType ||
+    "";
 
   // Construct the redirect URL with service type if coming from form
-  const redirectPath = from.includes("/formulario") && serviceType
-    ? `${from}?serviceType=${serviceType}`
-    : from;
+  const redirectPath =
+    from.includes("/formulario") && serviceType
+      ? `${from}?serviceType=${serviceType}`
+      : from;
 
   const initialRender = useRef(true);
 
@@ -47,7 +50,8 @@ const UnifiedLogin = () => {
         logger.info("Usuario ya autenticado, redirigiendo", {
           userId: user._id,
           role: user.role,
-          redirectPath: user.role === "admin" ? "/admin/calendario" : redirectPath
+          redirectPath:
+            user.role === "admin" ? "/admin/calendario" : redirectPath,
         });
 
         if (user.role === "admin") {
@@ -66,16 +70,16 @@ const UnifiedLogin = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
 
     // Limpiar error del campo cuando el usuario empieza a escribir
     if (formErrors[name]) {
-      setFormErrors(prev => ({
+      setFormErrors((prev) => ({
         ...prev,
-        [name]: ""
+        [name]: "",
       }));
     }
   };
@@ -94,27 +98,35 @@ const UnifiedLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       setIsSubmitting(true);
-      
+
       // Validar formulario completo
-      const validationResult = validator.validateForm(formData, ValidationSchemas.login);
-      
+      const validationResult = validator.validateForm(
+        formData,
+        ValidationSchemas.login
+      );
+
       if (!validationResult.isValid) {
         setFormErrors(validationResult.errors);
-        mostrarAlerta("Error", "Por favor verifica los datos ingresados", "error");
+        mostrarAlerta(
+          "Error",
+          "Por favor verifica los datos ingresados",
+          "error"
+        );
         return;
       }
 
       logger.info("Iniciando intento de login", { email: formData.email });
-      
+
       const user = await login(formData.email, formData.password);
-      
+
       logger.info("Login exitoso", {
         userId: user._id,
         role: user.role,
-        redirectPath: user.role === "admin" ? "/admin/calendario" : redirectPath
+        redirectPath:
+          user.role === "admin" ? "/admin/calendario" : redirectPath,
       });
 
       mostrarAlerta(
@@ -134,7 +146,7 @@ const UnifiedLogin = () => {
       const handledError = errorHandler.handleFormError(error);
       logger.error("Error en login", {
         error: handledError,
-        email: formData.email
+        email: formData.email,
       });
 
       mostrarAlerta(
@@ -191,11 +203,7 @@ const UnifiedLogin = () => {
             )}
           </div>
 
-          <button 
-            type="submit" 
-            className="auth-button"
-            disabled={isSubmitting}
-          >
+          <button type="submit" className="auth-button" disabled={isSubmitting}>
             {isSubmitting ? "Iniciando sesión..." : "Iniciar Sesión"}
           </button>
         </form>

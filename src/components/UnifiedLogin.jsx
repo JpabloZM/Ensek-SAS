@@ -7,15 +7,7 @@ import "../admin/auth/Auth.css";
 import "./UnifiedLogin.css";
 
 // Componente para las partículas de fondo
-const ParticlesBackground = () => {
-  return (
-    <div className="particles-background">
-      {[...Array(30)].map((_, index) => (
-        <div key={index} className="particle" />
-      ))}
-    </div>
-  );
-};
+import ParticlesBackground from "./common/ParticlesBackground";
 
 const UnifiedLogin = () => {
   const { login, user } = useAuth();

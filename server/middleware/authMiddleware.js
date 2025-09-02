@@ -3,11 +3,6 @@ import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 
 export const protect = async (req, res, next) => {
-  console.log("\n=== Auth Middleware Start ===");
-  console.log("Request URL:", req.originalUrl);
-  console.log("Request Method:", req.method);
-  console.log("Auth Headers:", req.headers.authorization);
-
   let token;
 
   if (
@@ -17,7 +12,6 @@ export const protect = async (req, res, next) => {
     try {
       // Get token from header
       token = req.headers.authorization.split(" ")[1];
-      console.log("Token extracted:", token ? "Present" : "Missing");
 
       // Verify token with enhanced validation
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -28,8 +22,6 @@ export const protect = async (req, res, next) => {
           message: "Token expirado, por favor inicie sesión nuevamente",
         });
       }
-
-      console.log("Token decoded successfully. User ID:", decoded.id);
 
       // Get user from the token with role validation
       req.user = await User.findById(decoded.id).select("-password");
