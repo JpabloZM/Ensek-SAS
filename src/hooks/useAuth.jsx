@@ -46,9 +46,9 @@ export const useAuth = () => {
   const handleAuthError = useCallback(
     (error) => {
       const handledError = errorHandler.handleAuthError(error);
-      logger.error("Error de autenticación", handledError);
+      logger.error("Error de autenticación", { error: handledError });
       updateAuthState(AUTH_STATES.ERROR, handledError.message);
-      throw handledError;
+      return handledError; // Retornamos el error en lugar de lanzarlo
     },
     [updateAuthState]
   );
@@ -68,34 +68,81 @@ export const useAuth = () => {
     async (retryCount = 3) => {
       try {
         const currentUser = sessionService.getSession();
-        if (!currentUser?.token) return;
+        if (!currentUser?.token) {
+          logger.debug("No hay token para refrescar");
+          return false;
+        }
+
+        logger.debug("Intentando refrescar token", {
+          userId: currentUser._id,
+          tokenLength: currentUser.token.length,
+        });
 
         const refreshedData = await apiService.auth.refreshToken(
           currentUser.token,
           { cancelToken: cancelTokenRef.current?.token }
         );
 
-        if (refreshedData?.token) {
-          const updatedUser = {
-            ...currentUser,
-            token: refreshedData.token,
-          };
+        if (!refreshedData) {
+          logger.error("No se recibieron datos de refresh");
+          handleSessionExpired();
+          return false;
+        }
+
+        if (!refreshedData.token) {
+          logger.error("No se recibió token en la respuesta", {
+            refreshedData,
+          });
+          handleSessionExpired();
+          return false;
+        }
+
+        const updatedUser = {
+          ...currentUser,
+          token: refreshedData.token,
+        };
+
+        try {
           sessionService.setSession(updatedUser);
           setUser(updatedUser);
           updateAuthState(AUTH_STATES.SUCCESS);
-
           logger.info("Sesión renovada exitosamente");
+          return true;
+        } catch (storageError) {
+          logger.error("Error al almacenar la sesión actualizada", {
+            error: storageError,
+            updatedUser: { ...updatedUser, token: "***" },
+          });
+          handleSessionExpired();
+          return false;
         }
       } catch (error) {
+        // Log detallado del error
+        logger.error("Error al renovar sesión", {
+          error: {
+            name: error.name,
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data,
+            stack: error.stack,
+          },
+        });
+
         if (retryCount > 0 && error.response?.status === 429) {
-          // Retry con backoff exponencial
+          logger.warn("Límite de tasa excedido, reintentando...");
           const delay = Math.pow(2, 4 - retryCount) * 1000;
           await new Promise((resolve) => setTimeout(resolve, delay));
           return handleSessionRefresh(retryCount - 1);
         }
 
-        logger.error("Error al renovar sesión", error);
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          logger.warn("Token inválido o expirado");
+          handleSessionExpired();
+          return false;
+        }
+
         handleSessionExpired();
+        return false;
       }
     },
     [handleSessionExpired, updateAuthState]
@@ -117,10 +164,14 @@ export const useAuth = () => {
           // Verificar token inmediatamente
           await handleSessionRefresh();
         } else {
+          // Si no hay sesión, simplemente establecemos el estado como IDLE
           updateAuthState(AUTH_STATES.IDLE);
         }
       } catch (error) {
-        handleAuthError(error);
+        // En lugar de lanzar el error, actualizamos el estado
+        logger.error("Error al restaurar la sesión", error);
+        setUser(null);
+        updateAuthState(AUTH_STATES.ERROR, "Error al restaurar la sesión");
       }
     };
 

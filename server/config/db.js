@@ -1,7 +1,7 @@
 // Database connection configuration
 import mongoose from "mongoose";
 
-export const connectDB = async () => {
+const connectDB = async () => {
   try {
     const conn = await mongoose.connect(
       process.env.MONGO_URI || "mongodb://localhost:27017/ensek",
@@ -17,3 +17,9 @@ export const connectDB = async () => {
     throw error; // Propagar el error para que la aplicación sepa que no pudo conectarse
   }
 };
+
+export const isUsingMockDB = () => {
+  return !process.env.MONGO_URI;
+};
+
+export default connectDB;

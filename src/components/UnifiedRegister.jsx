@@ -26,7 +26,7 @@ const UnifiedRegister = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    telefono: "",  // Nuevo campo opcional
+    telefono: "", // Nuevo campo opcional
     direccion: "", // Nuevo campo opcional
   };
 
@@ -48,24 +48,24 @@ const UnifiedRegister = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleBlur = (e) => {
     const { name } = e.target;
-    setTouched(prev => ({
+    setTouched((prev) => ({
       ...prev,
-      [name]: true
+      [name]: true,
     }));
 
     // Validar campo individual
     const fieldError = validateField(name, formData[name]);
-    setFormErrors(prev => ({
+    setFormErrors((prev) => ({
       ...prev,
-      [name]: fieldError
+      [name]: fieldError,
     }));
   };
 
@@ -90,28 +90,38 @@ const UnifiedRegister = () => {
 
   const validateForm = () => {
     const errors = {};
-    Object.keys(formData).forEach(field => {
+    Object.keys(formData).forEach((field) => {
       const error = validateField(field, formData[field]);
       if (error) errors[field] = error;
     });
-    
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
     try {
       setIsSubmitting(true);
-      
+
       // Marcar todos los campos como tocados
-      const allTouched = Object.keys(formData).reduce((acc, field) => ({
-        ...acc,
-        [field]: true
-      }), {});
+      const allTouched = Object.keys(formData).reduce(
+        (acc, field) => ({
+          ...acc,
+          [field]: true,
+        }),
+        {}
+      );
       setTouched(allTouched);
 
       // Validar todo el formulario
       if (!validateForm()) {
-        mostrarAlerta("Error", "Por favor, corrija los errores del formulario", "error");
+        mostrarAlerta(
+          "Error",
+          "Por favor, corrija los errores del formulario",
+          "error"
+        );
         return;
       }
 
@@ -129,7 +139,7 @@ const UnifiedRegister = () => {
 
       // Registrar usuario
       const result = await register(userData);
-      
+
       logger.info("Registro exitoso", { userId: result.user._id });
 
       await mostrarAlerta(
@@ -137,7 +147,7 @@ const UnifiedRegister = () => {
         "Registro completado correctamente. Ahora puedes iniciar sesión.",
         "success"
       );
-      
+
       // Limpiar formulario y navegar al login
       setFormData(initialFormState);
       setTouched({});
@@ -145,7 +155,7 @@ const UnifiedRegister = () => {
     } catch (error) {
       logger.error("Error en registro", {
         error,
-        email: formData.email
+        email: formData.email,
       });
 
       mostrarAlerta(
@@ -262,7 +272,9 @@ const UnifiedRegister = () => {
                   required
                 />
                 {touched.confirmPassword && formErrors.confirmPassword && (
-                  <span className="error-message">{formErrors.confirmPassword}</span>
+                  <span className="error-message">
+                    {formErrors.confirmPassword}
+                  </span>
                 )}
               </div>
             </div>
@@ -311,10 +323,10 @@ const UnifiedRegister = () => {
             </div>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="auth-button"
-            disabled={isSubmitting || authState.status === 'loading'}
+            disabled={isSubmitting || authState.status === "loading"}
           >
             {isSubmitting ? "Registrando..." : "Registrarse"}
           </button>

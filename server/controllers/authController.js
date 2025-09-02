@@ -1,6 +1,6 @@
 // Authentication controller
 import User from "../models/userModel.js";
-import { generateToken } from "../config/jwt.js";
+import { generateToken, verifyToken, decodeToken } from "../config/jwt.js";
 import { ROLES, validateRole } from "../config/roles.js";
 
 // @desc    Register a new user
@@ -108,6 +108,60 @@ export const loginUser = async (req, res) => {
       success: false,
       message: "Server Error",
       error: error.message,
+    });
+  }
+};
+
+// @desc    Refresh access token
+// @route   POST /api/auth/refresh-token
+// @access  Public
+export const refreshToken = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: "Token is required",
+      });
+    }
+
+    // Verificar el token actual y obtener el id del usuario
+    const decoded = verifyToken(token);
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Generar nuevo token
+    const newToken = generateToken(user._id);
+
+    // Enviar el nuevo token como texto plano
+    res.setHeader("Content-Type", "text/plain");
+    res.send(newToken);
+  } catch (error) {
+    console.error("Token refresh error:", {
+      message: error.message,
+      type: error.name,
+      token: token ? "Present" : "Missing",
+    });
+
+    if (error.message === "Token inválido o expirado") {
+      return res.status(401).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Error al refrescar el token",
+      details:
+        process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };

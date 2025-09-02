@@ -8,8 +8,8 @@ export const LogLevel = {
 
 class LoggerService {
   constructor() {
-    this.isDevelopment = process.env.NODE_ENV === "development";
-    this.logLevel = process.env.LOG_LEVEL || "info";
+    this.isDevelopment = import.meta.env.DEV;
+    this.logLevel = import.meta.env.VITE_LOG_LEVEL || "info";
     this.config = {
       console: true,
       file: false,
@@ -33,7 +33,7 @@ class LoggerService {
       message,
       context: {
         ...context,
-        environment: process.env.NODE_ENV,
+        environment: import.meta.env.MODE,
         url: typeof window !== "undefined" ? window.location.href : undefined,
         userAgent:
           typeof navigator !== "undefined" ? navigator.userAgent : undefined,
@@ -83,7 +83,7 @@ class LoggerService {
     console.error(JSON.stringify(logData, null, 2));
 
     // En producción, podríamos enviar errores críticos a un servicio externo
-    if (process.env.NODE_ENV === "production") {
+    if (!this.isDevelopment) {
       // TODO: Implementar envío a servicio de monitoreo
     }
   }

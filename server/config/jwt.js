@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
 const DEFAULT_SECRET = crypto.randomBytes(32).toString("hex");
 
@@ -20,4 +21,23 @@ export const generateToken = (id) => {
   return jwt.sign({ id }, jwtConfig.secret, {
     expiresIn: jwtConfig.expiresIn,
   });
+};
+
+export const verifyToken = (token) => {
+  if (!jwtConfig.secret) {
+    throw new Error("JWT_SECRET no está configurado");
+  }
+  try {
+    return jwt.verify(token, jwtConfig.secret);
+  } catch (error) {
+    throw new Error("Token inválido o expirado");
+  }
+};
+
+export const decodeToken = (token) => {
+  try {
+    return jwt.decode(token);
+  } catch (error) {
+    throw new Error("Error al decodificar el token");
+  }
 };

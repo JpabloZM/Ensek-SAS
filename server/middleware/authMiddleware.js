@@ -1,6 +1,6 @@
 // Authentication middleware
-import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
+import { verifyToken } from "../config/jwt.js";
 
 export const protect = async (req, res, next) => {
   let token;
@@ -14,7 +14,7 @@ export const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
 
       // Verify token with enhanced validation
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = verifyToken(token);
 
       if (decoded.exp && Date.now() >= decoded.exp * 1000) {
         return res.status(401).json({

@@ -145,6 +145,41 @@ class ErrorHandlerService {
     };
   }
 
+  // Manejar errores específicos de autenticación
+  handleAuthError(error) {
+    this.logger.error("Error de autenticación", {
+      error: {
+        message: error.message,
+        name: error.name,
+        stack: error.stack,
+      },
+    });
+
+    if (error.response) {
+      const { status, data } = error.response;
+
+      switch (status) {
+        case 401:
+          return new AuthenticationError(
+            data.message || "Credenciales inválidas"
+          );
+        case 403:
+          return new AuthorizationError(data.message || "Acceso denegado");
+        default:
+          return new Error(data.message || "Error en la autenticación");
+      }
+    }
+
+    if (
+      error instanceof AuthenticationError ||
+      error instanceof AuthorizationError
+    ) {
+      return error;
+    }
+
+    return new Error("Error en el proceso de autenticación");
+  }
+
   // Obtener mensaje amigable para el usuario
   getUserFriendlyMessage(error) {
     if (error instanceof ValidationError) {
