@@ -8,6 +8,8 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "seed": "node seeder.js",
+    "init:db": "node scripts/initDb.js",
+    "check:db": "node scripts/checkDb.js",
     "test": "node testAPI.js",
     "test:auth": "node testAuth.js",
     "test:auth:full": "node fullAuthTest.js",

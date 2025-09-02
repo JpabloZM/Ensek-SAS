@@ -1,7 +1,7 @@
 // Authentication controller
-import User from '../models/userModel.js';
-import { generateToken } from '../config/jwt.js';
-import { ROLES, validateRole } from '../config/roles.js';
+import User from "../models/userModel.js";
+import { generateToken } from "../config/jwt.js";
+import { ROLES, validateRole } from "../config/roles.js";
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -16,7 +16,7 @@ export const registerUser = async (req, res) => {
     if (userExists) {
       return res.status(400).json({
         success: false,
-        message: 'User already exists',
+        message: "User already exists",
       });
     }
 
@@ -25,7 +25,7 @@ export const registerUser = async (req, res) => {
     if (!validateRole(userRole)) {
       return res.status(400).json({
         success: false,
-        message: 'Rol de usuario inválido'
+        message: "Rol de usuario inválido",
       });
     }
 
@@ -55,14 +55,14 @@ export const registerUser = async (req, res) => {
     } else {
       res.status(400).json({
         success: false,
-        message: 'Invalid user data',
+        message: "Invalid user data",
       });
     }
   } catch (error) {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: "Server Error",
       error: error.message,
     });
   }
@@ -76,7 +76,7 @@ export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     // Check for user email
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email }).select("+password");
 
     let isPasswordMatch = false;
     if (user) {
@@ -99,14 +99,14 @@ export const loginUser = async (req, res) => {
     } else {
       res.status(401).json({
         success: false,
-        message: 'Invalid email or password',
+        message: "Invalid email or password",
       });
     }
   } catch (error) {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: "Server Error",
       error: error.message,
     });
   }
@@ -134,14 +134,14 @@ export const getUserProfile = async (req, res) => {
     } else {
       res.status(404).json({
         success: false,
-        message: 'User not found',
+        message: "User not found",
       });
     }
   } catch (error) {
     console.error(error);
     res.status(500).json({
       success: false,
-      message: 'Server Error',
+      message: "Server Error",
       error: error.message,
     });
   }

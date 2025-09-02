@@ -21,23 +21,23 @@ export const protect = async (req, res, next) => {
 
       // Verify token with enhanced validation
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
+
       if (decoded.exp && Date.now() >= decoded.exp * 1000) {
         return res.status(401).json({
           success: false,
-          message: "Token expirado, por favor inicie sesión nuevamente"
+          message: "Token expirado, por favor inicie sesión nuevamente",
         });
       }
-      
+
       console.log("Token decoded successfully. User ID:", decoded.id);
 
       // Get user from the token with role validation
       req.user = await User.findById(decoded.id).select("-password");
-      
-      if (!['admin', 'user'].includes(req.user?.role)) {
+
+      if (!["admin", "user"].includes(req.user?.role)) {
         return res.status(401).json({
           success: false,
-          message: "Rol de usuario inválido"
+          message: "Rol de usuario inválido",
         });
       }
 
