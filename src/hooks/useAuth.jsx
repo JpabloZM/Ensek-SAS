@@ -1,67 +1,77 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { apiService } from "../utils/apiService";
+import { sessionService } from "../services/sessionService";
 
 export const useAuth = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  useEffect(() => {
-    // Restore user from localStorage on init
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        // Verify the user has necessary properties
-        if (parsedUser && parsedUser.token) {
-          console.log("Restored user from localStorage:", {
-            name: parsedUser.name,
-            email: parsedUser.email,
-            role: parsedUser.role
+  // Manejador de expiración de sesión
+  const handleSessionExpired = useCallback(() => {
+    setUser(null);
+    setError("La sesión ha expirado. Por favor, inicie sesión nuevamente.");
+  }, []);
+
+  // Manejador de renovación de sesión
+  const handleSessionRefresh = useCallback(async () => {
+    try {
+      const currentUser = sessionService.getSession();
+      if (currentUser && currentUser.token) {
+        const refreshedData = await apiService.auth.refreshToken(
+          currentUser.token
+        );
+        if (refreshedData && refreshedData.token) {
+          sessionService.setSession({
+            ...currentUser,
+            token: refreshedData.token,
           });
-          setUser(parsedUser);
-        } else {
-          console.warn("Invalid user data in localStorage (missing token), clearing...");
-          localStorage.removeItem("user");
+          setUser((prev) => ({ ...prev, token: refreshedData.token }));
         }
-      } catch (err) {
-        console.error("Error parsing user from localStorage:", err);
-        localStorage.removeItem("user");
       }
-    } else {
-      console.log("No user found in localStorage");
+    } catch (error) {
+      console.error("Error al renovar la sesión:", error);
+      handleSessionExpired();
+    }
+  }, []);
+
+  useEffect(() => {
+    // Restaurar sesión al iniciar
+    const session = sessionService.getSession();
+    if (session) {
+      setUser(session);
     }
     setLoading(false);
-  }, []);
+
+    // Configurar listeners para eventos de sesión
+    window.addEventListener("sessionExpired", handleSessionExpired);
+    window.addEventListener("sessionNeedsRefresh", handleSessionRefresh);
+
+    return () => {
+      window.removeEventListener("sessionExpired", handleSessionExpired);
+      window.removeEventListener("sessionNeedsRefresh", handleSessionRefresh);
+    };
+  }, [handleSessionExpired, handleSessionRefresh]);
   const login = async (email, password) => {
     try {
       setLoading(true);
-      setError(null); // Clear any previous errors
-      
-      console.log(`Sending login request to ${apiService.auth.login.toString()}`);
-      console.log(`Email: ${email}, Password: ${password.substring(0, 1)}${'*'.repeat(password.length - 1)}`);
-      
+      setError(null);
+
+      console.log("Iniciando proceso de login...");
       const data = await apiService.auth.login(email, password);
-      console.log("Server response:", data);
-      
-      if (data && data.user && data.user.token) {
-        localStorage.setItem("user", JSON.stringify(data.user));
+
+      if (data?.user?.token) {
+        // Usar sessionService para almacenar los datos de sesión
+        sessionService.setSession(data.user);
         setUser(data.user);
         return data.user;
       } else {
-        console.error("Invalid response structure:", data);
-        throw new Error("Login successful but received invalid user data");
+        throw new Error("Datos de usuario inválidos");
       }
     } catch (error) {
-      console.error("Login error details:", error);
-      
-      // Create a more descriptive error message
-      let errorMessage = "Error de autenticación";
-      
-      if (error.response && error.response.data) {
-        errorMessage = error.response.data.message || errorMessage;
-        console.error("Server error response:", error.response.data);
-      }
-      
+      console.error("Error en login:", error);
+
+      const errorMessage =
+        error.response?.data?.message || "Error de autenticación";
       setError(errorMessage);
       throw error;
     } finally {
@@ -85,11 +95,20 @@ export const useAuth = () => {
   const logout = async () => {
     try {
       setLoading(true);
-      localStorage.removeItem("user");
+      // Limpiar sesión usando sessionService
+      sessionService.clearSession();
       setUser(null);
+
+      // Llamar al endpoint de logout si existe
+      try {
+        await apiService.auth.logout();
+      } catch (logoutError) {
+        console.warn("Error en logout del servidor:", logoutError);
+        // Continuamos con el logout local aunque falle el servidor
+      }
     } catch (error) {
       setError(error.message);
-      console.error("Error during logout:", error);
+      console.error("Error durante logout:", error);
     } finally {
       setLoading(false);
     }
