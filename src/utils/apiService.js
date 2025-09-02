@@ -5,16 +5,37 @@ import axios from "axios";
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
-// Configure axios with better error handling
-axios.interceptors.response.use(
-  (response) => response,
+import { errorHandler } from './errorHandler';
+import { logger } from './logger';
+import { validator, ValidationSchemas } from './validator';
+
+// Configure axios with enhanced error handling
+axios.interceptors.request.use(
+  (config) => {
+    logger.debug('API Request', {
+      url: config.url,
+      method: config.method,
+      headers: config.headers
+    });
+    return config;
+  },
   (error) => {
-    console.error("API Error:", error.message);
-    if (error.response) {
-      console.error("Response data:", error.response.data);
-      console.error("Response status:", error.response.status);
-    }
+    logger.error('API Request Error', error);
     return Promise.reject(error);
+  }
+);
+
+axios.interceptors.response.use(
+  (response) => {
+    logger.debug('API Response', {
+      url: response.config.url,
+      status: response.status,
+      data: response.data
+    });
+    return response;
+  },
+  (error) => {
+    return Promise.reject(errorHandler.handleApiError(error));
   }
 );
 
